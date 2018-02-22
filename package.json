@@ -1,0 +1,82 @@
+{
+  "name": "can-query",
+  "version": "0.0.0",
+  "description": "query data",
+  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/canjs/can-query.git"
+  },
+  "author": {
+    "name": "Bitovi",
+    "email": "core@donejs.com",
+    "url": "donejs.com"
+  },
+  "scripts": {
+    "preversion": "npm test && npm run build",
+    "version": "git commit -am \"Update version number\" && git checkout -b release && git add -f dist/",
+    "postpublish": "git push --tags && git checkout master && git branch -D release && git push",
+    "testee": "testee test.html --browsers firefox",
+    "test": "npm run jshint && npm run testee",
+    "jshint": "jshint ./*.js --config",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish",
+    "build": "node build.js",
+    "develop": "done-serve --static --develop --port 8080"
+  },
+  "main": "dist/cjs/can-query",
+  "browser": {
+    "transform": [
+      "cssify"
+    ]
+  },
+  "browserify": {
+    "transform": [
+      "cssify"
+    ]
+  },
+  "keywords": [
+    "",
+    "donejs-plugin"
+  ],
+  "steal": {
+    "main": "can-query",
+    "configDependencies": [
+      "live-reload"
+    ],
+    "npmIgnore": [
+      "testee",
+      "generator-donejs",
+      "donejs-cli",
+      "steal-tools"
+    ],
+    "plugins": [
+      "steal-less",
+      "steal-stache"
+    ]
+  },
+  "dependencies": {
+    "can-assign": "^1.1.1",
+    "can-component": "^4.0.0-pre.16",
+    "can-define": "^2.0.0-pre.19",
+    "can-reflect": "^1.13.3",
+    "can-stache": "^4.0.0-pre.32",
+    "can-symbol": "^1.6.1",
+    "can-view-autorender": "^4.0.0-pre.0",
+    "cssify": "^0.6.0",
+    "steal-less": "^1.2.0",
+    "steal-stache": "^4.0.0-pre.2"
+  },
+  "devDependencies": {
+    "jshint": "^2.9.1",
+    "steal": "^1.6.2",
+    "steal-qunit": "^1.0.1",
+    "steal-tools": "^1.10.0",
+    "testee": "^0.3.0",
+    "generator-donejs": "^2.0.0-pre.0",
+    "donejs-cli": "^2.0.0-pre.0",
+    "done-serve": "^2.0.0-pre.0"
+  },
+  "license": "MIT"
+}
