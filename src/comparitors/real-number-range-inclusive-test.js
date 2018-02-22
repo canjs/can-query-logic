@@ -1,5 +1,5 @@
 var QUnit = require("steal-qunit");
-var set = require("./set");
+var set = require("../set");
 var RealNumberRangeInclusive = require("./real-number-range-inclusive");
 
 QUnit.module("can-type");

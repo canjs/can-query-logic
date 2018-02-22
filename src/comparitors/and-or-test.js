@@ -1,5 +1,5 @@
 var QUnit = require("steal-qunit");
-var set = require("./set");
+var set = require("../set");
 var addAddOrComparitors = require("./and-or");
 var addNotComparitor = require("./not");
 

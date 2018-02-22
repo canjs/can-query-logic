@@ -1,4 +1,4 @@
-var set = require("./set");
+var set = require("../set");
 module.exports = function(NotIdentity, Identity){
     Identity = Identity || set.Identity;
     // Only difference is needed w/ universal

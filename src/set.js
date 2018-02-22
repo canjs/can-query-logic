@@ -3,6 +3,19 @@ var canSymbol = require("can-symbol");
 var emptySymbol = {name: "EMPTY"}; //canSymbol.for("can.emptySet");
 var setComparisonsSymbol = canSymbol.for("can.setComparisons");
 
+//.count
+//.equal
+//.properSubset
+//.subset
+//.union
+//.intersection
+//.difference
+//.getSubset
+//.getUnion
+//.has
+//.index
+//.identity
+
 function reverseArgs(fn){
     return function(first, second){
         return fn.call(this, second, first);

@@ -1,4 +1,4 @@
-var set = require("./set");
+var set = require("../set");
 
 function RealNumberRangeInclusive(start, end){
     this.start = start;

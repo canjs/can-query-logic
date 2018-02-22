@@ -1,5 +1,5 @@
 var QUnit = require("steal-qunit");
-var set = require("./set");
+var set = require("../set");
 var Enum = require("./enum");
 
 QUnit.module("can-type/enum");

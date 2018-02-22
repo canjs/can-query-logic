@@ -1,4 +1,4 @@
-var set = require("./set");
+var set = require("../set");
 var assign = require("can-assign");
 var arrayUnionIntersectionDifference = require("./array-union-intersection-difference");
 

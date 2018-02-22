@@ -1,4 +1,4 @@
-require("./src/enum-test");
-require("./src/real-number-range-inclusive-test");
-require("./src/not-test");
-require("./src/and-or-test");
+require("./src/comparitors/enum-test");
+require("./src/comparitors/real-number-range-inclusive-test");
+require("./src/comparitors/not-test");
+require("./src/comparitors/and-or-test");
