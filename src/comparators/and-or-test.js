@@ -1,13 +1,13 @@
 var QUnit = require("steal-qunit");
 var set = require("../set");
-var addAddOrComparitors = require("./and-or");
+var addAddOrComparators = require("./and-or");
 var addNotComparitor = require("./not");
 
 function justAnd(){
     function And(values) {
         this.values = values;
     }
-    addAddOrComparitors(And);
+    addAddOrComparators(And);
     return {
         And: And
     };
@@ -24,7 +24,7 @@ function AndOrNot(){
         this.value = value;
     }
     addNotComparitor(Not);
-    addAddOrComparitors(And, Or, Not);
+    addAddOrComparators(And, Or, Not);
     return {
         And: And,
         Or: Or,

@@ -1,9 +1,5 @@
 var set = require("../set");
 
-function RealNumberRangeInclusive(start, end){
-    this.start = start;
-    this.end = end;
-}
 
 var within = function(value, range){
 	return value >= range[0] && value <= range[1];
@@ -115,24 +111,32 @@ var diff = function(setA, setB, property1, property2){
 
 };
 
-set.defineComparison(RealNumberRangeInclusive, RealNumberRangeInclusive,{
-    union: function(range1, range2){
-        var result = diff(range1, range2,"start","end");
-        if(result.union) {
-            return new RealNumberRangeInclusive(result.union[0], result.union[1]);
+
+module.exports = function(min, max) {
+    function isUniversal(range) {
+        return range.start <= min && range.end >= max;
+    }
+
+    function RealNumberRangeInclusive(start, end){
+        this.start = start;
+        this.end = end;
+        if(isUniversal(this)) {
+            return set.UNIVERSAL;
         } else {
-            return set.EMPTY;
+            return this;
         }
-    },
-    intersection: function(range1, range2){
+    }
+
+    function intersection(range1, range2){
         var result = diff(range1, range2,"start","end");
         if(result.intersection) {
             return new RealNumberRangeInclusive(result.intersection[0], result.intersection[1]);
         } else {
             return set.EMPTY;
         }
-    },
-    difference: function(range1, range2){
+    }
+
+    function difference(range1, range2){
         var result = diff(range1, range2,"start","end");
         if(result.difference) {
             return new RealNumberRangeInclusive(result.difference[0], result.difference[1]);
@@ -140,6 +144,40 @@ set.defineComparison(RealNumberRangeInclusive, RealNumberRangeInclusive,{
             return set.EMPTY;
         }
     }
-});
 
-module.exports = RealNumberRangeInclusive;
+    set.defineComparison(RealNumberRangeInclusive, RealNumberRangeInclusive,{
+        union: function(range1, range2){
+            var result = diff(range1, range2,"start","end");
+            if(result.union) {
+                return new RealNumberRangeInclusive(result.union[0], result.union[1]);
+            } else {
+                return set.EMPTY;
+            }
+        },
+        intersection: intersection,
+        difference: difference
+    });
+    
+    set.defineComparison(RealNumberRangeInclusive, set.UNIVERSAL, {
+        difference: function(range){
+            if(isUniversal(range)) {
+                return set.EMPTY;
+            } else {
+                return difference(range, {start: min, end: max});
+            }
+        },
+        intersection: function(range) {return range;}
+    });
+
+    set.defineComparison(set.UNIVERSAL,RealNumberRangeInclusive, {
+        difference: function(universe, range){
+            if(isUniversal(range)) {
+                return set.EMPTY;
+            } else {
+                return difference({start: min, end: max}, range);
+            }
+        }
+    });
+
+    return RealNumberRangeInclusive;
+};

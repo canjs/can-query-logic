@@ -22,7 +22,7 @@ function reverseArgs(fn){
     };
 }
 
-function addComparitors(type1, type2, comparitors) {
+function addComparators(type1, type2, comparators) {
     var comparisons = type1[setComparisonsSymbol];
     if(!type1[setComparisonsSymbol]) {
         comparisons = type1[setComparisonsSymbol] = new Map();
@@ -33,7 +33,18 @@ function addComparitors(type1, type2, comparitors) {
         subMap = new Map();
         comparisons.set(type1, subMap);
     }
-    subMap.set(type2, comparitors);
+    var existingComparators = subMap.get(type2);
+    if(existingComparators) {
+        for(var prop in comparators) {
+            if(existingComparators.hasOwnProperty(prop)) {
+                console.warn("Overwriting "+type1.name+" "+prop+" "+type2.name+" comparitor");
+            }
+            existingComparators[prop] = comparators[prop];
+        }
+    } else {
+        subMap.set(type2, comparators);
+    }
+
 }
 
 function Identity(){}
@@ -52,6 +63,9 @@ var set = {
     EMPTY: emptySymbol,
     UNDEFINABLE: {name: "UNDEFINABLE"}, //canSymbol.for("can.UNDEFINABLE_SET"),
     Identity: Identity,
+    isSpecial: function(setA){
+        return setA === set.UNIVERSAL || setA === set.EMPTY || setA === set.UNDEFINABLE;
+    },
     getType: function(value){
         if(value === set.UNIVERSAL) {
             return set.UNIVERSAL;
@@ -77,18 +91,18 @@ var set = {
             }
         }
     },
-    defineComparison: function(type1, type2, comparitors) {
-        addComparitors(type1, type2, comparitors);
+    defineComparison: function(type1, type2, comparators) {
+        addComparators(type1, type2, comparators);
         if(type1 !== type2) {
             var reverse = {};
-            for(var prop in comparitors) {
+            for(var prop in comparators) {
                 // difference can not be reversed
                 if(prop !== "difference") {
-                    reverse[prop] = reverseArgs(comparitors[prop]);
+                    reverse[prop] = reverseArgs(comparators[prop]);
                 }
 
             }
-            addComparitors(type2, type1, reverse);
+            addComparators(type2, type1, reverse);
         }
     },
     /**
@@ -98,20 +112,19 @@ var set = {
      */
     isSubset: function(value1, value2){
         // check primary direction
-
+        if(value1 === value2) {
+            return true;
+        }
         var Type1 = set.getType(value1),
             Type2 = set.getType(value2);
-        var forwardComparitors = set.getComparisons(Type1, Type2);
-        var reverseComparitors = set.getComparisons(Type2, Type1);
-        if(forwardComparitors && reverseComparitors) {
+        var forwardComparators = set.getComparisons(Type1, Type2);
+        if(forwardComparators) {
 
-            var intersection = get.intersection(forwardComparitors, value1, value2);
+            var intersection = get.intersection(forwardComparators, value1, value2);
             // [a, b] \ [a, b, c]
-            var difference = get.difference(forwardComparitors, value1, value2);
+            var difference = get.difference(forwardComparators, value1, value2);
             // they intersect, but value2 has nothing value1 outside value2
             if(intersection !== set.EMPTY && difference === set.EMPTY) {
-                //var reverseIntersection = get.intersection(reverseComparitors, value1, value2);
-                //return reverseIntersection !== set.EMPTY;
                 return true;
             } else {
                 return false;
@@ -123,17 +136,17 @@ var set = {
     isEqual: function(value1, value2) {
         var Type1 = set.getType(value1),
             Type2 = set.getType(value2);
-        if(Type1 === Identity && Type2 === Identity) {
-            return value1 === value2;
+        if(value1 === value2) {
+            return true;
         }
-        var forwardComparitors = set.getComparisons(Type1, Type2);
-        var reverseComparitors = set.getComparisons(Type2, Type1);
-        if(forwardComparitors && reverseComparitors) {
-            var intersection = get.intersection(forwardComparitors, value1, value2);
-            var difference = get.difference(forwardComparitors, value1, value2);
+        var forwardComparators = set.getComparisons(Type1, Type2);
+        var reverseComparators = set.getComparisons(Type2, Type1);
+        if(forwardComparators && reverseComparators) {
+            var intersection = get.intersection(forwardComparators, value1, value2);
+            var difference = get.difference(forwardComparators, value1, value2);
             if(intersection !== set.EMPTY && difference === set.EMPTY) {
-                var reverseIntersection = get.intersection(reverseComparitors, value1, value2);
-                var reverseDifference = get.difference(reverseComparitors, value1, value2);
+                var reverseIntersection = get.intersection(reverseComparators, value2, value1);
+                var reverseDifference = get.difference(reverseComparators, value2, value1);
                 return reverseIntersection !== set.EMPTY && reverseDifference === set.EMPTY;
             } else {
                 return false;
@@ -154,8 +167,8 @@ var set = {
         }
         var Type1 = set.getType(value1),
             Type2 = set.getType(value2);
-        var forwardComparitors = set.getComparisons(Type1, Type2);
-        return get.union(forwardComparitors, value1, value2);
+        var forwardComparators = set.getComparisons(Type1, Type2);
+        return get.union(forwardComparators, value1, value2);
     },
 
     intersection: function(value1, value2){
@@ -170,9 +183,9 @@ var set = {
         }
         var Type1 = set.getType(value1),
             Type2 = set.getType(value2);
-        var forwardComparitors = set.getComparisons(Type1, Type2);
-        if(forwardComparitors) {
-            return get.intersection(forwardComparitors, value1, value2);
+        var forwardComparators = set.getComparisons(Type1, Type2);
+        if(forwardComparators) {
+            return get.intersection(forwardComparators, value1, value2);
         } else {
             throw new Error("Unable to perform intersection comparison between "+Type1.name+" and "+Type2.name);
         }
@@ -183,9 +196,9 @@ var set = {
         }
         var Type1 = set.getType(value1),
             Type2 = set.getType(value2);
-        var forwardComparitors = set.getComparisons(Type1, Type2);
-        if(forwardComparitors) {
-            return get.difference(forwardComparitors, value1, value2);
+        var forwardComparators = set.getComparisons(Type1, Type2);
+        if(forwardComparators) {
+            return get.difference(forwardComparators, value1, value2);
         } else {
             throw new Error("Unable to perform difference comparison between "+Type1.name+" and "+Type2.name);
         }
@@ -200,13 +213,13 @@ var algebraSymbol = {
 };
 
 ["intersection","difference","union"].forEach(function(prop){
-    get[prop] = function(forwardComparitors, value1, value2){
+    get[prop] = function(forwardComparators, value1, value2){
         //var name1 = set.getType(value1).name,
         //    name2 = set.getType(value2).name;
-        if(forwardComparitors && forwardComparitors[prop]) {
-            var result = forwardComparitors[prop](value1, value2);
+        if(forwardComparators && forwardComparators[prop]) {
+            var result = forwardComparators[prop](value1, value2);
             console.log("",/*name1,*/ value1, algebraSymbol[prop], /*name2,*/ value2,"=", result);
-            if(result === undefined && forwardComparitors.undefinedIsEmptySet === true) {
+            if(result === undefined && forwardComparators.undefinedIsEmptySet === true) {
                 return set.EMPTY;
             } else {
                 return result;
@@ -235,5 +248,6 @@ var identityComparitor = {
 };
 set.defineComparison(Identity,Identity, identityComparitor);
 
+set.defineComparison(set.UNIVERSAL,set.UNIVERSAL, identityComparitor);
 
 module.exports = set;
