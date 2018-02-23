@@ -29,7 +29,7 @@ QUnit.test("isSubset", function(){
 
 });
 
-QUnit.test("union with universal", function(){
+QUnit.test("isEqual with universal", function(){
 
     QUnit.equal(
         set.isEqual(
@@ -47,5 +47,21 @@ QUnit.test("union with universal", function(){
         ),
         false,
         "universal first");
+
+    QUnit.equal(
+        set.isEqual(
+            new RealNumberRangeInclusive(-Infinity, Infinity),
+            set.UNIVERSAL
+        ),
+        true,
+        "eq universal second");
+
+    QUnit.equal(
+        set.isEqual(
+            set.UNIVERSAL,
+            new RealNumberRangeInclusive(-Infinity, Infinity)
+        ),
+        true,
+        "eq universal second");
 
 });

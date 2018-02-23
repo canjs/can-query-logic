@@ -118,13 +118,8 @@ module.exports = function(min, max) {
     }
 
     function RealNumberRangeInclusive(start, end){
-        this.start = start;
-        this.end = end;
-        if(isUniversal(this)) {
-            return set.UNIVERSAL;
-        } else {
-            return this;
-        }
+        this.start = arguments.length > 0 ? start : min;
+        this.end = arguments.length > 1 ? end : max;
     }
 
     function intersection(range1, range2){
@@ -157,7 +152,7 @@ module.exports = function(min, max) {
         intersection: intersection,
         difference: difference
     });
-    
+
     set.defineComparison(RealNumberRangeInclusive, set.UNIVERSAL, {
         difference: function(range){
             if(isUniversal(range)) {

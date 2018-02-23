@@ -28,7 +28,7 @@ function BasicQuery(query) {
         this.filter = set.UNIVERSAL;
     }
     if(!this.page) {
-        this.page = set.UNIVERSAL;
+        this.page = new RecordRange();
     }
     if(!this.sort) {
         this.sort = "id ASC";
@@ -60,7 +60,7 @@ set.defineComparison(BasicQuery, BasicQuery,{
     union: function(queryA, queryB){
 
         var pageIsEqual = set.isEqual(queryA.page, queryB.page),
-            pagesAreUniversal = pageIsEqual && queryA.page === set.UNIVERSAL,
+            pagesAreUniversal = pageIsEqual && set.isEqual( queryA.page, set.UNIVERSAL),
             filterUnion = set.union(queryA.filter, queryB.filter),
             sortIsEqual = set.isEqual(queryA.sort, queryB.sort);
 

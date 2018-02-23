@@ -21,8 +21,8 @@ function legacyToQuery(set) {
 function queryToLegacy(query) {
     var legacy = {};
     if(query.page) {
-        if(query.page === set.UNIVERSAL) {
-            
+        if( set.isEqual( query.page, set.UNIVERSAL) ) {
+
         } else {
             legacy.start = query.page.start;
             legacy.end = query.page.end;
