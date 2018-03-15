@@ -1,6 +1,7 @@
 var set = require("../set");
 var assign = require("can-assign");
 var arrayUnionIntersectionDifference = require("./array-union-intersection-difference");
+var canReflect = require("can-reflect");
 
 var MISSING = {};
 function eachInUnique(a, acb, b, bcb, defaultReturn){
@@ -22,6 +23,19 @@ function eachInUnique(a, acb, b, bcb, defaultReturn){
 	return defaultReturn;
 }
 
+function keyDiff(valuesA, valuesB) {
+	var keyResults = arrayUnionIntersectionDifference(
+		Object.keys(valuesA),
+		Object.keys(valuesB));
+	return {
+		aOnlyKeys: keyResults.difference,
+		aAndBKeys: keyResults.intersection,
+		bOnlyKeys:  arrayUnionIntersectionDifference(
+			Object.keys(valuesB),
+			Object.keys(valuesA)).difference
+	};
+}
+
 
 module.exports = function(And, Or, Not) {
 
@@ -29,14 +43,10 @@ module.exports = function(And, Or, Not) {
 
 		var valuesA = obj1.values,
 			valuesB = obj2.values,
-			keyResults = arrayUnionIntersectionDifference(
-				Object.keys(obj1.values),
-				Object.keys(obj2.values)),
-			aOnlyKeys = keyResults.difference,
-			aAndBKeys = keyResults.intersection,
-			bOnlyKeys =  arrayUnionIntersectionDifference(
-				Object.keys(obj2.values),
-				Object.keys(obj1.values)).difference;
+			diff = keyDiff(valuesA, valuesB),
+			aOnlyKeys = diff.aOnlyKeys,
+			aAndBKeys = diff.aAndBKeys,
+			bOnlyKeys = diff.bOnlyKeys;
 
 		// check if all aAndB are equal
 
@@ -189,17 +199,36 @@ module.exports = function(And, Or, Not) {
         // {age: 2} or {age: 3} -> {age: new OR[2,3]}
         // {age: 3, name: "Justin"} OR {age: 4} -> {age: 3, name: "Justin"} OR {age: 4}
         union: function(obj1, obj2){
-            if(Or) {
-                var keys1 = Object.keys(obj1.values),
-                    keys2 = Object.keys(obj2.values),
-                    keyValue = keys1[0];
-                if(keys1.length === 1 && keys2.length === 1) {
-                    var newAnd = {};
-                    var result = newAnd[keyValue] = set.union(obj1.values[keyValue], obj2.values[keyValue]);
-                    return result === set.UNIVERSAL ? set.UNIVERSAL : new And(newAnd);
-                } else {
-                    return new Or(obj1.values, obj2.values);
-                }
+			// first see if we can union a single property
+			// {age: 21, color: ["R"]} U {age: 21, color: ["B"]} -> {age: 21, color: ["R","B"]}
+
+			var diff = keyDiff(obj1.values, obj2.values);
+			// if all keys are shared
+			if(!diff.aOnlyKeys.length && !diff.bOnlyKeys.length) {
+				// check if only one is different..
+				var differentKeys = [],
+					sameKeys= {};
+				diff.aAndBKeys.forEach(function(key){
+					if(!set.isEqual(obj1.values[key], obj2.values[key])) {
+						differentKeys.push(key)
+					} else {
+						sameKeys[key] = obj1.values[key];
+					}
+				});
+
+				if(differentKeys.length === 1) {
+					var keyValue = differentKeys[0];
+
+                    var result = sameKeys[keyValue] = set.union(obj1.values[keyValue], obj2.values[keyValue]);
+
+					// if there is only one property, we can just return the universal set
+					return canReflect.size(sameKeys) === 1 && set.isEqual(result, set.UNIVERSAL) ?
+						set.UNIVERSAL : new And(sameKeys);
+				}
+			}
+
+			if(Or) {
+                return new Or(obj1.values, obj2.values);
             } else {
                 return set.UNDEFINABLE;
             }

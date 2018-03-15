@@ -1,7 +1,7 @@
 var set = require("../set");
 var makeRealNumberRangeInclusive = require("./make-real-number-range-inclusive");
 var assign = require("can-assign");
-
+var canReflect = require("can-reflect");
 
 var addAddOrComparators = require("../comparators/and-or");
 var addNotComparitor = require("../comparators/not");
@@ -9,6 +9,17 @@ var addNotComparitor = require("../comparators/not");
 function And(values) {
     this.values = values;
 }
+canReflect.assignSymbols(And.prototype,{
+    "can.serialize": function(){
+        var result = {};
+        canReflect.eachKey(this.values, function(value, key){
+            // is value universal ... if not, we don't need to add anything
+            result[key] = canReflect.serialize(value);
+        });
+        return result;
+    }
+});
+
 function Or(values) {
     this.values = values;
 }
@@ -35,6 +46,28 @@ function BasicQuery(query) {
     }
 }
 
+BasicQuery.prototype.count = function(){
+    return this.page.end - this.page.start + 1;
+};
+BasicQuery.prototype.getSubset = function(){
+
+};
+canReflect.assignSymbols(BasicQuery.prototype,{
+    "can.serialize": function(){
+
+        var res = {
+            filter: canReflect.serialize(this.filter)
+        };
+        if(!set.isEqual(this.page, new RecordRange())) {
+            res.page = canReflect.serialize(this.page);
+        }
+
+        if(this.sort !== "id ASC") {
+            res.sort = this.sort;
+        }
+        return res;
+    }
+});
 
 BasicQuery.And = And;
 BasicQuery.Or = Or;
@@ -59,10 +92,12 @@ function getDifferentClauseTypes(queryA, queryB){
 set.defineComparison(BasicQuery, BasicQuery,{
     union: function(queryA, queryB){
 
-        var pageIsEqual = set.isEqual(queryA.page, queryB.page),
-            pagesAreUniversal = pageIsEqual && set.isEqual( queryA.page, set.UNIVERSAL),
-            filterUnion = set.union(queryA.filter, queryB.filter),
-            sortIsEqual = set.isEqual(queryA.sort, queryB.sort);
+        var pageIsEqual = set.isEqual(queryA.page, queryB.page);
+        var pagesAreUniversal = pageIsEqual && set.isEqual( queryA.page, set.UNIVERSAL);
+
+        var filterUnion = set.union(queryA.filter, queryB.filter);
+
+        var sortIsEqual = set.isEqual(queryA.sort, queryB.sort);
 
         if(pagesAreUniversal) {
             // We ignore the sort.

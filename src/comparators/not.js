@@ -48,16 +48,30 @@ module.exports = function(NotIdentity, Identity){
             else {
                 throw new Error("Not,Identity Union is not filled out");
             }
-        }/*,
+        },
         // {foo: zed, abc: d}
-        intersection: function(obj1, obj2){
-
+        intersection: function(not, primitive){
+            return set.isEqual( !not.value, primitive ) ? primitive: set.EMPTY;
         },
         // A \ B -> what's in b, but not in A
-        difference: function(obj1, obj2){
-
-        }*/
+        difference: function difference(not, primitive){
+            // NOT(5) \ 3 -> UNDEFINABLE
+            // NOT(3) \ 3 -> NOT(3)
+            if(set.isEqual( not.value, primitive )) {
+                return not;
+            } else {
+                return set.UNDEFINABLE;
+            }
+        }
     });
 
-
+    set.defineComparison(Identity, NotIdentity,{
+        difference: function(primitive, not){
+            if(set.isEqual(primitive, not.value)) {
+                return primitive;
+            } else {
+                return set.UNDEFINABLE;
+            }
+        }
+    });
 };

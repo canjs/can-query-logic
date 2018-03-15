@@ -2,6 +2,7 @@ var QUnit = require("steal-qunit");
 var set = require("../set");
 var addAddOrComparators = require("./and-or");
 var addNotComparitor = require("./not");
+var makeEnum = require("../types/make-enum");
 
 function justAnd(){
     function And(values) {
@@ -192,4 +193,26 @@ QUnit.test("AND / OR / NOT isSubset", function(){
 	);
 	QUnit.ok(!res, 'different values');
 
+});
+
+QUnit.test("union AND with ENUM", function(){
+    var types = AndOrNot();
+
+    function Color(){}
+
+    var ColorSet = makeEnum(Color, ["red","green","blue"]);
+
+    var qA = new types.And({ type: 'FOLDER', status: new ColorSet("red") }),
+        qB = new types.And({ type: 'FOLDER', status: new ColorSet("green") });
+
+
+    var res = set.union(qA, qB);
+
+    QUnit.deepEqual(res,
+        new types.And({
+            type: 'FOLDER',
+            status: new ColorSet(["red","green"])
+        }),
+        "able to do a union"
+    );
 });

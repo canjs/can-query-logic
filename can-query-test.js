@@ -3,25 +3,89 @@ require("./src/comparators/not-test");
 require("./src/comparators/and-or-test");
 require("./src/types/make-real-number-range-inclusive-test");
 require("./src/types/basic-query-sorting-test");
+require("./src/types/comparisons-test");
 
 var QUnit = require("steal-qunit");
 var Query = require("can-query");
+var canReflect = require("can-reflect");
+var makeEnum = require("./src/types/make-enum");
 
-/*
+
+function Color(){}
+makeEnum(Color, ["red","green","blue"]);
+
+// var Todo = DefineMap.extend({
+//     id: {identity: true, type: "number"},
+//     status: Colors,
+//     complete: "boolean",
+//     name: String
+// });
+
+// union (Number|String)
+// application Array<String> Object<string, number>
+// record {foo: String}
+var TODO = canReflect.assignSymbols({},{
+    "can.schema": function(){
+        return {
+            kind: "record",
+            identity: ["id"],
+            properties: {
+                id: Number,
+                points: Number,
+                status: Color,
+                complete: Boolean,
+                name: String
+            }
+        };
+    }
+});
+
+var algebra = new Query(TODO);
+
+
 QUnit.module("can-query");
 
-QUnit.test("building a query", function(){
+QUnit.test("union - enum", function(){
 
+    var unionResult = algebra.union({
+        filter: {
+            name: "Justin",
+            status: "red"
+        }
+    },{
+        filter: {
+            name: "Justin",
+            status: "green"
+        }
+    });
 
-    var isJustinAnd35 = new And({name: "Justin", age: 35});
-    var algebra = new query.Algebra({ .... });
+    QUnit.deepEqual(unionResult, {
+        filter: {
+            name: "Justin",
+            status: ["red","green"]
+        }
+    });
+});
+/*
 
-    var q1 = new algebra.Query({
-        filter: isJustinAnd35,
-        page: new RealNumberRange(1,5),
-        sort:
-    })
-})
+QUnit.test("union - MustBeNumber", function(){
+
+    var unionResult = algebra.union({
+        filter: {
+            points: {$gt: 5}
+        }
+    },{
+        filter: {
+            points: {$gt: 3}
+        }
+    });
+
+    QUnit.deepEqual(unionResult, {
+        filter: {
+            points: {$gt: 3}
+        }
+    });
+});
 
 QUnit.test("query basics", function(){
 
@@ -44,28 +108,5 @@ QUnit.test("query basics", function(){
     //
     // properSubset
 
-    var query = new Query({
-        logic: {
-            And: And,
-            Or: Or,
-            Not: Not
-        },
-        schema: {
 
-        }
-    });
-    new Query({
-    filter: {foo: []}[{},{}]
-})
-
-    var query = {
-        filter: {color: ["red"], complete: true},
-        page: {},
-        sort: {
-
-        }
-    }
-}
-    query.
-});
-*/
+});*/

@@ -3,7 +3,7 @@ var QUnit = require("steal-qunit");
 var set = require("../set");
 var assign = require("can-assign");
 
-QUnit.module("can-query/types/basic-query sorting")
+QUnit.module("can-query/types/basic-query sorting");
 
 function legacyToQuery(set) {
     var copy = assign({}, set);
@@ -303,12 +303,17 @@ test('rangeInclusive legacyUnion', function() {
 
 
 
-QUnit.skip('rangeInclusive set.count', function(){
+QUnit.test('rangeInclusive set.count', function(){
 	/*
 	 * X = [A0, ..., A99]
 	 * |X| = 100
 	 */
-	var res = set.count({ start: 0, end: 99 });
+
+    var query = new BasicQuery({
+        page: new BasicQuery.RecordRange(0, 99),
+        filter: set.UNIVERSAL
+    });
+    var res = query.count({ start: 0, end: 99 });
 	equal(res, 100, "count is right");
 });
 
