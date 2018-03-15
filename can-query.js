@@ -18,9 +18,11 @@ var toBasicQuery = function(schema, data){
             if(SetType) {
                 filter[prop] = new SetType(value);
             } else {
+                // HERE
                 filter[prop] = value;
             }
         } else {
+            // HERE {$gt: 1} -> new is.GreaterThan(1)
             filter[prop] = value;
         }
 

@@ -36,7 +36,6 @@ var comparisons = {
     }
 };
 
-
 function makeEnum(type, Type, emptyResult) {
     return function(a, b){
         var result = arrayUnionIntersectionDifference(a.values, b.values);
@@ -55,6 +54,29 @@ function makeSecondValue(Type, prop) {
     };
 }
 
+function returnBiggerValue(gtA, gtB) {
+    if(gtA.value < gtB.value) {
+        return gtB;
+    } else {
+        return gtA;
+    }
+}
+
+ function returnSmallerValue(gtA, gtB) {
+    if(gtA.value > gtB.value) {
+        return gtB;
+    } else {
+        return gtA;
+    }
+}
+
+
+function makeAnd(ands) {
+    return comparisons.And ? new comparisons.And(ands) : set.UNDEFINABLE;
+}
+function makeOr(ors) {
+    return comparisons.Or ? new comparisons.Or(ors) : set.UNDEFINABLE;
+}
 
 var is = comparisons;
 var comparators = {
@@ -71,7 +93,14 @@ var comparators = {
     In_NotIn: {},
     NotIn_In: {},
 
-    In_GreaterThan: {},
+    In_GreaterThan: {
+        union: function(inSet, gt){
+            var allGt = inSet.values.every(function(value){
+                return value > gt.value;
+            });
+            return allGt ? gt: makeOr([inSet, gt]);
+        }
+    },
     GreaterThan_In: {},
 
     In_GreaterThanEqual: {},
@@ -106,7 +135,22 @@ var comparators = {
     LessThanEqual_NotIn: {},
 
     // GreaterThan
-    GreaterThan_GreaterThan: {},
+    GreaterThan_GreaterThan: {
+        union: returnSmallerValue,
+        intersection: returnBiggerValue,
+        difference: function(gtA, gtB) {
+            if(gtA.value < gtB.value) {
+                // AND( {$gt:5}, {$lte: 6} )
+                return makeAnd([gtA, new is.LessThanEqual(gtB.value)]);
+            } else {
+                return set.EMPTY;
+            }
+        }
+    },
+    UNIVERSAL_GreaterThan: {
+        difference: makeSecondValue(is.LessThanEqual)
+    },
+
     GreaterThan_GreaterThanEqual: {},
     GreaterThanEqual_GreaterThan: {},
 
@@ -117,7 +161,21 @@ var comparators = {
     LessThanEqual_GreaterThan: {},
 
     // GreaterThanEqual
-    GreaterThanEqual_GreaterThanEqual: {},
+    GreaterThanEqual_GreaterThanEqual: {
+        union: returnSmallerValue,
+        intersection: returnBiggerValue,
+        difference: function(gtA, gtB) {
+            if(gtA.value < gtB.value) {
+                // AND( {$gt:5}, {$lte: 6} )
+                return set.UNDEFINABLE;
+            } else {
+                return set.EMPTY;
+            }
+        }
+    },
+    UNIVERSAL_GreaterThanEqual: {
+        difference: makeSecondValue(is.LessThan)
+    },
 
     GreaterThanEqual_LessThan: {},
     LessThan_GreaterThanEqual: {},
@@ -126,7 +184,17 @@ var comparators = {
     LessThanEqual_GreaterThanEqual: {},
 
     // LessThan
-    LessThan_LessThan: {},
+    LessThan_LessThan: {
+        union: returnBiggerValue,
+        intersection: returnSmallerValue,
+        difference: function(ltA, ltB){
+            if(ltA.value > ltB.value) {
+                return set.UNDEFINABLE;
+            } else {
+                return set.EMPTY;
+            }
+        }
+    },
 
     LessThan_LessThanEqual: {},
     LessThanEqual_LessThan: {},
