@@ -151,8 +151,30 @@ var comparators = {
         difference: makeSecondValue(is.LessThanEqual)
     },
 
-    GreaterThan_GreaterThanEqual: {},
-    GreaterThanEqual_GreaterThan: {},
+	GreaterThan_GreaterThanEqual: {
+		union: returnSmallerValue,
+		intersection: returnBiggerValue,
+		difference: function(gt, gte) {
+			if(gt.value < gte.value) {
+				// AND( {$gt:5}, {$lt: 6} )
+				return makeAnd([gt, new is.LessThan(gte.value)]);
+			} else {
+				return set.EMPTY;
+			}
+		}
+	},
+	GreaterThanEqual_GreaterThan: {
+		union: returnSmallerValue,
+		intersection: returnBiggerValue,
+		difference: function(gt, gte) {
+			if(gt.value <= gte.value) {
+				// AND( {$gt:5}, {$lte: 6} )
+				return makeAnd([gt, new is.LessThanEqual(gte.value)]);
+			} else {
+				return set.EMPTY;
+			}
+		}
+	},
 
     GreaterThan_LessThan: {},
     LessThan_GreaterThan: {},
@@ -166,8 +188,7 @@ var comparators = {
         intersection: returnBiggerValue,
         difference: function(gtA, gtB) {
             if(gtA.value < gtB.value) {
-                // AND( {$gt:5}, {$lte: 6} )
-                return set.UNDEFINABLE;
+                return makeAnd([gtA, new is.LessThan(gtB.value)]);
             } else {
                 return set.EMPTY;
             }
@@ -189,18 +210,54 @@ var comparators = {
         intersection: returnSmallerValue,
         difference: function(ltA, ltB){
             if(ltA.value > ltB.value) {
-                return set.UNDEFINABLE;
+                return makeAnd([ ltA, new is.GreaterThanEqual(ltB.value) ]);
             } else {
                 return set.EMPTY;
             }
         }
     },
+	UNIVERSAL_LessThan: {
+        difference: makeSecondValue(is.GreaterThanEqual)
+	},
 
-    LessThan_LessThanEqual: {},
-    LessThanEqual_LessThan: {},
+	LessThan_LessThanEqual: {
+		union: returnBiggerValue,
+		intersection: returnSmallerValue,
+		difference: function(lt, lte){
+			if (lte.value >= lt.value) {
+				return set.EMPTY;
+			} else {
+				return makeAnd([ lt, new is.GreaterThan(lte.value) ]);
+			}
+		}
+	},
+	LessThanEqual_LessThan: {
+		union: returnBiggerValue,
+		intersection: returnSmallerValue,
+		difference: function(lte, lt){
+			if (lte.value <= lt.value) {
+				return set.EMPTY;
+			} else {
+				return makeAnd([ lte, new is.GreaterThanEqual(lt.value) ]);
+			}
+		}
+	},
 
     // LessThanEqual
-    LessThanEqual_LessThanEqual: {}
+	LessThanEqual_LessThanEqual: {
+		union: returnBiggerValue,
+		intersection: returnSmallerValue,
+		difference: function(lteA, lteB){
+			if(lteA.value >= lteB.value) {
+				return makeAnd([ lteA, new is.GreaterThan(lteB.value) ]);
+			} else {
+				return set.EMPTY;
+			}
+		}
+	},
+	UNIVERSAL_LessThanEqual: {
+		difference: makeSecondValue(is.GreaterThan)
+	}
 };
 
 var names = Object.keys(comparisons);
