@@ -79,7 +79,9 @@ var tests = {
 
             assert.deepEqual(
                 set.union(a, b),
-                set.UNDEFINABLE
+                // OR( {$in: [2,4]}, {$gt: 3} )
+                new is.Or([a, b])
+                // set.UNDEFINABLE
             );
 
         }
