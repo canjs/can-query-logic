@@ -35,6 +35,19 @@ var comparisons = {
         this.value = value;
     }
 };
+comparisons.GreaterThan.test = function(a, b) {
+    return a > b;
+};
+comparisons.GreaterThanEqual.test = function(a, b) {
+    return a >= b;
+};
+comparisons.LessThan.test = function(a, b) {
+    return a < b;
+};
+comparisons.LessThanEqual.test = function(a, b) {
+    return a <= b;
+};
+
 
 function makeEnum(type, Type, emptyResult) {
     return function(a, b){
@@ -69,6 +82,27 @@ function returnBiggerValue(gtA, gtB) {
         return gtA;
     }
 }
+
+function makeAndIf(Comparison, Type) {
+    return function(ltA, ltB){
+        if( Comparison.test(ltA.value,  ltB.value) ) {
+            return makeAnd([ ltA, new Type(ltB.value) ]);
+        } else {
+            return set.EMPTY;
+        }
+    };
+}
+function make_InIfEqual_else_andIf(Comparison, Type) {
+    var elseCase = makeAndIf(Comparison, Type);
+    return function(a, b) {
+        if(a.value === b.value) {
+            return new is.In([a.value]);
+        } else {
+            return elseCase(a, b);
+        }
+    };
+}
+
 
 
 function makeAnd(ands) {
@@ -138,14 +172,8 @@ var comparators = {
     GreaterThan_GreaterThan: {
         union: returnSmallerValue,
         intersection: returnBiggerValue,
-        difference: function(gtA, gtB) {
-            if(gtA.value < gtB.value) {
-                // AND( {$gt:5}, {$lte: 6} )
-                return makeAnd([gtA, new is.LessThanEqual(gtB.value)]);
-            } else {
-                return set.EMPTY;
-            }
-        }
+        // {$gt:5} \ {gt: 6} -> AND( {$gt:5}, {$lte: 6} )
+        difference: makeAndIf(is.LessThan, is.LessThanEqual)
     },
     UNIVERSAL_GreaterThan: {
         difference: makeSecondValue(is.LessThanEqual)
@@ -154,26 +182,13 @@ var comparators = {
 	GreaterThan_GreaterThanEqual: {
 		union: returnSmallerValue,
 		intersection: returnBiggerValue,
-		difference: function(gt, gte) {
-			if(gt.value < gte.value) {
-				// AND( {$gt:5}, {$lt: 6} )
-				return makeAnd([gt, new is.LessThan(gte.value)]);
-			} else {
-				return set.EMPTY;
-			}
-		}
+        // {$gt:5} \ {gte: 6} -> AND( {$gt:5}, {$lt: 6} )
+		difference: makeAndIf(is.LessThan, is.LessThan)
 	},
 	GreaterThanEqual_GreaterThan: {
 		union: returnSmallerValue,
 		intersection: returnBiggerValue,
-		difference: function(gt, gte) {
-			if(gt.value <= gte.value) {
-				// AND( {$gt:5}, {$lte: 6} )
-				return makeAnd([gt, new is.LessThanEqual(gte.value)]);
-			} else {
-				return set.EMPTY;
-			}
-		}
+		difference: make_InIfEqual_else_andIf(is.LessThan, is.LessThanEqual)
 	},
 
     GreaterThan_LessThan: {},
@@ -186,13 +201,8 @@ var comparators = {
     GreaterThanEqual_GreaterThanEqual: {
         union: returnSmallerValue,
         intersection: returnBiggerValue,
-        difference: function(gtA, gtB) {
-            if(gtA.value < gtB.value) {
-                return makeAnd([gtA, new is.LessThan(gtB.value)]);
-            } else {
-                return set.EMPTY;
-            }
-        }
+        // {gte: 2} \ {gte: 3} = {gte: 2} AND {lt: 3}
+        difference: makeAndIf(is.LessThan, is.LessThan)
     },
     UNIVERSAL_GreaterThanEqual: {
         difference: makeSecondValue(is.LessThan)
@@ -208,13 +218,7 @@ var comparators = {
     LessThan_LessThan: {
         union: returnBiggerValue,
         intersection: returnSmallerValue,
-        difference: function(ltA, ltB){
-            if(ltA.value > ltB.value) {
-                return makeAnd([ ltA, new is.GreaterThanEqual(ltB.value) ]);
-            } else {
-                return set.EMPTY;
-            }
-        }
+        difference: makeAndIf(is.GreaterThan, is.GreaterThanEqual)
     },
 	UNIVERSAL_LessThan: {
         difference: makeSecondValue(is.GreaterThanEqual)
@@ -223,24 +227,13 @@ var comparators = {
 	LessThan_LessThanEqual: {
 		union: returnBiggerValue,
 		intersection: returnSmallerValue,
-		difference: function(lt, lte){
-			if (lte.value >= lt.value) {
-				return set.EMPTY;
-			} else {
-				return makeAnd([ lt, new is.GreaterThan(lte.value) ]);
-			}
-		}
+        // {lt: 3} \ {lte: 2} -> {lt: 3} AND {gt: 2}
+		difference: makeAndIf(is.GreaterThan, is.GreaterThan)
 	},
 	LessThanEqual_LessThan: {
 		union: returnBiggerValue,
 		intersection: returnSmallerValue,
-		difference: function(lte, lt){
-			if (lte.value <= lt.value) {
-				return set.EMPTY;
-			} else {
-				return makeAnd([ lte, new is.GreaterThanEqual(lt.value) ]);
-			}
-		}
+		difference: make_InIfEqual_else_andIf(is.GreaterThanEqual, is.GreaterThanEqual)
 	},
 
     // LessThanEqual

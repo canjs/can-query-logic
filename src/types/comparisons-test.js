@@ -348,11 +348,11 @@ var tests = {
 
 			a = new is.GreaterThanEqual(5);
 			b = new is.GreaterThan(5);
-
+            
 			assert.deepEqual(
 				set.difference(a, b),
 				// AND( {$gte:5}, {$lte: 5} )
-				new is.And([a, new is.LessThanEqual(5)])
+				new is.In([5])
 				//set.UNDEFINABLE
 			);
 		}
@@ -613,7 +613,7 @@ var tests = {
 
 			assert.deepEqual(
 				set.difference(a, b),
-				set.EMPTY
+				new is.In([5])
 			);
 		}
 	},
