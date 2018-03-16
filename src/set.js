@@ -216,6 +216,27 @@ var algebraSymbol = {
     get[prop] = function(forwardComparators, value1, value2){
         //var name1 = set.getType(value1).name,
         //    name2 = set.getType(value2).name;
+
+        if(value2 === set.UNIVERSAL) {
+            if(prop === "intersection" ) {
+                return value1;
+            }
+            if(prop === "union") {
+                return set.UNIVERSAL;
+            }
+            if(prop === "difference") {
+                return set.EMPTY;
+            }
+        }
+        if(value1 === set.UNIVERSAL) {
+            if(prop === "intersection" ) {
+                return value1;
+            }
+            if(prop === "union") {
+                return set.UNIVERSAL;
+            }
+        }
+
         if(forwardComparators && forwardComparators[prop]) {
             var result = forwardComparators[prop](value1, value2);
             console.log("",/*name1,*/ value1, algebraSymbol[prop], /*name2,*/ value2,"=", result);

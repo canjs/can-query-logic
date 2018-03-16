@@ -66,6 +66,25 @@ QUnit.test("union - enum", function(){
         }
     });
 });
+
+QUnit.test("union without enum", function(){
+    var unionResult = algebra.union({
+        filter: {
+            name: "Ramiya"
+        }
+    },{
+        filter: {
+            name: "Bohdi"
+        }
+    });
+
+    QUnit.deepEqual(unionResult, {
+        filter: {
+            name: {$in: ["Ramiya", "Bohdi"]},
+        }
+    });
+});
+
 /*
 
 QUnit.test("union - MustBeNumber", function(){

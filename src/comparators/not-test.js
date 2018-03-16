@@ -28,8 +28,8 @@ QUnit.test("union basics", function(){
 
 QUnit.test("difference with universal", function(){
     var types = justNot();
+    // everything NOT 1, but not the universe
+    QUnit.equal( set.difference( new types.Not(1), set.UNIVERSAL), set.EMPTY, "not 1 \\ univesal = 1");
 
-    QUnit.equal( set.difference( new types.Not(1), set.UNIVERSAL), 1, "not 1 \\ univesal = 1");
-
-    QUnit.deepEqual( set.difference( 1, set.UNIVERSAL), new types.Not(1), "1 \\ univesal = not 1");
+    QUnit.deepEqual( set.difference( set.UNIVERSAL, 1), new types.Not(1), "1 \\ univesal = not 1");
 });

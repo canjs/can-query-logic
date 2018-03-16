@@ -2,17 +2,17 @@ var set = require("../set");
 module.exports = function(NotIdentity, Identity){
     Identity = Identity || set.Identity;
     // Only difference is needed w/ universal
-    set.defineComparison(Identity,set.UNIVERSAL,{
+    set.defineComparison(set.UNIVERSAL, Identity,{
         // A \ B -> what's in b, but not in A
-        difference: function(value){
+        difference: function(universe, value){
             return new NotIdentity(value);
         }
     });
 
     // Only difference is needed w/ universal
-    set.defineComparison(NotIdentity,set.UNIVERSAL,{
+    set.defineComparison(set.UNIVERSAL, NotIdentity,{
         // A \ B -> what's in b, but not in A
-        difference: function(not){
+        difference: function(universe, not){
             return not.value;
         }
     });

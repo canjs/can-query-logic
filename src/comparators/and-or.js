@@ -99,7 +99,7 @@ module.exports = function(And, Or, Not) {
 		if(Object.keys(disjointKeysAndValues).length) {
 			return obj1;
 		}
-
+		
 		// contain all the same keys
 		if((aOnlyKeys.length === 0) && (bOnlyKeys.length === 0)) {
 			if(productAbleKeys.length > 1) {
@@ -161,7 +161,7 @@ module.exports = function(And, Or, Not) {
 			else if(bOnlyKeys.length === 1) {
 				var key = bOnlyKeys[0];
 				var shared = assign({},sharedKeysAndValues);
-				shared[key] = set.difference(valuesB[key],set.UNIVERSAL);
+				shared[key] = set.difference(set.UNIVERSAL, valuesB[key]);
 				return new And(shared);
 			}
 			// sharedKeysAndValues
@@ -182,7 +182,7 @@ module.exports = function(And, Or, Not) {
 				// TODO: de-duplicate below
 				var key = bOnlyKeys[0];
 				var shared = assign({},sharedKeysAndValues);
-				shared[key] = set.difference(valuesB[key],set.UNIVERSAL);
+				shared[key] = set.difference(set.UNIVERSAL,valuesB[key]);
 				return new And(shared);
 			}
 			// {foo: "bar"} \\ {name: "Justin", age: 35} -> UNDEFINABLE

@@ -9,16 +9,6 @@ var addNotComparitor = require("../comparators/not");
 function And(values) {
     this.values = values;
 }
-canReflect.assignSymbols(And.prototype,{
-    "can.serialize": function(){
-        var result = {};
-        canReflect.eachKey(this.values, function(value, key){
-            // is value universal ... if not, we don't need to add anything
-            result[key] = canReflect.serialize(value);
-        });
-        return result;
-    }
-});
 
 function Or(values) {
     this.values = values;
@@ -52,22 +42,7 @@ BasicQuery.prototype.count = function(){
 BasicQuery.prototype.getSubset = function(){
 
 };
-canReflect.assignSymbols(BasicQuery.prototype,{
-    "can.serialize": function(){
 
-        var res = {
-            filter: canReflect.serialize(this.filter)
-        };
-        if(!set.isEqual(this.page, new RecordRange())) {
-            res.page = canReflect.serialize(this.page);
-        }
-
-        if(this.sort !== "id ASC") {
-            res.sort = this.sort;
-        }
-        return res;
-    }
-});
 
 BasicQuery.And = And;
 BasicQuery.Or = Or;
