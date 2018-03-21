@@ -17,6 +17,7 @@ var arrayUnionIntersectionDifference = require("../comparators/array-union-inter
 
 var comparisons = {
 	In: function In(values) {
+		// TODO: change this to store as `Set` later.
 		this.values = values;
 	},
 	NotIn: function NotIn(values) {
@@ -35,6 +36,13 @@ var comparisons = {
 		this.value = value;
 	}
 };
+comparisons.In.test = function(values, b) {
+	return values.some(function(value){ return value === b; });
+};
+comparisons.NotIn.test = function(values, b) {
+	return !comparisons.In.test(values, b);
+};
+
 comparisons.GreaterThan.test = function(a, b) {
 	return a > b;
 };
@@ -47,6 +55,18 @@ comparisons.LessThan.test = function(a, b) {
 comparisons.LessThanEqual.test = function(a, b) {
 	return a <= b;
 };
+function isMemberThatUsesTest(value) {
+	return this.constructor.test(this.value, value);
+}
+[comparisons.GreaterThan, comparisons.GreaterThanEqual, comparisons.LessThan, comparisons.LessThanEqual].forEach(function(Type){
+	Type.prototype.isMember = isMemberThatUsesTest;
+});
+function isMemberThatUsesTestOnValues(value) {
+	return this.constructor.test(this.values, value);
+}
+[comparisons.In, comparisons.NotIn, comparisons.LessThan].forEach(function(Type){
+	Type.prototype.isMember = isMemberThatUsesTestOnValues;
+});
 
 
 function makeEnum(type, Type, emptyResult) {

@@ -3,12 +3,11 @@ var canReflect = require("can-reflect");
 var BasicQuery = require("../types/basic-query");
 var set = require("../set");
 var comparisonsConverter = require("../serializers/comparisons");
+var Serializer = require("../serializer");
 
-var setTypeSymbol = canSymbol.for("can.SetType"),
-    serializeSymbol = canSymbol.for("can.serialize");
+var setTypeSymbol = canSymbol.for("can.SetType");
 
-
-var serializeMap = new Map([
+var serializeMap = [
     [BasicQuery.And, function(and, serializer){
         var result = {};
         canReflect.eachKey(and.values, function(value, key){
@@ -19,24 +18,47 @@ var serializeMap = new Map([
     }],
     [BasicQuery.RecordRange, function(range){
         return {start: range.start, end: range.end};
-    }]
-]);
+    }],
+    [BasicQuery, function(basicQuery, childSerializer){
 
-function childSerializer(value) {
-    if(value && value[serializeSymbol]) {
-        return value[serializeSymbol]();
-    }
-    return comparisonsConverter.serialize(value);
-}
+        var filter = childSerializer(basicQuery.filter);
+
+        var res = {
+            filter: filter
+        };
+        if(!set.isEqual(basicQuery.page, new BasicQuery.RecordRange())) {
+            throw new Error('get this working');
+            //res.page = canReflect.serialize(this.page);
+        }
+
+        if(basicQuery.sort !== "id ASC") {
+            res.sort = basicQuery.sort;
+        }
+        return res;
+
+    }]
+];
 
 
 module.exports = function(schema) {
+
+    var serializer = new Serializer(serializeMap);
+    serializer.add(comparisonsConverter.serializer);
+
     return {
         hydrate: function(data){
             var filter = canReflect.assignDeep({}, data.filter || {});
+            var properties = schema.properties;
+
+
+            if(!properties) {
+                console.warn("can-query given a type without a schema.  Using an empty schema.");
+                properties = {};
+            }
+
 
             canReflect.eachKey(filter, function(value, prop){
-                var type = schema.properties[prop];
+                var type = properties[prop];
                 if(type) {
                     var SetType = type[setTypeSymbol];
                     if(SetType) {
@@ -55,23 +77,6 @@ module.exports = function(schema) {
                 filter: new BasicQuery.And(filter)
             });
         },
-        serialize: function(basicQuery){
-
-            var filter = serializeMap.get(basicQuery.filter.constructor)(basicQuery.filter, childSerializer);
-
-            var res = {
-                filter: filter
-            };
-            if(!set.isEqual(basicQuery.page, new BasicQuery.RecordRange())) {
-                throw new Error('get this working');
-                //res.page = canReflect.serialize(this.page);
-            }
-
-            if(basicQuery.sort !== "id ASC") {
-                res.sort = basicQuery.sort;
-            }
-            return res;
-
-        }
+        serializer: serializer
     };
 };

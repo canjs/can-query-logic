@@ -2,8 +2,10 @@ require("./src/comparators/enum-test");
 require("./src/comparators/not-test");
 require("./src/comparators/and-or-test");
 require("./src/types/make-real-number-range-inclusive-test");
-require("./src/types/basic-query-sorting-test");
 require("./src/types/comparisons-test");
+require("./src/types/basic-query-sorting-test");
+require("./src/types/basic-query-get-subset-test");
+require("./src/serializers/basic-query-test");
 
 var QUnit = require("steal-qunit");
 var Query = require("can-query");
@@ -83,6 +85,50 @@ QUnit.test("union without enum", function(){
             name: {$in: ["Ramiya", "Bohdi"]},
         }
     });
+});
+
+QUnit.test("difference without enum", function(){
+    var differenceResult = algebra.difference({
+        filter: {
+            name: {$in: ["Ramiya", "Bohdi"]}
+        }
+    },{
+        filter: {
+            name: "Bohdi"
+        }
+    });
+
+    QUnit.deepEqual(differenceResult, {
+        filter: {
+            name: "Ramiya",
+        }
+    });
+});
+
+QUnit.test("subset without enum", function(){
+    var subsetResult = algebra.subset({
+        filter: {
+            name: "Bohdi"
+        }
+    },{
+        filter: {
+            name: {$in: ["Ramiya", "Bohdi"]}
+        }
+    });
+
+    QUnit.deepEqual(subsetResult,true);
+});
+
+QUnit.test("has without enum", function(){
+    var hasResult = algebra.has({
+        filter: {
+            name: "Bohdi"
+        }
+    },{
+        name: "Bohdi"
+    });
+
+    QUnit.deepEqual(hasResult,true);
 });
 
 /*

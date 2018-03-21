@@ -46,6 +46,11 @@ var tests = {
             );
         }
     },
+    In_isMember: function(assert){
+        assert.ok( new is.In([5]).isMember(5) );
+        assert.notOk( new is.In([5]).isMember(6) );
+        assert.ok( new is.In([5,-1]).isMember(-1) );
+    },
     UNIVERSAL_In: {
         difference: function(assert){
             var isIn5 = new is.In([5]);
@@ -348,7 +353,7 @@ var tests = {
 
 			a = new is.GreaterThanEqual(5);
 			b = new is.GreaterThan(5);
-            
+
 			assert.deepEqual(
 				set.difference(a, b),
 				// AND( {$gte:5}, {$lte: 5} )
@@ -701,6 +706,12 @@ names.forEach(function(name1, i){
         QUnit.skip("no "+name1+"_"+name1+" test", function(){});
     } else {
         makeTests(tests[name1+"_"+name1], name1, name1);
+    }
+
+    if(!tests[name1+"_isMember"]) {
+        QUnit.skip("no "+name1+"_isMember test", function(){});
+    } else {
+        QUnit.test(name1+"_isMember", tests[name1+"_isMember"]);
     }
 
     if(!tests["UNIVERSAL_"+name1]) {

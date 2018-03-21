@@ -216,3 +216,34 @@ QUnit.test("union AND with ENUM", function(){
         "able to do a union"
     );
 });
+
+QUnit.test("AND isMember", function(){
+    var types = AndOrNot();
+
+    var folderAnd35 = new types.And({ type: 'FOLDER', age: 35 });
+
+    QUnit.ok( folderAnd35.isMember({type: 'FOLDER', age: 35}) );
+    QUnit.ok( folderAnd35.isMember({type: 'FOLDER', age: 35, extra: "value"}) );
+    QUnit.notOk( folderAnd35.isMember({type: 'FOLDER', age: 36}) );
+    QUnit.notOk( folderAnd35.isMember({type: 'folder', age: 35}) );
+    QUnit.notOk( folderAnd35.isMember({type: 'FOLDER'}) );
+    QUnit.notOk( folderAnd35.isMember({age: 35}) );
+
+});
+
+QUnit.test("OR isMember", function(){
+    var types = AndOrNot();
+
+    var isFolder =  new types.And({ type: 'FOLDER'}),
+        is35 = new types.And({  age: 35 }),
+        isFolderOr35 = new types.Or([isFolder, is35]);
+
+    QUnit.ok( isFolderOr35.isMember({type: 'FOLDER', age: 35}), "both" );
+    QUnit.notOk( isFolderOr35.isMember({}), "empty" );
+    QUnit.ok( isFolderOr35.isMember({type: 'FOLDER', age: 36}) );
+    QUnit.ok( isFolderOr35.isMember({type: 'folder', age: 35}) );
+    QUnit.notOk( isFolderOr35.isMember({type: 'folder', age: 36}) );
+    QUnit.ok( isFolderOr35.isMember({type: 'FOLDER'}) );
+    QUnit.ok( isFolderOr35.isMember({age: 35}) );
+
+});

@@ -1,29 +1,38 @@
 var is = require("../types/comparisons");
-
+var Serializer = require("../serializer");
 
 function makeNew(Constructor) {
     return function(value){
         return new Constructor(value);
     };
 }
+var hydrateMap = {};
+function addHydrateFrom(key, hydrate) {
+    hydrateMap[key] = function(value) {
+        return hydrate(value[key]);
+    };
+}
 
 // https://docs.mongodb.com/manual/reference/operator/query-comparison/
-var hydrateMap = {
-    $eq: function(value){
-        return new is.In([value]);
-    },
-    $gt: makeNew(is.GreaterThan),
-    $gte: makeNew(is.GreaterThanEqual),
-    $in: makeNew(is.In),
-    $lt: makeNew(is.LessThan),
-    $lte: makeNew(is.LessThanEqual),
-    $ne: function(value){
-        return new is.NotIn([value]);
-    },
-    $nin: makeNew(is.NotIn),
-};
+addHydrateFrom("$eq", function(value){
+    return new is.In([value]);
+});
+addHydrateFrom("$ne", function(value){
+    return new is.NotIn([value]);
+});
 
-var serializeMap = new Map([
+addHydrateFrom("$gt", makeNew(is.GreaterThan));
+addHydrateFrom("$gte", makeNew(is.GreaterThanEqual));
+addHydrateFrom("$in", makeNew(is.In));
+addHydrateFrom("$lt", makeNew(is.LessThan));
+addHydrateFrom("$lt", makeNew(is.LessThanEqual));
+addHydrateFrom("$nin", makeNew(is.GreaterThan));
+
+
+
+
+
+var serializer = new Serializer([
     [is.In,function(isIn){
         return isIn.values.length === 1 ? isIn.values[0] : {$in: isIn.values};
     }],
@@ -58,12 +67,5 @@ module.exports = {
             return new is.In([value]);
         }
     },
-    serialize: function(comparison){
-        var serializer = serializeMap.get(comparison.constructor);
-        if(!serializer) {
-            return new Error("can-query is unable to serialize value");
-        } else {
-            return serializer(comparison);
-        }
-    }
+    serializer: serializer
 };

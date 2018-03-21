@@ -36,11 +36,83 @@ function BasicQuery(query) {
     }
 }
 
+function sorter(sortPropValue) {
+    var parts = sortPropValue.split(' ');
+    var sortProp = parts[0];
+    var desc = parts[1] || '';
+    desc = desc.toLowerCase()	=== 'desc';
+    return function(item1, item2){
+        var item1Value = item1[sortProp];
+        var item2Value = item2[sortProp];
+        var temp;
+
+
+        if(desc) {
+            temp = item1Value;
+            item1Value = item2Value;
+            item2Value = temp;
+        }
+
+        if(item1Value < item2Value) {
+            return -1;
+        }
+
+        if(item1Value > item2Value) {
+            return 1;
+        }
+
+        return 0;
+    };
+}
+
 BasicQuery.prototype.count = function(){
     return this.page.end - this.page.start + 1;
 };
-BasicQuery.prototype.getSubset = function(){
+BasicQuery.prototype.sortData = function(data){
+    var sort = sorter(this.sort);
+    return data.slice(0).sort(sort);
+};
+BasicQuery.prototype.filterFrom = function(bData, parentQuery) {
+    parentQuery  = parentQuery || new BasicQuery();
 
+    // if this isn't a subset ... we can't filter
+    if(!set.isSubset(this, parentQuery)) {
+        return undefined;
+    }
+
+    // reduce response to items in data that meet where criteria
+    var aData = bData.filter(this.filter.isMember.bind(this.filter));
+
+    // sort the data if needed
+    if( aData.length && (this.sort !== parentQuery.sort) ) {
+        aData = this.sortData(aData);
+    }
+
+    // {page: }
+
+    var thisIsUniversal = set.isEqual( this.page, set.UNIVERSAL),
+        parentIsUniversal = set.isEqual( parentQuery.page, set.UNIVERSAL);
+
+    if(parentIsUniversal) {
+        if( thisIsUniversal ) {
+            return aData;
+        } else {
+            return aData.slice(this.page.start, this.page.end+1);
+        }
+    }
+    // everything but range is equal
+    else if(this.sort === parentQuery.sort && set.isEqual(parentQuery.filter,this.filter) ) {
+        return aData.slice( this.page.start - parentQuery.page.start, this.page.end - parentQuery.page.start + 1 );
+    }
+    else {
+        // parent starts at something ...
+        throw new Error("unable to do right now");
+    }
+
+    return aData;
+};
+BasicQuery.prototype.isMember = function(props){
+    return this.filter.isMember(props);
 };
 
 
@@ -62,6 +134,41 @@ function getDifferentClauseTypes(queryA, queryB){
 	});
 
 	return differentTypes;
+}
+
+function isSubset(subLetter, superLetter, meta) {
+    if(meta[subLetter+"FilterIsSubset"]) {
+        if(meta[superLetter+"PageIsUniversal"]) {
+            return true;
+        } else {
+            return meta[subLetter+"PageIsSubset"] && meta.sortIsEqual;
+        }
+    } else {
+        return false;
+    }
+}
+
+function metaInformation(queryA, queryB) {
+    var pageIsEqual = set.isEqual(queryA.page, queryB.page),
+        aPageIsUniversal = set.isEqual( queryA.page, set.UNIVERSAL),
+        bPageIsUniversal = set.isEqual( queryB.page, set.UNIVERSAL);
+
+    var meta = {
+        pageIsEqual: pageIsEqual,
+        aPageIsUniversal: aPageIsUniversal,
+        bPageIsUniversal: bPageIsUniversal,
+        pagesAreUniversal: pageIsEqual && aPageIsUniversal,
+        sortIsEqual: queryA.sort === queryB.sort,
+        aFilterIsSubset: set.isSubset(queryA.filter, queryB.filter),
+        bFilterIsSubset: set.isSubset(queryB.filter, queryA.filter),
+        aPageIsSubset: set.isSubset(queryA.page, queryB.page),
+        bPageIsSubset: set.isSubset(queryB.page, queryA.page),
+        filterIsEqual: set.isEqual(queryA.filter, queryB.filter)
+    };
+
+    meta.aIsSubset = isSubset("a","b", meta);
+    meta.bIsSubset = isSubset("b","a", meta);
+    return meta;
 }
 
 set.defineComparison(BasicQuery, BasicQuery,{
@@ -112,25 +219,18 @@ set.defineComparison(BasicQuery, BasicQuery,{
         //   page: {0, 10},
         //   sort: "foo" }
 
-        var pageIsEqual = set.isEqual(queryA.page, queryB.page),
-            pagesAreUniversal = pageIsEqual && queryA.page === set.UNIVERSAL,
-            filterIntersection = set.intersection(queryA.filter, queryB.filter),
-            sortIsEqual = set.isEqual(queryA.sort, queryB.sort);
+        var meta = metaInformation(queryA, queryB);;
 
-        if(pagesAreUniversal) {
+        if(meta.pagesAreUniversal) {
             // We ignore the sort.
             return new BasicQuery({
-                filter: filterIntersection,
-                sort: sortIsEqual ? queryA.sort : undefined
+                filter: set.intersection(queryA.filter, queryB.filter),
+                sort: meta.sortIsEqual ? queryA.sort : undefined
             });
         }
 
-        var aFilterIsSubset = set.isSubset(queryA.filter, queryB.filter),
-            bFilterIsSubset = set.isSubset(queryA.filter, queryB.filter),
-            filterIsEqual = set.isEqual(queryA.filter, queryB.filter);
-
-        if(filterIsEqual) {
-            if(sortIsEqual) {
+        if(meta.filterIsEqual) {
+            if(meta.sortIsEqual) {
                 return new BasicQuery({
                     filter: queryA.filter,
                     sort: queryA.sort,
@@ -140,14 +240,24 @@ set.defineComparison(BasicQuery, BasicQuery,{
                 throw new Error("same filter, different sorts, non universal pages");
             }
         } else {
-            throw new Error("different filters, non-universal pages");
+            if(meta.aIsSubset) {
+                return queryA;
+            } else if(meta.bIsSubset){
+                return queryB;
+            }
+            throw new Error("different filters, non-universal pagination");
         }
 
     },
     difference: function(queryA, queryB){
+
         var differentClauses = getDifferentClauseTypes(queryA, queryB);
         var clause;
         if(differentClauses.length > 1) {
+            var meta = metaInformation(queryA, queryB);
+            if(meta.aIsSubset) {
+                return set.EMPTY;
+            }
 			return set.UNDEFINABLE;
 		} else {
 			switch(clause = differentClauses[0]) {

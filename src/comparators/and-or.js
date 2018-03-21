@@ -39,6 +39,32 @@ function keyDiff(valuesA, valuesB) {
 
 module.exports = function(And, Or, Not) {
 
+	And.prototype.isMember = function(props){
+		var equal = true;
+		canReflect.eachKey(this.values, function(value, key){
+			if(value && value.isMember) {
+				if(!value.isMember( props[key] ) ) {
+					equal = false;
+				}
+			} else {
+				if(value !== props[key]) {
+					equal = false;
+				}
+			}
+		});
+		return equal;
+	}
+	if(Or) {
+		Or.prototype.isMember = function(props){
+			return this.values.some(function(value){
+					return value && value.isMember ?
+						value.isMember( props ) : value === props;
+			});
+		};
+	}
+
+
+
 	function difference(obj1, obj2){
 
 		var valuesA = obj1.values,
@@ -99,7 +125,7 @@ module.exports = function(And, Or, Not) {
 		if(Object.keys(disjointKeysAndValues).length) {
 			return obj1;
 		}
-		
+
 		// contain all the same keys
 		if((aOnlyKeys.length === 0) && (bOnlyKeys.length === 0)) {
 			if(productAbleKeys.length > 1) {
