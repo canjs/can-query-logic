@@ -73,9 +73,16 @@ module.exports = function(schema) {
                 }
 
             });
-            return new BasicQuery({
+            var query = {
                 filter: new BasicQuery.And(filter)
-            });
+            };
+            if(data.page) {
+                query.page = new BasicQuery.RecordRange(data.page.start, data.page.end);
+            }
+            if(data.sort) {
+                query.sort = data.sort;
+            }
+            return new BasicQuery(query);
         },
         serializer: serializer
     };

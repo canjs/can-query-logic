@@ -28,11 +28,23 @@ module.exports = function(Type){
 
 
     return {
-        // count
+        count: function(a){
+            var queryA = converter.hydrate(a);
+            return queryA.page.end - queryA.page.start + 1;
+        },
         difference: makeNewSet("difference"),
         equal: makeReturnValue("isEqual"),
-        // getSubset
-        // getUnion
+        getSubset: function(a, b, bData){
+            var queryA = converter.hydrate(a),
+                queryB = converter.hydrate(b);
+            return queryA.filterFrom(bData, queryB);
+        },
+        getUnion: function(a, b, aData, bData) {
+            var queryA = converter.hydrate(a),
+                queryB = converter.hydrate(b);
+
+            return queryA.merge(queryB, aData, bData, this.id.bind(this));
+        },
         has: function(query, props) {
             return converter.hydrate(query).isMember(props);
         },
@@ -49,6 +61,9 @@ module.exports = function(Type){
     			});
     			return JSON.stringify(id);
     		}
+        },
+        index: function(query, items, props){
+            return converter.hydrate(query).index(props, items);
         },
         // index
         intersection: makeNewSet("intersection"),

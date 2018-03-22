@@ -4,7 +4,8 @@ require("./src/comparators/and-or-test");
 require("./src/types/make-real-number-range-inclusive-test");
 require("./src/types/comparisons-test");
 require("./src/types/basic-query-sorting-test");
-require("./src/types/basic-query-get-subset-test");
+require("./src/types/basic-query-filter-from-test");
+require("./src/types/basic-query-merge-test");
 require("./src/serializers/basic-query-test");
 
 var QUnit = require("steal-qunit");
@@ -129,6 +130,83 @@ QUnit.test("has without enum", function(){
     });
 
     QUnit.deepEqual(hasResult,true);
+});
+
+QUnit.test("getSubset basics", function(){
+    var subset = algebra.getSubset({
+        filter: {
+            name: {$in: ["Bohdi","Ramiya"]}
+        }
+    },{}, [
+        {name: "Bohdi"},
+        {name: "Ramiya"},
+        {name: "Payal"},
+        {name: "Justin"}
+    ]);
+
+    QUnit.deepEqual(subset,[
+        {name: "Bohdi"},
+        {name: "Ramiya"}
+    ]);
+});
+
+
+QUnit.test("getUnion basics", function(){
+    var union = algebra.getUnion({
+        filter: {
+            name: "Bohdi"
+        }
+    },{
+        filter: {
+            name: "Ramiya"
+        }
+    }, [
+        {name: "Bohdi", id: 1},
+    ],[
+        {name: "Ramiya", id: 2},
+    ]);
+
+    QUnit.deepEqual(union,[
+        {name: "Bohdi", id: 1},
+        {name: "Ramiya", id: 2}
+    ]);
+});
+
+QUnit.test("count basics", function(){
+
+    QUnit.equal(algebra.count({}), Infinity);
+    QUnit.equal(algebra.count({page: {start: 1, end: 2}}), 2);
+
+
+});
+
+QUnit.test('index basics', function(){
+
+	var index = algebra.index(
+		{sort: "name"},
+		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}],
+		{name: "k"});
+	equal(index, 2);
+
+    index = algebra.index(
+		{},
+		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}],
+		{id: 0, name: "k"});
+
+	equal(index, 0);
+
+
+	index = algebra.index(
+		{},
+		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}],
+		{name: "k"});
+
+	equal(index, undefined, "no value if no id");
+    
+
+	//var algebra = new set.Algebra(set.props.id("id"));
+
+
 });
 
 /*

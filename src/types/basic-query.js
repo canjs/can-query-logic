@@ -36,18 +36,65 @@ function BasicQuery(query) {
     }
 }
 
-function sorter(sortPropValue) {
+function uniqueConcat(itemsA, itemsB, getId) {
+    var ids = new Set();
+    return itemsA.concat(itemsB).filter(function(item){
+        var id = getId(item);
+        if(!ids.has(id)) {
+            ids.add(id);
+            return true;
+        } else {
+            return false;
+        }
+    });
+}
+
+function getIndex(compare, items, props){
+    if(!items || !items.length) {
+        return undefined;
+    }
+    // check the start and the end
+    if( compare(props, items[0]) === -1 ) {
+        return 0;
+    }
+    else if(compare(props, items[items.length -1] ) === 1 ) {
+        return items.length;
+    }
+    var low = 0,
+        high = items.length;
+
+    // From lodash lodash 4.6.1 <https://lodash.com/>
+    // Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
+    while (low < high) {
+        var mid = (low + high) >>> 1,
+            item = items[mid],
+            computed = compare(props, item);
+        if ( computed === -1 ) {
+            high = mid;
+        } else {
+            low = mid + 1;
+        }
+    }
+    return high;
+    // bisect by calling sortFunc
+}
+function sortData(sortPropValue) {
     var parts = sortPropValue.split(' ');
-    var sortProp = parts[0];
-    var desc = parts[1] || '';
-    desc = desc.toLowerCase()	=== 'desc';
+    return {
+        prop: parts[0],
+        desc: (parts[1] || '').toLowerCase()	=== 'desc'
+    };
+}
+
+function sorter(sortPropValue) {
+    var data = sortData(sortPropValue);
     return function(item1, item2){
-        var item1Value = item1[sortProp];
-        var item2Value = item2[sortProp];
+        var item1Value = item1[data.prop];
+        var item2Value = item2[data.prop];
         var temp;
 
 
-        if(desc) {
+        if(data.desc) {
             temp = item1Value;
             item1Value = item2Value;
             item2Value = temp;
@@ -88,8 +135,6 @@ BasicQuery.prototype.filterFrom = function(bData, parentQuery) {
         aData = this.sortData(aData);
     }
 
-    // {page: }
-
     var thisIsUniversal = set.isEqual( this.page, set.UNIVERSAL),
         parentIsUniversal = set.isEqual( parentQuery.page, set.UNIVERSAL);
 
@@ -111,6 +156,30 @@ BasicQuery.prototype.filterFrom = function(bData, parentQuery) {
 
     return aData;
 };
+BasicQuery.prototype.merge = function(b, aItems, bItems, getId){
+    var union = set.union(this,b);
+
+    if(union === set.UNDEFINABLE) {
+        return undefined;
+    } else {
+        var combined = uniqueConcat(aItems,bItems, getId);
+        return union.sortData(combined);
+    }
+
+    // basically if there's pagination, we might not be able to do this
+
+
+};
+
+BasicQuery.prototype.index = function(props, items){
+    var data = sortData(this.sort);
+    if(!Object.prototype.hasOwnProperty.call(props, data.prop)) {
+        return undefined;
+    }
+    var sort = sorter(this.sort);
+    return getIndex(sort, items, props);
+};
+
 BasicQuery.prototype.isMember = function(props){
     return this.filter.isMember(props);
 };

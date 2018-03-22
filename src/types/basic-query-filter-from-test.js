@@ -44,7 +44,7 @@ QUnit.test("against non ranged set", function(){
 	QUnit.deepEqual(res && res.map(getId), [2,4,6]);
 });
 
-QUnit.test("getSubset ordered ascending and paginated", function() {
+QUnit.test("ordered ascending and paginated", function() {
 	/*
 	 * 1. set b = {} evaluates to all available entities -- the univeral set
 	 * 2. set a = { type: 'critical', sort: 'note ASC', start: 1, end: 3 }
@@ -75,7 +75,7 @@ QUnit.test("getSubset ordered ascending and paginated", function() {
  	QUnit.deepEqual(res && res.map(getId), [7,1,2]);
 });
 
-QUnit.test("getSubset ordered descending and paginated", function() {
+QUnit.test("ordered descending and paginated", function() {
 	/*
 	 * 1. set b = {} evaluates to all available entities -- the univeral set
 	 * 2. set a = { type: 'critical', sort: 'note DESC', start: 1, end: 3 }
@@ -101,7 +101,7 @@ QUnit.test("getSubset ordered descending and paginated", function() {
     QUnit.deepEqual(res && res.map(getId), [2,1,7]);
 });
 
-QUnit.test("getSubset against paginated set", function(){
+QUnit.test("against paginated set", function(){
 
     var query = new BasicQuery({
         filter: new BasicQuery.And({ type: 'critical'}),
@@ -117,7 +117,7 @@ QUnit.test("getSubset against paginated set", function(){
 	QUnit.deepEqual(res && res.map(getId), [2,4,6]);
 });
 
-QUnit.test("getSubset returns undefined against incompatible set", function() {
+QUnit.test("returns undefined against incompatible set", function() {
     var query = new BasicQuery({
         filter: new BasicQuery.And({ note: 'C' })
     });
@@ -129,44 +129,3 @@ QUnit.test("getSubset returns undefined against incompatible set", function() {
 
 	QUnit.equal(res, undefined);
 });
-
-
-QUnit.skip("basics", function(){
-    var isJustin = new BasicQuery({
-        filter: new BasicQuery.And({name: "Justin"})
-    });
-
-    var isEverything = new BasicQuery({});
-
-    isJustin.filterFrom([{
-
-    }])
-});
-
-
-/*
-test('pagination', function(){
-
-
-
-	var algebra = new set.Algebra(
-		props.rangeInclusive('start','end')
-	);
-	ok(
-		algebra.subset(
-			{start: "1", end: "100"},
-			{start: "0", end: "100"}
-		),
-		".subset" );
-
-	var res = algebra.getSubset({start: "2",end: "3"},{start: "1",end: "4"},[{id: 1},{id: 2},{id: 3},{id: 4}]);
-	deepEqual(res, [{id: 2},{id: 3}], ".getSubset");
-
-	res = algebra.getUnion(
-		{start: "2",end: "3"},
-		{start: "1",end: "4"},
-		[{id: 2},{id: 3}],
-		[{id: 1},{id: 2},{id: 3},{id: 4}]);
-	deepEqual(res, [{id: 1},{id: 2},{id: 3},{id: 4}], ".getUnion");
-
-});*/
