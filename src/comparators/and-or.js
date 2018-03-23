@@ -36,6 +36,10 @@ function keyDiff(valuesA, valuesB) {
 	};
 }
 
+function  notEmpty(value) {
+	return value !== set.EMPTY;
+}
+
 
 module.exports = function(And, Or, Not) {
 
@@ -65,10 +69,10 @@ module.exports = function(And, Or, Not) {
 
 
 
-	function difference(obj1, obj2){
+	function difference(objA, objB){
 
-		var valuesA = obj1.values,
-			valuesB = obj2.values,
+		var valuesA = objA.values,
+			valuesB = objB.values,
 			diff = keyDiff(valuesA, valuesB),
 			aOnlyKeys = diff.aOnlyKeys,
 			aAndBKeys = diff.aAndBKeys,
@@ -123,7 +127,7 @@ module.exports = function(And, Or, Not) {
 		// if we have any disjoint keys, these sets can not intersect
 		// {age: 21, ...} \ {age: 22, ...} ->  {age: 21, ...}
 		if(Object.keys(disjointKeysAndValues).length) {
-			return obj1;
+			return objA;
 		}
 
 		// contain all the same keys
@@ -169,29 +173,26 @@ module.exports = function(And, Or, Not) {
 			if(productAbleKeys.length) {
 				return set.UNDEFINABLE;
 			}
+			
+			var ands = bOnlyKeys.map(function(key){
+				var shared = assign({},sharedKeysAndValues);
+				var result = shared[key] = set.difference(set.UNIVERSAL, valuesB[key]);
+				return result === set.EMPTY ? result : new And(shared);
+			}).filter(notEmpty);
 
 			// {c: "g"}
 			// \ {c: "g", age: 22, name: "justin"}
 			// = OR[ AND(name: NOT("justin"), c:"g"), AND(age: NOT(22), c: "g") ]
-			if(bOnlyKeys.length > 1) {
-				var ands = bOnlyKeys.map(function(key){
-					var shared = assign({},sharedKeysAndValues);
-					shared[key] = set.difference(valuesB[key],set.UNIVERSAL);
-					return new And(shared);
-				});
+			if(ands.length > 1) {
 				return new Or(ands);
+			} else if(ands.length === 1) {
+				// {c: "g"}
+				// \ {c: "g", age: 22}
+				// = AND(age: NOT(22), c: "g")
+				return ands[0];
+			} else {
+				return set.EMPTY;
 			}
-			// {c: "g"}
-			// \ {c: "g", age: 22}
-			// = OR[ AND(name: NOT("justin"), c:"g"), AND(age: NOT(22), c: "g") ]
-			else if(bOnlyKeys.length === 1) {
-				var key = bOnlyKeys[0];
-				var shared = assign({},sharedKeysAndValues);
-				shared[key] = set.difference(set.UNIVERSAL, valuesB[key]);
-				return new And(shared);
-			}
-			// sharedKeysAndValues
-			return set.EMPTY;
 		}
 
 		// {name: "Justin"} \\ {age: 35} -> {name: "Justin", age: NOT(35)}
@@ -214,57 +215,73 @@ module.exports = function(And, Or, Not) {
 			// {foo: "bar"} \\ {name: "Justin", age: 35} -> UNDEFINABLE
 			else {
 				return set.UNDEFINABLE;
-
 			}
 
 		}
+	}
+
+	function checkIfUniversalAndReturnUniversal(setA) {
+		return set.isEqual(setA, set.UNIVERSAL) ? set.UNIVERSAL : setA;
 	}
 
     set.defineComparison(And, And,{
         // {name: "Justin"} or {age: 35} -> new OR[{name: "Justin"},{age: 35}]
         // {age: 2} or {age: 3} -> {age: new OR[2,3]}
         // {age: 3, name: "Justin"} OR {age: 4} -> {age: 3, name: "Justin"} OR {age: 4}
-        union: function(obj1, obj2){
+        union: function(objA, objB){
 			// first see if we can union a single property
 			// {age: 21, color: ["R"]} U {age: 21, color: ["B"]} -> {age: 21, color: ["R","B"]}
 
-			var diff = keyDiff(obj1.values, obj2.values);
+			var diff = keyDiff(objA.values, objB.values);
+
+
+			// find the different keys
+			var aAndBKeysThatAreNotEqual = [],
+				sameKeys= {};
+
+			diff.aAndBKeys.forEach(function(key){
+				if(!set.isEqual(objA.values[key], objB.values[key])) {
+					aAndBKeysThatAreNotEqual.push(key)
+				} else {
+					sameKeys[key] = objA.values[key];
+				}
+			});
+
 			// if all keys are shared
 			if(!diff.aOnlyKeys.length && !diff.bOnlyKeys.length) {
-				// check if only one is different..
-				var differentKeys = [],
-					sameKeys= {};
-				diff.aAndBKeys.forEach(function(key){
-					if(!set.isEqual(obj1.values[key], obj2.values[key])) {
-						differentKeys.push(key)
-					} else {
-						sameKeys[key] = obj1.values[key];
-					}
-				});
 
-				if(differentKeys.length === 1) {
-					var keyValue = differentKeys[0];
+				if(aAndBKeysThatAreNotEqual.length === 1) {
+					var keyValue = aAndBKeysThatAreNotEqual[0];
 
-                    var result = sameKeys[keyValue] = set.union(obj1.values[keyValue], obj2.values[keyValue]);
+                    var result = sameKeys[keyValue] = set.union(objA.values[keyValue], objB.values[keyValue]);
 
 					// if there is only one property, we can just return the universal set
 					return canReflect.size(sameKeys) === 1 && set.isEqual(result, set.UNIVERSAL) ?
 						set.UNIVERSAL : new And(sameKeys);
 				}
 			}
+			// If everything shared is the same
+			if(aAndBKeysThatAreNotEqual.length === 0 ) {
+				// the set with the extra keys is a subset
+				if( diff.aOnlyKeys.length > 0 && diff.bOnlyKeys.length === 0) {
+					return checkIfUniversalAndReturnUniversal(objB);
+				} else if( diff.aOnlyKeys.length === 0 && diff.bOnlyKeys.length > 0 ) {
+					return checkIfUniversalAndReturnUniversal(objA);
+				}
+			}
 
 			if(Or) {
-                return new Or(obj1.values, obj2.values);
+                return new Or(objA.values, objB.values);
             } else {
                 return set.UNDEFINABLE;
             }
         },
         // {foo: zed, abc: d}
-        intersection: function(obj1, obj2){
+        intersection: function(objA, objB){
             // combine all properties ... if the same property, try to take
             // an intersection ... if an intersection isn't possible ... freak out?
-            var valuesA = obj1.values,
-                valuesB = obj2.values,
+            var valuesA = objA.values,
+                valuesB = objB.values,
                 foundEmpty = false;
             var resultValues = {};
             eachInUnique(valuesA,

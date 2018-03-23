@@ -1,6 +1,16 @@
 var canSymbol = require("can-symbol");
+var canReflect = require("can-reflect");
 
-var emptySymbol = {name: "EMPTY"}; //canSymbol.for("can.emptySet");
+var addSerializeToThis = function(obj){
+    return canReflect.assignSymbols(obj,{
+        "can.serialize": function(){
+            return this;
+        }
+    });
+};
+
+var emptySymbol = addSerializeToThis({name: "EMPTY"});
+
 var setComparisonsSymbol = canSymbol.for("can.setComparisons");
 
 //.count
@@ -59,9 +69,9 @@ var typeMap = {
 var get = {};
 
 var set = {
-    UNIVERSAL: {name: "UNIVERSAL"}, //canSymbol.for("can.UNIVERSAL_SET"),
+    UNIVERSAL: addSerializeToThis({name: "UNIVERSAL"}), //canSymbol.for("can.UNIVERSAL_SET"),
     EMPTY: emptySymbol,
-    UNDEFINABLE: {name: "UNDEFINABLE"}, //canSymbol.for("can.UNDEFINABLE_SET"),
+    UNDEFINABLE: addSerializeToThis({name: "UNDEFINABLE"}), //canSymbol.for("can.UNDEFINABLE_SET"),
     Identity: Identity,
     isSpecial: function(setA){
         return setA === set.UNIVERSAL || setA === set.EMPTY || setA === set.UNDEFINABLE;
@@ -134,6 +144,14 @@ var set = {
         }
     },
     isEqual: function(value1, value2) {
+        //console.group("is", value1, "==", value2);
+        var isSpecial1 = set.isSpecial(value1),
+            isSpecial2 = set.isSpecial(value2);
+
+        // Both have to be specail because some other sets will be equal to UNIVERSAL without being UNIVERSAL
+        if(isSpecial1 && isSpecial2) {
+            return isSpecial1 === isSpecial2;
+        }
         var Type1 = set.getType(value1),
             Type2 = set.getType(value2);
         if(value1 === value2) {
@@ -142,13 +160,16 @@ var set = {
         var forwardComparators = set.getComparisons(Type1, Type2);
         var reverseComparators = set.getComparisons(Type2, Type1);
         if(forwardComparators && reverseComparators) {
+
             var intersection = get.intersection(forwardComparators, value1, value2);
             var difference = get.difference(forwardComparators, value1, value2);
             if(intersection !== set.EMPTY && difference === set.EMPTY) {
                 var reverseIntersection = get.intersection(reverseComparators, value2, value1);
                 var reverseDifference = get.difference(reverseComparators, value2, value1);
+                //console.groupEnd();
                 return reverseIntersection !== set.EMPTY && reverseDifference === set.EMPTY;
             } else {
+                //console.groupEnd();
                 return false;
             }
         } else {

@@ -217,26 +217,51 @@ function isSubset(subLetter, superLetter, meta) {
     }
 }
 
+var defineLazyValue = require("can-define-lazy-value");
+
+function MetaInformation(queryA, queryB) {
+    this.queryA = queryA;
+    this.queryB = queryB;
+}
+defineLazyValue(MetaInformation.prototype, "pageIsEqual", function(){
+    return set.isEqual(this.queryA.page, this.queryB.page);
+});
+defineLazyValue(MetaInformation.prototype, "aPageIsUniversal", function(){
+    return set.isEqual( this.queryA.page, set.UNIVERSAL);
+});
+defineLazyValue(MetaInformation.prototype, "bPageIsUniversal", function(){
+    return set.isEqual( this.queryB.page, set.UNIVERSAL);
+});
+defineLazyValue(MetaInformation.prototype, "pagesAreUniversal", function(){
+    return this.pageIsEqual && this.aPageIsUniversal;
+});
+defineLazyValue(MetaInformation.prototype, "sortIsEqual", function(){
+    return this.queryA.sort === this.queryB.sort;
+});
+defineLazyValue(MetaInformation.prototype, "aFilterIsSubset", function(){
+    return set.isSubset(this.queryA.filter, this.queryB.filter);
+});
+defineLazyValue(MetaInformation.prototype, "bFilterIsSubset", function(){
+    return set.isSubset(this.queryB.filter, this.queryA.filter);
+});
+defineLazyValue(MetaInformation.prototype, "aPageIsSubset", function(){
+    return set.isSubset(this.queryA.page, this.queryB.page);
+});
+defineLazyValue(MetaInformation.prototype, "bPageIsSubset", function(){
+    return set.isSubset(this.queryB.page, this.queryA.page);
+});
+defineLazyValue(MetaInformation.prototype, "filterIsEqual", function(){
+    return set.isEqual(this.queryA.filter, this.queryB.filter);
+});
+defineLazyValue(MetaInformation.prototype, "aIsSubset", function(){
+    return isSubset("a","b", this);
+});
+defineLazyValue(MetaInformation.prototype, "bIsSubset", function(){
+    return isSubset("b","a", this);
+});
+
 function metaInformation(queryA, queryB) {
-    var pageIsEqual = set.isEqual(queryA.page, queryB.page),
-        aPageIsUniversal = set.isEqual( queryA.page, set.UNIVERSAL),
-        bPageIsUniversal = set.isEqual( queryB.page, set.UNIVERSAL);
-
-    var meta = {
-        pageIsEqual: pageIsEqual,
-        aPageIsUniversal: aPageIsUniversal,
-        bPageIsUniversal: bPageIsUniversal,
-        pagesAreUniversal: pageIsEqual && aPageIsUniversal,
-        sortIsEqual: queryA.sort === queryB.sort,
-        aFilterIsSubset: set.isSubset(queryA.filter, queryB.filter),
-        bFilterIsSubset: set.isSubset(queryB.filter, queryA.filter),
-        aPageIsSubset: set.isSubset(queryA.page, queryB.page),
-        bPageIsSubset: set.isSubset(queryB.page, queryA.page),
-        filterIsEqual: set.isEqual(queryA.filter, queryB.filter)
-    };
-
-    meta.aIsSubset = isSubset("a","b", meta);
-    meta.bIsSubset = isSubset("b","a", meta);
+    var meta = new MetaInformation(queryA, queryB);
     return meta;
 }
 
@@ -350,7 +375,11 @@ set.defineComparison(BasicQuery, BasicQuery,{
                     if(set.isSpecial(result)) {
                         return result;
                     } else {
-                        var query = assign({}, queryA);
+                        var query = {
+                            filter: queryA.filter,
+                            page: queryA.page,
+                            sort: queryA.sort
+                        };
                         query[clause] = result;
                         return new BasicQuery(query);
                     }

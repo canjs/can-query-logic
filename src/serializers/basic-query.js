@@ -21,7 +21,7 @@ var serializeMap = [
     }],
     [BasicQuery, function(basicQuery, childSerializer){
 
-        var filter = childSerializer(basicQuery.filter);
+        var filter = set.isEqual(basicQuery.filter, set.UNIVERSAL) ? {} : childSerializer(basicQuery.filter);
 
         var res = {
             filter: filter

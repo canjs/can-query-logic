@@ -96,6 +96,14 @@ QUnit.test("AND / OR / NOT union", function(){
         isNotJustin = new types.And({name: new types.Not("Justin")});
 
     QUnit.equal( set.union(isJustin,isNotJustin), set.UNIVERSAL, "{name: 'j'} U {name: NOT('j')}");
+
+    var everything = new types.And({});
+
+    QUnit.equal( set.union(isJustin,everything), set.UNIVERSAL, "{name: 'j'} U {}");
+
+    var isJustinAnd21 = new types.And({name: "Justin", age: 22});
+
+    QUnit.equal( set.union(isJustin,isJustinAnd21), isJustin, "super and subset");
 });
 
 QUnit.test("AND / OR / NOT difference", function(){
@@ -117,7 +125,7 @@ QUnit.test("AND / OR / NOT difference", function(){
 
     // CASE: overlaping sets
     QUnit.deepEqual(result, isJustinAndNot35, 'OVERLAP: {name: "Justin"} \\ {age: 35} -> {name: "justin", age: NOT(35)}');
-    return;
+
     // CASE: same set
     QUnit.deepEqual( set.difference(is35, is35), set.EMPTY, 'SAME SET: {age: 35} \\ {age: 35} -> EMPTY');
 
@@ -167,6 +175,13 @@ QUnit.test("AND / OR / NOT difference", function(){
     QUnit.deepEqual(result,compare,
         'UNIVESAL: {} \\ {name: "Justin", age: 35} -> OR[ AND(name: NOT("Justin")), AND(age: NOT(35)) ]');
 
+
+    // CASE:
+    //   {} \ {bar: IS_UNIVERSAL}
+    result = set.difference(new types.And({foo: 2}), new types.And({foo: 2, bar : set.UNIVERSAL}));
+
+    QUnit.deepEqual(result,set.EMPTY,
+        'UNIVESAL: {foo:2} \ {foo:2, bar: IS_UNIVERSAL} -> set.EMPTY');
 
     // FUTURE CASES:
     // {color: [r, g]} \ {color: [r]} -> {color: [g]}

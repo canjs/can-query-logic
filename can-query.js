@@ -5,23 +5,41 @@ var schemaSymbol = canSymbol.for("can.schema");
 
 
 
-module.exports = function(Type){
+module.exports = function(Type, passedHydrator, passedSerializer){
     var schema = Type[schemaSymbol]();
 
-    var converter = makeBasicQueryConvert(schema);
+    var converter = makeBasicQueryConvert(schema),
+        hydrate,
+        serialize;
+
+    if(passedHydrator) {
+        hydrate = function(query){
+            return converter.hydrate(passedHydrator(query));
+        };
+    } else {
+        hydrate = converter.hydrate;
+    }
+
+    if(passedSerializer) {
+        serialize = function(query){
+            return passedSerializer(converter.serializer.serialize(query));
+        };
+    } else {
+        serialize = converter.serializer.serialize;
+    }
 
     function makeNewSet(prop){
         return function(qA, qB){
-            var queryA = converter.hydrate(qA),
-                queryB = converter.hydrate(qB);
+            var queryA = hydrate(qA),
+                queryB = hydrate(qB);
             var unionQuery = set[prop](queryA , queryB );
-            return converter.serializer.serialize( unionQuery );
+            return serialize( unionQuery );
         };
     }
     function makeReturnValue(prop) {
         return function(qA, qB){
-            var queryA = converter.hydrate(qA),
-                queryB = converter.hydrate(qB);
+            var queryA = hydrate(qA),
+                queryB = hydrate(qB);
             return set[prop](queryA , queryB );
         };
     }
@@ -29,24 +47,24 @@ module.exports = function(Type){
 
     return {
         count: function(a){
-            var queryA = converter.hydrate(a);
+            var queryA = hydrate(a);
             return queryA.page.end - queryA.page.start + 1;
         },
         difference: makeNewSet("difference"),
         equal: makeReturnValue("isEqual"),
         getSubset: function(a, b, bData){
-            var queryA = converter.hydrate(a),
-                queryB = converter.hydrate(b);
+            var queryA = hydrate(a),
+                queryB = hydrate(b);
             return queryA.filterFrom(bData, queryB);
         },
         getUnion: function(a, b, aData, bData) {
-            var queryA = converter.hydrate(a),
-                queryB = converter.hydrate(b);
+            var queryA = hydrate(a),
+                queryB = hydrate(b);
 
             return queryA.merge(queryB, aData, bData, this.id.bind(this));
         },
         has: function(query, props) {
-            return converter.hydrate(query).isMember(props);
+            return hydrate(query).isMember(props);
         },
         id: function(props) {
             var identity = schema.identity;
@@ -63,7 +81,7 @@ module.exports = function(Type){
     		}
         },
         index: function(query, items, props){
-            return converter.hydrate(query).index(props, items);
+            return hydrate(query).index(props, items);
         },
         // index
         intersection: makeNewSet("intersection"),

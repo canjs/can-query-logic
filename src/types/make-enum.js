@@ -7,10 +7,12 @@ var canSymbol = require("can-symbol");
 var setTypeSymbol = canSymbol.for("can.SetType"),
     isMemberSymbol = canSymbol.for("can.isMember");
 
-module.exports = function(Type, allValues){
+module.exports = function(Type, allValues, hydrate){
 
     function Enum(values){
-        this.values = Array.isArray(values) ? values : [values];
+        this.values = hydrate? hydrate(values) : (
+            Array.isArray(values) ? values : [values]
+        );
     }
     canReflect.assignSymbols(Enum.prototype,{
         "can.serialize": function(){
@@ -32,7 +34,14 @@ module.exports = function(Type, allValues){
 
     Enum.UNIVERSAL = new Enum(allValues);
 
-
+    var difference = function(enum1, enum2){
+        var result = arrayUnionIntersectionDifference(enum1.values, enum2.values);
+        if(result.difference.length) {
+            return new Enum(result.difference);
+        } else {
+            return set.EMPTY;
+        }
+    };
 
     set.defineComparison(Enum, Enum,{
         union: function(enum1, enum2){
@@ -51,13 +60,18 @@ module.exports = function(Type, allValues){
                 return set.EMPTY;
             }
         },
-        difference: function(enum1, enum2){
-            var result = arrayUnionIntersectionDifference(enum1.values, enum2.values);
-            if(result.difference.length) {
-                return new Enum(result.difference);
-            } else {
-                return set.EMPTY;
-            }
+        difference: difference
+    });
+
+    set.defineComparison(Enum, set.UNIVERSAL, {
+        difference: function(enumA){
+            return difference(enumA, {values: allValues.slice(0)});
+        }
+    });
+
+    set.defineComparison(set.UNIVERSAL,Enum, {
+        difference: function(universe, enumB){
+            return difference({values: allValues.slice(0)}, enumB);
         }
     });
 

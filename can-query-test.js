@@ -7,6 +7,7 @@ require("./src/types/basic-query-sorting-test");
 require("./src/types/basic-query-filter-from-test");
 require("./src/types/basic-query-merge-test");
 require("./src/serializers/basic-query-test");
+require("./compat/compat-test");
 
 var QUnit = require("steal-qunit");
 var Query = require("can-query");
@@ -202,7 +203,7 @@ QUnit.test('index basics', function(){
 		{name: "k"});
 
 	equal(index, undefined, "no value if no id");
-    
+
 
 	//var algebra = new set.Algebra(set.props.id("id"));
 
