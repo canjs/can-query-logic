@@ -8,6 +8,11 @@ var Serializer = require("../serializer");
 var setTypeSymbol = canSymbol.for("can.SetType");
 
 var serializeMap = [
+    [BasicQuery.Or, function(or, serializer){
+        return or.values.map(function(value){
+            return serializer(value);
+        });
+    }],
     [BasicQuery.And, function(and, serializer){
         var result = {};
         canReflect.eachKey(and.values, function(value, key){

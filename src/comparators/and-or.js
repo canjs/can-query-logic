@@ -164,21 +164,33 @@ module.exports = function(And, Or, Not) {
 		// sB is likely subset of sA
 		// {}, {foo: "bar"} -> {foo: NOT("bar")}
 		if(aOnlyKeys.length === 0 && bOnlyKeys.length > 0) {
-
 			// Lets not figure out productAbleKeys right now.
 			// Example:
 			// {color: [RED, GREEN], ...X...}
 			// \ {age: 35, color: [RED], ...X...}
 			// = OR( {color: [GREEN], ...X...}, {age: NOT(35), color: [RED], ...X...} )
-			if(productAbleKeys.length) {
+			if(productAbleKeys.length > 1) {
 				return set.UNDEFINABLE;
 			}
-			
+			var productAbleOr;
+			if(productAbleKeys.length === 1) {
+				// we add the intersection to the AND
+				// the difference is the or
+				var productableKey = productAbleKeys[0];
+				productAbleOr = assign({},sharedKeysAndValues);
+				productAbleOr[productableKey] = productAbleKeysAndData[productableKey].difference;
+				sharedKeysAndValues[productableKey] = productAbleKeysAndData[productableKey].intersection;
+			}
+
 			var ands = bOnlyKeys.map(function(key){
 				var shared = assign({},sharedKeysAndValues);
 				var result = shared[key] = set.difference(set.UNIVERSAL, valuesB[key]);
 				return result === set.EMPTY ? result : new And(shared);
 			}).filter(notEmpty);
+
+			if(productAbleOr) {
+				ands.push(new And(productAbleOr))
+			}
 
 			// {c: "g"}
 			// \ {c: "g", age: 22, name: "justin"}
@@ -319,4 +331,12 @@ module.exports = function(And, Or, Not) {
             }
         }
     });
+
+	if(Or) {
+		set.defineComparison(set.UNIVERSAL, Or,{
+			difference: function(universal, or){
+				return set.UNDEFINABLE;
+			}
+		})
+	}
 };

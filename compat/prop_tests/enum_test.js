@@ -185,7 +185,7 @@ test('enum set.equal', function(){
 	 */
 	res = set.equal({} , { type: ['new','prep','deliver','delivered'] }, prop);
 	deepEqual(res, true, "subset of all possible enums is the same as universal set");
-	return;
+
 	/*
 	 * x ∈ X | x.type ∈ ['new']
 	 * y ∈ Y | y.type ∈ ['new']

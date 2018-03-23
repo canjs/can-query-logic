@@ -21,6 +21,19 @@ makeEnum(IsBoolean,[true, false], function(data) {
     });
 });
 
+function hasKey(obj, keys) {
+    if(obj && typeof obj === "object") {
+        for(var key in obj) {
+            if(keys[key]) {
+                return true;
+            } else {
+                return hasKey(obj[key], keys);
+            }
+        }
+    }
+    return false;
+}
+
 var defaultAlgebra;
 
 var set = {
@@ -55,14 +68,25 @@ var set = {
                 return hydrator(last);
             }, {filter: data});
         }, function(data){
+
             if(data === SET.EMPTY) {
                 return false;
+            }
+            if(data === SET.UNDEFINABLE) {
+                return true;
+            }
+            if(Array.isArray(data.filter)){
+                // OR is not supported ...
+                return true;
             }
             var out = mutators.serialize.reduce(function(last, serializer){
                 return serializer(last);
             }, data);
 
             var filter = out.filter;
+            if(hasKey(filter, {"$ne": true})) {
+                return true;
+            }
             delete out.filter;
             return canReflect.assign(out, filter);
         });
@@ -151,7 +175,7 @@ function makeFromTwoQueries(prop) {
         if(!algebra) {
             algebra = defaultAlgebra;
         }
-        else if(!(algebra instanceof set.Algebra) ) {
+        else if(!(algebra instanceof Query) ) {
             algebra = new set.Algebra(algebra);
         }
 

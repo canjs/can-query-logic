@@ -1,7 +1,7 @@
 var QUnit = require("steal-qunit");
 
-var set = require("../set-core"),
-  props = require("../props");
+var set = require('../compat'),
+	props = set.props;
 
 QUnit.module("can-set props.id");
 
@@ -11,7 +11,7 @@ test("id set.difference", function(){
   var res;
 
   res = set.difference({ color: "red" }, { color: "blue" }, idProps);
-  deepEqual(res, false, "id changes always false");
+  deepEqual(res, { color: "red" }, "id changes always false");
 
   res = set.difference({ color: "red" }, { }, idProps);
   deepEqual(res, false, "id removal always false");
@@ -29,12 +29,16 @@ test("id set.difference with where", function() {
   var res;
 
   res = set.difference({ color: "red", type: ["light", "dark"] }, { color: "blue", type: "light" }, algebra);
-  deepEqual(res, false, "id changes always false");
+  deepEqual(res, { color: "red", type: ["light", "dark"] }, "id changes always false");
 
   res = set.difference({ color: "red", type: ["light", "dark"] }, { type: "light" }, algebra);
-  deepEqual(res, false, "id removal always false");
+  deepEqual(res, { color: "red", type:  "dark" }, "id removal always false");
 
-  res = set.difference({ type: ["light", "dark"] }, {  type: "light", color: "blue" }, algebra);
+  var a2 = new set.Algebra(
+    props.enum("color", ["red", "green"])
+  );
+
+  res = set.difference({ color: ["red", "green"] }, {  status: "accepted", color: "red" }, a2);
   deepEqual(res, true, "id addition always true");
 
   res = set.difference({ type: ["light", "dark"] }, {  type: "light" }, algebra);

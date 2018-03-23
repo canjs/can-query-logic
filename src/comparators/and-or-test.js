@@ -183,7 +183,10 @@ QUnit.test("AND / OR / NOT difference", function(){
     QUnit.deepEqual(result,set.EMPTY,
         'UNIVESAL: {foo:2} \ {foo:2, bar: IS_UNIVERSAL} -> set.EMPTY');
 
+
+
     // FUTURE CASES:
+    // { color: ["r", "g"] }, {  color: "r", status: a } -> OR( {c: g}, {c:r, NOT: a} )
     // {color: [r, g]} \ {color: [r]} -> {color: [g]}
     // {color: [r, g], status: [a, c]} \ {color: [r], status: [a]} -> OR( {g X a}, {g X c}, {r X c} )
 });

@@ -204,9 +204,31 @@ QUnit.test('index basics', function(){
 
 	equal(index, undefined, "no value if no id");
 
+    var TODO_id = canReflect.assignSymbols({},{
+        "can.schema": function(){
+            return {
+                kind: "record",
+                identity: ["_id"],
+                properties: {
+                    id: Number,
+                    points: Number,
+                    status: Color,
+                    complete: Boolean,
+                    name: String
+                }
+            };
+        }
+    });
+    var algebra2 = new Query(TODO_id);
+
+    index = algebra.index(
+		{},
+		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}],
+		{id: 0, name: "k"});
+
+	equal(index, 0);
 
 	//var algebra = new set.Algebra(set.props.id("id"));
-
 
 });
 
