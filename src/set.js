@@ -260,7 +260,7 @@ var algebraSymbol = {
 
         if(forwardComparators && forwardComparators[prop]) {
             var result = forwardComparators[prop](value1, value2);
-            console.log("",/*name1,*/ value1, algebraSymbol[prop], /*name2,*/ value2,"=", result);
+            // console.log("",/*name1,*/ value1, algebraSymbol[prop], /*name2,*/ value2,"=", result);
             if(result === undefined && forwardComparators.undefinedIsEmptySet === true) {
                 return set.EMPTY;
             } else {

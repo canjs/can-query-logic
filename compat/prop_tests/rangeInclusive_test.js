@@ -1,7 +1,7 @@
 var QUnit = require("steal-qunit");
 
-var set = require('../set-core'),
-	props = require("../props");
+var set = require('../compat'),
+	props = set.props;
 
 QUnit.module("can-set props.rangeInclusive");
 
@@ -126,7 +126,7 @@ test('rangeInclusive set.difference', function() {
 	 * X / Y = the set of all things not in Y
 	 */
 	res = set.difference({}, { start: 0, end: 10 }, prop);
-	equal(res, true, 'universal set');
+	deepEqual(res, {start: 11}, 'universal set');
 
 	/*
 	 * X = [A0, ..., A49]
@@ -268,9 +268,8 @@ test('rangeInclusive set.intersection', function(){
 	deepEqual(res, { start: 50, end: 99 }, "got a intersection");
 
 
-	var res = set.intersection({ start: 0, end: 10, age: 35 }, { start: 0, end: 100, name: "JBM" }, prop);
-	debugger;
-	deepEqual(res, { start: 50, end: 99 }, "got a intersection");
+	res = set.intersection({ start: 0, end: 10, age: 35 }, { start: 0, end: 100, name: "JBM" }, prop);
+	deepEqual(res, true, "got a intersection");
 });
 
 test('rangeInclusive with string numbers (#17)', function(){

@@ -313,7 +313,7 @@ set.defineComparison(BasicQuery, BasicQuery,{
         //   page: {0, 10},
         //   sort: "foo" }
 
-        var meta = metaInformation(queryA, queryB);;
+        var meta = metaInformation(queryA, queryB);
 
         if(meta.pagesAreUniversal) {
             // We ignore the sort.
@@ -321,6 +321,11 @@ set.defineComparison(BasicQuery, BasicQuery,{
                 filter: set.intersection(queryA.filter, queryB.filter),
                 sort: meta.sortIsEqual ? queryA.sort : undefined
             });
+        }
+
+        // check if disjoint wheres
+        if(set.intersection(queryA.filter, queryB.filter) === set.EMPTY ) {
+            return set.EMPTY;
         }
 
         if(meta.filterIsEqual) {
@@ -338,8 +343,11 @@ set.defineComparison(BasicQuery, BasicQuery,{
                 return queryA;
             } else if(meta.bIsSubset){
                 return queryB;
+            } else {
+                // filters are different, both pagination isn't universal
+                return set.UNDEFINABLE;
             }
-            throw new Error("different filters, non-universal pagination");
+
         }
 
     },

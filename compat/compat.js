@@ -48,6 +48,7 @@ var set = {
                 mutators[prop].push(value[prop]);
             }
         });
+
         var obj = canReflect.assignSymbols({},{
             "can.schema": function(){
                 var schema = {
@@ -58,6 +59,9 @@ var set = {
                 mutators.schema.forEach(function(updateSchema){
                     updateSchema(schema);
                 });
+                if(!schema.identity.length) {
+                    schema.identity.push("id");
+                }
 
                 return schema;
             }
@@ -135,7 +139,16 @@ var set = {
                 // start -> page.start
                 // end -> page.end
                 hydrate: function(raw){
-                    return transform(raw, hydrateTransfomer);
+                    var res = transform(raw, hydrateTransfomer);
+                    if(res.page) {
+                        if(res.page.start) {
+                            res.page.start = parseInt(res.page.start);
+                        }
+                        if(res.page.end) {
+                            res.page.end = parseInt(res.page.end);
+                        }
+                    }
+                    return res;
                 },
                 // taking the normal format and putting it back
                 // page.start -> start
@@ -170,16 +183,19 @@ var set = {
     }
 };
 
+function makeAlgebra(algebra) {
+    if(!algebra) {
+        return defaultAlgebra;
+    }
+    else if(!(algebra instanceof Query) ) {
+        return new set.Algebra(algebra);
+    }
+    return algebra;
+}
+
 function makeFromTwoQueries(prop) {
     set[prop] = function( a, b, algebra ){
-        if(!algebra) {
-            algebra = defaultAlgebra;
-        }
-        else if(!(algebra instanceof Query) ) {
-            algebra = new set.Algebra(algebra);
-        }
-
-        return algebra[prop](a, b);
+        return makeAlgebra(algebra)[prop](a, b);
     };
 }
 makeFromTwoQueries("difference");
@@ -188,6 +204,10 @@ makeFromTwoQueries("intersection");
 makeFromTwoQueries("subset");
 makeFromTwoQueries("equal");
 makeFromTwoQueries("properSubset");
+
+set.count = function(query, algebra) {
+    return makeAlgebra(algebra).count(query);
+};
 
 defaultAlgebra = new set.Algebra();
 

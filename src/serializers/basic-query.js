@@ -7,6 +7,8 @@ var Serializer = require("../serializer");
 
 var setTypeSymbol = canSymbol.for("can.SetType");
 
+var defaultQuery = new BasicQuery({});
+
 var serializeMap = [
     [BasicQuery.Or, function(or, serializer){
         return or.values.map(function(value){
@@ -31,9 +33,14 @@ var serializeMap = [
         var res = {
             filter: filter
         };
-        if(!set.isEqual(basicQuery.page, new BasicQuery.RecordRange())) {
-            throw new Error('get this working');
-            //res.page = canReflect.serialize(this.page);
+        if(!set.isEqual(basicQuery.page, defaultQuery.page)) {
+            // we always provide the start, even if it's 0
+            res.page = {
+                start: basicQuery.page.start
+            };
+            if(basicQuery.page.end !== defaultQuery.page.end) {
+                res.page.end = basicQuery.page.end;
+            }
         }
 
         if(basicQuery.sort !== "id ASC") {

@@ -208,8 +208,6 @@ var comparators = {
 		difference: makeAndIf(is.LessThan, is.LessThan)
 	},
 	GreaterThanEqual_GreaterThan: {
-		union: returnSmallerValue,
-		intersection: returnBiggerValue,
 		difference: make_InIfEqual_else_andIf(is.LessThan, is.LessThanEqual)
 	},
 
@@ -253,8 +251,6 @@ var comparators = {
 		difference: makeAndIf(is.GreaterThan, is.GreaterThan)
 	},
 	LessThanEqual_LessThan: {
-		union: returnBiggerValue,
-		intersection: returnSmallerValue,
 		difference: make_InIfEqual_else_andIf(is.GreaterThanEqual, is.GreaterThanEqual)
 	},
 
