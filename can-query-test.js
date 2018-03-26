@@ -221,12 +221,12 @@ QUnit.test('index basics', function(){
     });
     var algebra2 = new Query(TODO_id);
 
-    index = algebra.index(
+    index = algebra2.index(
 		{},
-		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}],
-		{id: 0, name: "k"});
+		[{id: 1, _id: 0}, {id: 2, _id: 1}, {id: 3, _id: 3}, {id: 4, _id: 4}],
+		{id: 0, _id: 2});
 
-	equal(index, 0);
+	equal(index, 2);
 
 	//var algebra = new set.Algebra(set.props.id("id"));
 

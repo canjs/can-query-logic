@@ -9,50 +9,70 @@ var setTypeSymbol = canSymbol.for("can.SetType");
 
 var defaultQuery = new BasicQuery({});
 
-var serializeMap = [
-    [BasicQuery.Or, function(or, serializer){
-        return or.values.map(function(value){
-            return serializer(value);
-        });
-    }],
-    [BasicQuery.And, function(and, serializer){
-        var result = {};
-        canReflect.eachKey(and.values, function(value, key){
-            // is value universal ... if not, we don't need to add anything
-            result[key] = serializer(value);
-        });
-        return result;
-    }],
-    [BasicQuery.RecordRange, function(range){
-        return {start: range.start, end: range.end};
-    }],
-    [BasicQuery, function(basicQuery, childSerializer){
 
-        var filter = set.isEqual(basicQuery.filter, set.UNIVERSAL) ? {} : childSerializer(basicQuery.filter);
-
-        var res = {
-            filter: filter
-        };
-        if(!set.isEqual(basicQuery.page, defaultQuery.page)) {
-            // we always provide the start, even if it's 0
-            res.page = {
-                start: basicQuery.page.start
-            };
-            if(basicQuery.page.end !== defaultQuery.page.end) {
-                res.page.end = basicQuery.page.end;
-            }
-        }
-
-        if(basicQuery.sort !== "id ASC") {
-            res.sort = basicQuery.sort;
-        }
-        return res;
-
-    }]
-];
 
 
 module.exports = function(schema) {
+
+    var id = schema.identity && schema.identity[0];
+    if(!id) {
+        console.warn("can-query given a type without an identity schema.  Using `id` as the identity id.");
+        id = "id";
+    }
+
+
+    var properties = schema.properties;
+
+    if(!properties) {
+        console.warn("can-query given a type without a properties schema.  Using an empty schema.");
+        properties = {};
+    }
+
+    var serializeMap = [
+        [BasicQuery.Or, function(or, serializer){
+            return or.values.map(function(value){
+                return serializer(value);
+            });
+        }],
+        [BasicQuery.And, function(and, serializer){
+            var result = {};
+            canReflect.eachKey(and.values, function(value, key){
+                // is value universal ... if not, we don't need to add anything
+                result[key] = serializer(value);
+            });
+            return result;
+        }],
+        [BasicQuery.RecordRange, function(range){
+            return {start: range.start, end: range.end};
+        }],
+        [BasicQuery, function(basicQuery, childSerializer){
+
+            var filter = set.isEqual(basicQuery.filter, set.UNIVERSAL) ? {} : childSerializer(basicQuery.filter);
+
+            var res = {
+                filter: filter
+            };
+            if(!set.isEqual(basicQuery.page, defaultQuery.page)) {
+                // we always provide the start, even if it's 0
+                res.page = {
+                    start: basicQuery.page.start
+                };
+                if(basicQuery.page.end !== defaultQuery.page.end) {
+                    res.page.end = basicQuery.page.end;
+                }
+            }
+
+            if(basicQuery.sort !== id+" ASC") {
+                res.sort = basicQuery.sort;
+            }
+            return res;
+
+        }]
+    ];
+
+
+
+
 
     var serializer = new Serializer(serializeMap);
     serializer.add(comparisonsConverter.serializer);
@@ -60,13 +80,11 @@ module.exports = function(schema) {
     return {
         hydrate: function(data){
             var filter = canReflect.assignDeep({}, data.filter || {});
-            var properties = schema.properties;
 
 
-            if(!properties) {
-                console.warn("can-query given a type without a schema.  Using an empty schema.");
-                properties = {};
-            }
+
+
+
 
 
             canReflect.eachKey(filter, function(value, prop){
@@ -93,6 +111,8 @@ module.exports = function(schema) {
             }
             if(data.sort) {
                 query.sort = data.sort;
+            } else {
+                query.sort = id+" ASC";
             }
             return new BasicQuery(query);
         },
