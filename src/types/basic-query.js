@@ -2,10 +2,12 @@ var set = require("../set");
 var makeRealNumberRangeInclusive = require("./make-real-number-range-inclusive");
 var assign = require("can-assign");
 var canReflect = require("can-reflect");
-
 var addAddOrComparators = require("../comparators/and-or");
 var addNotComparitor = require("../comparators/not");
+var helpers = require("../helpers");
+var defineLazyValue = require("can-define-lazy-value");
 
+// Define the sub-types that BasicQuery will use
 function And(values) {
     this.values = values;
 }
@@ -17,12 +19,13 @@ function Not(value) {
     this.value = value;
 }
 
+var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
+
+// Wire up the sub-types to be able to compare to each other
 addNotComparitor(Not);
 addAddOrComparators(And, Or, Not);
 
-
-var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
-
+// Define the BasicQuery type
 function BasicQuery(query) {
     assign(this, query);
     if(!this.filter) {
@@ -36,161 +39,88 @@ function BasicQuery(query) {
     }
 }
 
-function uniqueConcat(itemsA, itemsB, getId) {
-    var ids = new Set();
-    return itemsA.concat(itemsB).filter(function(item){
-        var id = getId(item);
-        if(!ids.has(id)) {
-            ids.add(id);
-            return true;
-        } else {
-            return false;
-        }
-    });
-}
-
-function getIndex(compare, items, props){
-    if(!items || !items.length) {
-        return undefined;
-    }
-    // check the start and the end
-    if( compare(props, items[0]) === -1 ) {
-        return 0;
-    }
-    else if(compare(props, items[items.length -1] ) === 1 ) {
-        return items.length;
-    }
-    var low = 0,
-        high = items.length;
-
-    // From lodash lodash 4.6.1 <https://lodash.com/>
-    // Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
-    while (low < high) {
-        var mid = (low + high) >>> 1,
-            item = items[mid],
-            computed = compare(props, item);
-        if ( computed === -1 ) {
-            high = mid;
-        } else {
-            low = mid + 1;
-        }
-    }
-    return high;
-    // bisect by calling sortFunc
-}
-function sortData(sortPropValue) {
-    var parts = sortPropValue.split(' ');
-    return {
-        prop: parts[0],
-        desc: (parts[1] || '').toLowerCase()	=== 'desc'
-    };
-}
-
-function sorter(sortPropValue) {
-    var data = sortData(sortPropValue);
-    return function(item1, item2){
-        var item1Value = item1[data.prop];
-        var item2Value = item2[data.prop];
-        var temp;
-
-
-        if(data.desc) {
-            temp = item1Value;
-            item1Value = item2Value;
-            item2Value = temp;
-        }
-
-        if(item1Value < item2Value) {
-            return -1;
-        }
-
-        if(item1Value > item2Value) {
-            return 1;
-        }
-
-        return 0;
-    };
-}
-
-BasicQuery.prototype.count = function(){
-    return this.page.end - this.page.start + 1;
-};
-BasicQuery.prototype.sortData = function(data){
-    var sort = sorter(this.sort);
-    return data.slice(0).sort(sort);
-};
-BasicQuery.prototype.filterFrom = function(bData, parentQuery) {
-    parentQuery  = parentQuery || new BasicQuery();
-
-    // if this isn't a subset ... we can't filter
-    if(!set.isSubset(this, parentQuery)) {
-        return undefined;
-    }
-
-    // reduce response to items in data that meet where criteria
-    var aData = bData.filter(this.filter.isMember.bind(this.filter));
-
-    // sort the data if needed
-    if( aData.length && (this.sort !== parentQuery.sort) ) {
-        aData = this.sortData(aData);
-    }
-
-    var thisIsUniversal = set.isEqual( this.page, set.UNIVERSAL),
-        parentIsUniversal = set.isEqual( parentQuery.page, set.UNIVERSAL);
-
-    if(parentIsUniversal) {
-        if( thisIsUniversal ) {
-            return aData;
-        } else {
-            return aData.slice(this.page.start, this.page.end+1);
-        }
-    }
-    // everything but range is equal
-    else if(this.sort === parentQuery.sort && set.isEqual(parentQuery.filter,this.filter) ) {
-        return aData.slice( this.page.start - parentQuery.page.start, this.page.end - parentQuery.page.start + 1 );
-    }
-    else {
-        // parent starts at something ...
-        throw new Error("unable to do right now");
-    }
-
-    return aData;
-};
-BasicQuery.prototype.merge = function(b, aItems, bItems, getId){
-    var union = set.union(this,b);
-
-    if(union === set.UNDEFINABLE) {
-        return undefined;
-    } else {
-        var combined = uniqueConcat(aItems,bItems, getId);
-        return union.sortData(combined);
-    }
-
-    // basically if there's pagination, we might not be able to do this
-
-
-};
-
-BasicQuery.prototype.index = function(props, items){
-    var data = sortData(this.sort);
-    if(!Object.prototype.hasOwnProperty.call(props, data.prop)) {
-        return undefined;
-    }
-    var sort = sorter(this.sort);
-    return getIndex(sort, items, props);
-};
-
-BasicQuery.prototype.isMember = function(props){
-    return this.filter.isMember(props);
-};
-
-
+// BasicQuery's static properties
 BasicQuery.And = And;
 BasicQuery.Or = Or;
 BasicQuery.Not = Not;
 BasicQuery.RecordRange = RecordRange;
 
+// BasicQuery's prototype methods.
+// These are "additional" features beyond what `set` provides.
+// These typically pertain to actual data results of a query.
+canReflect.assignMap(BasicQuery.prototype,{
+    count: function(){
+        return this.page.end - this.page.start + 1;
+    },
+    sortData: function(data){
+        var sort = helpers.sorter(this.sort);
+        return data.slice(0).sort(sort);
+    },
+    filterFrom: function(bData, parentQuery) {
+        parentQuery  = parentQuery || new BasicQuery();
 
+        // if this isn't a subset ... we can't filter
+        if(!set.isSubset(this, parentQuery)) {
+            return undefined;
+        }
+
+        // reduce response to items in data that meet where criteria
+        var aData = bData.filter(this.filter.isMember.bind(this.filter));
+
+        // sort the data if needed
+        if( aData.length && (this.sort !== parentQuery.sort) ) {
+            aData = this.sortData(aData);
+        }
+
+        var thisIsUniversal = set.isEqual( this.page, set.UNIVERSAL),
+            parentIsUniversal = set.isEqual( parentQuery.page, set.UNIVERSAL);
+
+        if(parentIsUniversal) {
+            if( thisIsUniversal ) {
+                return aData;
+            } else {
+                return aData.slice(this.page.start, this.page.end+1);
+            }
+        }
+        // everything but range is equal
+        else if(this.sort === parentQuery.sort && set.isEqual(parentQuery.filter,this.filter) ) {
+            return aData.slice( this.page.start - parentQuery.page.start, this.page.end - parentQuery.page.start + 1 );
+        }
+        else {
+            // parent starts at something ...
+            throw new Error("unable to do right now");
+        }
+
+        return aData;
+    },
+    merge: function(b, aItems, bItems, getId){
+        var union = set.union(this,b);
+
+        if(union === set.UNDEFINABLE) {
+            return undefined;
+        } else {
+            var combined = helpers.uniqueConcat(aItems,bItems, getId);
+            return union.sortData(combined);
+        }
+
+        // basically if there's pagination, we might not be able to do this
+
+
+    },
+    index: function(props, items){
+        var data = helpers.sortData(this.sort);
+        if(!Object.prototype.hasOwnProperty.call(props, data.prop)) {
+            return undefined;
+        }
+        var sort = helpers.sorter(this.sort);
+        return helpers.getIndex(sort, items, props);
+    },
+    isMember: function(props){
+        return this.filter.isMember(props);
+    }
+});
+
+// Helpers used for the `set` comparators
 var CLAUSE_TYPES = ["filter","page","sort"];
 
 function getDifferentClauseTypes(queryA, queryB){
@@ -217,47 +147,53 @@ function isSubset(subLetter, superLetter, meta) {
     }
 }
 
-var defineLazyValue = require("can-define-lazy-value");
-
+// This type contains a bunch of lazy getters that
+// cache their value after being read.
+// This helps performance.
 function MetaInformation(queryA, queryB) {
     this.queryA = queryA;
     this.queryB = queryB;
 }
-defineLazyValue(MetaInformation.prototype, "pageIsEqual", function(){
-    return set.isEqual(this.queryA.page, this.queryB.page);
-});
-defineLazyValue(MetaInformation.prototype, "aPageIsUniversal", function(){
-    return set.isEqual( this.queryA.page, set.UNIVERSAL);
-});
-defineLazyValue(MetaInformation.prototype, "bPageIsUniversal", function(){
-    return set.isEqual( this.queryB.page, set.UNIVERSAL);
-});
-defineLazyValue(MetaInformation.prototype, "pagesAreUniversal", function(){
-    return this.pageIsEqual && this.aPageIsUniversal;
-});
-defineLazyValue(MetaInformation.prototype, "sortIsEqual", function(){
-    return this.queryA.sort === this.queryB.sort;
-});
-defineLazyValue(MetaInformation.prototype, "aFilterIsSubset", function(){
-    return set.isSubset(this.queryA.filter, this.queryB.filter);
-});
-defineLazyValue(MetaInformation.prototype, "bFilterIsSubset", function(){
-    return set.isSubset(this.queryB.filter, this.queryA.filter);
-});
-defineLazyValue(MetaInformation.prototype, "aPageIsSubset", function(){
-    return set.isSubset(this.queryA.page, this.queryB.page);
-});
-defineLazyValue(MetaInformation.prototype, "bPageIsSubset", function(){
-    return set.isSubset(this.queryB.page, this.queryA.page);
-});
-defineLazyValue(MetaInformation.prototype, "filterIsEqual", function(){
-    return set.isEqual(this.queryA.filter, this.queryB.filter);
-});
-defineLazyValue(MetaInformation.prototype, "aIsSubset", function(){
-    return isSubset("a","b", this);
-});
-defineLazyValue(MetaInformation.prototype, "bIsSubset", function(){
-    return isSubset("b","a", this);
+
+canReflect.eachKey({
+    "pageIsEqual": function(){
+        return set.isEqual(this.queryA.page, this.queryB.page);
+    },
+    "aPageIsUniversal": function(){
+        return set.isEqual( this.queryA.page, set.UNIVERSAL);
+    },
+    "bPageIsUniversal": function(){
+        return set.isEqual( this.queryB.page, set.UNIVERSAL);
+    },
+    "pagesAreUniversal": function(){
+        return this.pageIsEqual && this.aPageIsUniversal;
+    },
+    "sortIsEqual": function(){
+        return this.queryA.sort === this.queryB.sort;
+    },
+    "aFilterIsSubset": function(){
+        return set.isSubset(this.queryA.filter, this.queryB.filter);
+    },
+    "bFilterIsSubset": function(){
+        return set.isSubset(this.queryB.filter, this.queryA.filter);
+    },
+    "aPageIsSubset": function(){
+        return set.isSubset(this.queryA.page, this.queryB.page);
+    },
+    "bPageIsSubset": function(){
+        return set.isSubset(this.queryB.page, this.queryA.page);
+    },
+    "filterIsEqual": function(){
+        return set.isEqual(this.queryA.filter, this.queryB.filter);
+    },
+    "aIsSubset": function(){
+       return isSubset("a","b", this);
+    },
+    "bIsSubset": function(){
+       return isSubset("b","a", this);
+    }
+}, function(def, prop){
+    defineLazyValue(MetaInformation.prototype, prop, def);
 });
 
 function metaInformation(queryA, queryB) {
@@ -265,6 +201,8 @@ function metaInformation(queryA, queryB) {
     return meta;
 }
 
+
+// Define comparators
 set.defineComparison(BasicQuery, BasicQuery,{
     union: function(queryA, queryB){
 
@@ -283,9 +221,7 @@ set.defineComparison(BasicQuery, BasicQuery,{
             });
         }
 
-        var aFilterIsSubset = set.isSubset(queryA.filter, queryB.filter),
-            bFilterIsSubset = set.isSubset(queryA.filter, queryB.filter),
-            filterIsEqual = set.isEqual(queryA.filter, queryB.filter);
+        var filterIsEqual = set.isEqual(queryA.filter, queryB.filter);
 
         if(filterIsEqual) {
             if(sortIsEqual) {
