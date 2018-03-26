@@ -1,6 +1,25 @@
+// # can-query/set.js
+// This file defines the set mechanics of types.
+// It provides ways for types to define how to perform
+// `union`, `difference`, `intersection` operations.
+//
+// It also derives other operators (`isEqual`, `isSubset`, etc) from these
+// core operators.
+//
+// `.memberOf` is a property that defines if a value is within the set. It's
+// currently a different thing.
+
 var canSymbol = require("can-symbol");
 var canReflect = require("can-reflect");
 
+
+// This is what we are defining
+var set;
+
+// ## HELPERS =========
+//
+// Used to make sure an object serializes to itself.
+// This makes sure the empty object won't try to clone itself.
 var addSerializeToThis = function(obj){
     return canReflect.assignSymbols(obj,{
         "can.serialize": function(){
@@ -9,29 +28,23 @@ var addSerializeToThis = function(obj){
     });
 };
 
-var emptySymbol = addSerializeToThis({name: "EMPTY"});
-
-var setComparisonsSymbol = canSymbol.for("can.setComparisons");
-
-//.count
-//.equal
-//.properSubset
-//.subset
-//.union
-//.intersection
-//.difference
-//.getSubset
-//.getUnion
-//.has
-//.index
-//.identity
-
+// Reverses the arguments of a function.
 function reverseArgs(fn){
     return function(first, second){
         return fn.call(this, second, first);
     };
 }
 
+// This symbol is put on constructor functions to track the comparator operators
+// available to that type.
+var setComparisonsSymbol = canSymbol.for("can.setComparisons");
+
+// Adds comparators to a type. They are stored like:
+// Type[@can.setComparisons] = Map({
+//    [type1]: Map({[type2]: {union, different, intersection}})
+// })
+//
+// Why do we need the outer object?
 function addComparators(type1, type2, comparators) {
     var comparisons = type1[setComparisonsSymbol];
     if(!type1[setComparisonsSymbol]) {
@@ -54,9 +67,11 @@ function addComparators(type1, type2, comparators) {
     } else {
         subMap.set(type2, comparators);
     }
-
 }
 
+
+// This type is used for primitives in JS, but it can be used for
+// any value that should only === itself.
 function Identity(){}
 
 var typeMap = {
@@ -66,12 +81,62 @@ var typeMap = {
     "boolean": Identity
 };
 
+// `get.intersection`, etc is used to look within the types
+// maps and get the right comparator operators.
 var get = {};
+/*
+var algebraSymbol = {
+    "intersection": "∩",
+    "union": "∪",
+    "difference": "\\"
+};
+*/
 
-var set = {
-    UNIVERSAL: addSerializeToThis({name: "UNIVERSAL"}), //canSymbol.for("can.UNIVERSAL_SET"),
-    EMPTY: emptySymbol,
-    UNDEFINABLE: addSerializeToThis({name: "UNDEFINABLE"}), //canSymbol.for("can.UNDEFINABLE_SET"),
+["intersection","difference","union"].forEach(function(prop){
+    get[prop] = function(forwardComparators, value1, value2){
+
+        if(value2 === set.UNIVERSAL) {
+            if(prop === "intersection" ) {
+                return value1;
+            }
+            if(prop === "union") {
+                return set.UNIVERSAL;
+            }
+            if(prop === "difference") {
+                return set.EMPTY;
+            }
+        }
+        if(value1 === set.UNIVERSAL) {
+            if(prop === "intersection" ) {
+                return value1;
+            }
+            if(prop === "union") {
+                return set.UNIVERSAL;
+            }
+        }
+
+        if(forwardComparators && forwardComparators[prop]) {
+            var result = forwardComparators[prop](value1, value2);
+            // console.log("",/*name1,*/ value1, algebraSymbol[prop], /*name2,*/ value2,"=", result);
+            if(result === undefined && forwardComparators.undefinedIsEmptySet === true) {
+                return set.EMPTY;
+            } else {
+                return result;
+            }
+        } else {
+            throw new Error("Unable to perform "+prop+" between "+set.getType(value1).name+" and "+set.getType(value2).name);
+        }
+
+    };
+});
+
+
+
+set = {
+    // The special types
+    UNIVERSAL: addSerializeToThis({name: "UNIVERSAL"}),
+    EMPTY: addSerializeToThis({name: "EMPTY"}),
+    UNDEFINABLE: addSerializeToThis({name: "UNDEFINABLE"}),
     Identity: Identity,
     isSpecial: function(setA){
         return setA === set.UNIVERSAL || setA === set.EMPTY || setA === set.UNDEFINABLE;
@@ -227,51 +292,7 @@ var set = {
 
 };
 
-var algebraSymbol = {
-    "intersection": "∩",
-    "union": "∪",
-    "difference": "\\"
-};
 
-["intersection","difference","union"].forEach(function(prop){
-    get[prop] = function(forwardComparators, value1, value2){
-        //var name1 = set.getType(value1).name,
-        //    name2 = set.getType(value2).name;
-
-        if(value2 === set.UNIVERSAL) {
-            if(prop === "intersection" ) {
-                return value1;
-            }
-            if(prop === "union") {
-                return set.UNIVERSAL;
-            }
-            if(prop === "difference") {
-                return set.EMPTY;
-            }
-        }
-        if(value1 === set.UNIVERSAL) {
-            if(prop === "intersection" ) {
-                return value1;
-            }
-            if(prop === "union") {
-                return set.UNIVERSAL;
-            }
-        }
-
-        if(forwardComparators && forwardComparators[prop]) {
-            var result = forwardComparators[prop](value1, value2);
-            // console.log("",/*name1,*/ value1, algebraSymbol[prop], /*name2,*/ value2,"=", result);
-            if(result === undefined && forwardComparators.undefinedIsEmptySet === true) {
-                return set.EMPTY;
-            } else {
-                return result;
-            }
-        } else {
-            throw new Error("Unable to perform "+prop+" between "+set.getType(value1).name+" and "+set.getType(value2).name);
-        }
-
-    };
-});
 
 function identityIntersection(v1, v2) {
     return v1 === v2 ? v1 : set.EMPTY;
@@ -279,9 +300,9 @@ function identityIntersection(v1, v2) {
 function identityDifference(v1, v2){
     return v1 === v2 ? set.EMPTY : v1;
 }
-function identityUnion(v1, v2) {
+/*function identityUnion(v1, v2) {
     return v1 === v2 ? v1 : set.UNDEFINABLE;
-}
+}*/
 var identityComparitor = {
     mustReturnEmptySet: true,
     intersection: identityIntersection,

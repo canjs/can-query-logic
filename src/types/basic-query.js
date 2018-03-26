@@ -116,6 +116,7 @@ canReflect.assignMap(BasicQuery.prototype,{
         return helpers.getIndex(sort, items, props);
     },
     isMember: function(props){
+        // Use the AND type for it's isMember method
         return this.filter.isMember(props);
     }
 });
