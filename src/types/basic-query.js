@@ -232,7 +232,9 @@ set.defineComparison(BasicQuery, BasicQuery,{
                     page: set.union(queryA.page, queryB.page)
                 });
             } else {
-                throw new Error("same filter, different sorts, non universal pages");
+                // we can't specify which pagination would bring in everything.
+                // but a union does exist.
+                return set.UNDEFINABLE;
             }
         } else {
             throw new Error("different filters, non-universal pages");
@@ -273,7 +275,8 @@ set.defineComparison(BasicQuery, BasicQuery,{
                     page: set.intersection(queryA.page, queryB.page)
                 });
             } else {
-                throw new Error("same filter, different sorts, non universal pages");
+                return set.UNKNOWABLE;
+                //throw new Error("same filter, different sorts, non universal pages");
             }
         } else {
             if(meta.aIsSubset) {
@@ -291,12 +294,19 @@ set.defineComparison(BasicQuery, BasicQuery,{
     difference: function(queryA, queryB){
 
         var differentClauses = getDifferentClauseTypes(queryA, queryB);
+        var meta = metaInformation(queryA, queryB);
         var clause;
         if(differentClauses.length > 1) {
-            var meta = metaInformation(queryA, queryB);
             if(meta.aIsSubset) {
                 return set.EMPTY;
             }
+            if(meta.pagesAreUniversal) {
+                return new BasicQuery({
+                    filter: set.difference(queryA.filter, queryB.filter),
+                    sort: queryA.sort
+                });
+            }
+
 			return set.UNDEFINABLE;
 		} else {
 			switch(clause = differentClauses[0]) {
@@ -306,7 +316,13 @@ set.defineComparison(BasicQuery, BasicQuery,{
 					// if order is the only difference, then there can't be a difference
 					// if items are paged but the order is different, though, the sets are not comparable
 					// Either way, the result is false
-					return set.EMPTY;
+                    if(meta.pagesAreUniversal) {
+                        return set.EMPTY;
+                    } else {
+                        return set.UNKNOWABLE;
+                    }
+
+
 				}
 				case "page" :
 				case "filter" : {

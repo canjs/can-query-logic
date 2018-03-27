@@ -134,12 +134,20 @@ var algebraSymbol = {
 
 set = {
     // The special types
+
+    // All values within the "universe". Other sets can equal UNIVERSAL.
     UNIVERSAL: addSerializeToThis({name: "UNIVERSAL"}),
+    // Nothing
     EMPTY: addSerializeToThis({name: "EMPTY"}),
+    // The set exists, but we lack the language to represent it.
     UNDEFINABLE: addSerializeToThis({name: "UNDEFINABLE"}),
+
+    // We don't know if this exists. Intersection between two paginated sets.
+    UNKNOWABLE: addSerializeToThis({name: "UNKNOWABLE"}),
     Identity: Identity,
     isSpecial: function(setA){
-        return setA === set.UNIVERSAL || setA === set.EMPTY || setA === set.UNDEFINABLE;
+        return setA === set.UNIVERSAL || setA === set.EMPTY ||
+            setA === set.UNDEFINABLE || setA === set.UNKNOWABLE;
     },
     getType: function(value){
         if(value === set.UNIVERSAL) {
@@ -147,6 +155,9 @@ set = {
         }
         if(value === set.EMPTY) {
             return set.EMPTY;
+        }
+        if(value === set.UNKNOWABLE) {
+            return set.UNKNOWABLE;
         }
         if(value === null) {
             return Identity;
@@ -199,7 +210,10 @@ set = {
             // [a, b] \ [a, b, c]
             var difference = get.difference(forwardComparators, value1, value2);
             // they intersect, but value2 has nothing value1 outside value2
-            if(intersection !== set.EMPTY && difference === set.EMPTY) {
+            if(intersection === set.UNKNOWABLE || difference === set.UNKNOWABLE) {
+                // {sort: "a", page: 0-2} E {sort: "b", page: 2-3}
+                return undefined;
+            } else if(intersection !== set.EMPTY && difference === set.EMPTY) {
                 return true;
             } else {
                 return false;
@@ -209,6 +223,9 @@ set = {
         }
     },
     isEqual: function(value1, value2) {
+        if(value1 === set.UNKNOWABLE || value2 === set.UNKNOWABLE) {
+            return set.UNKNOWABLE;
+        }
         //console.group("is", value1, "==", value2);
         var isSpecial1 = set.isSpecial(value1),
             isSpecial2 = set.isSpecial(value2);
@@ -251,6 +268,9 @@ set = {
         } else if(value2 === set.EMPTY) {
             return value1;
         }
+        if(value1 === set.UNKNOWABLE || value2 === set.UNKNOWABLE) {
+            return set.UNKNOWABLE;
+        }
         var Type1 = set.getType(value1),
             Type2 = set.getType(value2);
         var forwardComparators = set.getComparisons(Type1, Type2);
@@ -267,6 +287,9 @@ set = {
         if(value1 === set.EMPTY || value2 === set.EMPTY) {
             return set.EMPTY;
         }
+        if(value1 === set.UNKNOWABLE || value2 === set.UNKNOWABLE) {
+            return set.UNKNOWABLE;
+        }
         var Type1 = set.getType(value1),
             Type2 = set.getType(value2);
         var forwardComparators = set.getComparisons(Type1, Type2);
@@ -279,6 +302,9 @@ set = {
     difference: function(value1, value2){
         if(value1 === set.EMPTY || value2 === set.EMPTY) {
             return set.EMPTY;
+        }
+        if(value1 === set.UNKNOWABLE || value2 === set.UNKNOWABLE) {
+            return set.UNKNOWABLE;
         }
         var Type1 = set.getType(value1),
             Type2 = set.getType(value2);

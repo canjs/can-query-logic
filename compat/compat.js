@@ -21,13 +21,20 @@ makeEnum(IsBoolean,[true, false], function(data) {
     });
 });
 
-function hasKey(obj, keys) {
+function hasKey(obj, keys, parent, parentKey) {
     if(obj && typeof obj === "object") {
         for(var key in obj) {
             if(keys[key]) {
-                return true;
+                if(typeof keys[key] === "function") {
+                    parent[parentKey] = keys[key](obj);
+                } else {
+                    return true;
+                }
+
             } else {
-                return hasKey(obj[key], keys);
+                if( hasKey(obj[key], keys, obj, key) ) {
+                    return true;
+                }
             }
         }
     }
@@ -45,7 +52,12 @@ var set = {
         };
         canReflect.eachIndex(arguments, function(value){
             for(var prop in value) {
-                mutators[prop].push(value[prop]);
+                if(mutators[prop]) {
+                    mutators[prop].push(value[prop]);
+                } else {
+                    throw new Error("can-query: This type of configuration is not supported. Please use can-query directly.")
+                }
+
             }
         });
 
@@ -88,7 +100,10 @@ var set = {
             }, data);
 
             var filter = out.filter;
-            if(hasKey(filter, {"$ne": true})) {
+            if(hasKey(filter, {
+                "$ne": true,
+                "$in": function(val){ return val["$in"]; }
+            })) {
                 return true;
             }
             delete out.filter;
@@ -158,15 +173,40 @@ var set = {
                 }
             };
         },
+        ignore: function(prop){
+            return {
+                // taking what was given and making it a raw query look
+                // start -> page.start
+                // end -> page.end
+                hydrate: function(raw){
+                    var res = transform(raw, hydrateTransfomer);
+                    if(res.page) {
+                        if(res.page.start) {
+                            res.page.start = parseInt(res.page.start);
+                        }
+                        if(res.page.end) {
+                            res.page.end = parseInt(res.page.end);
+                        }
+                    }
+                    return res;
+                },
+                // taking the normal format and putting it back
+                // page.start -> start
+                // page.end -> end
+                serialize: function(raw){
+                    return transform(raw, serializeTransformer);
+                }
+            };
+        },
         sort: function(prop, sortFunc){
+            if(!prop) {
+                prop = "sort";
+            }
             if(sortFunc) {
                 throw new Error("can-query/compat.sort - sortFunc is not supported");
             }
-            if(prop === "sort") {
-                return {};
-            }
             var hydrateTransfomer = {};
-            hydrateTransfomer[prop] = "sort";
+            hydrateTransfomer["filter."+prop] = "sort";
 
             var serializeTransformer = {
                 "sort": prop
@@ -176,7 +216,8 @@ var set = {
                     return transform(raw, hydrateTransfomer);
                 },
                 serialize: function(raw){
-                    return transform(raw, serializeTransformer);
+                    // TODO: fix bug in transform so it doesn't delete props
+                    return prop === "sort" ? raw : transform(raw, serializeTransformer);
                 }
             };
         }

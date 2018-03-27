@@ -270,6 +270,9 @@ module.exports = function(And, Or, Not) {
 					// if there is only one property, we can just return the universal set
 					return canReflect.size(sameKeys) === 1 && set.isEqual(result, set.UNIVERSAL) ?
 						set.UNIVERSAL : new And(sameKeys);
+				}  else if(aAndBKeysThatAreNotEqual.length === 0){
+					// these things are equal
+					return objA;
 				}
 			}
 			// If everything shared is the same
@@ -283,7 +286,7 @@ module.exports = function(And, Or, Not) {
 			}
 
 			if(Or) {
-                return new Or(objA.values, objB.values);
+                return new Or([objA.values, objB.values]);
             } else {
                 return set.UNDEFINABLE;
             }

@@ -104,6 +104,8 @@ QUnit.test("AND / OR / NOT union", function(){
     var isJustinAnd21 = new types.And({name: "Justin", age: 22});
 
     QUnit.equal( set.union(isJustin,isJustinAnd21), isJustin, "super and subset");
+
+    QUnit.equal( set.union(isJustinAnd21,isJustinAnd21), isJustinAnd21, "union with itself");
 });
 
 QUnit.test("AND / OR / NOT difference", function(){
