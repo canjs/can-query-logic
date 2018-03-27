@@ -176,7 +176,7 @@ var set = {
         ignore: function(prop){
             return {
                 hydrate: function(raw){
-                    var clone = canReflect.assignDeep({}, raw);
+                    var clone = canReflect.serialize(raw);
                     delete clone[prop];
                     return clone;
                 }
@@ -233,6 +233,8 @@ makeFromTwoQueries("properSubset");
 set.count = function(query, algebra) {
     return makeAlgebra(algebra).count(query);
 };
+
+set.comparators = set.props;
 
 defaultAlgebra = new set.Algebra();
 
