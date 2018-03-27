@@ -232,6 +232,11 @@ set.defineComparison(BasicQuery, BasicQuery,{
                     page: set.union(queryA.page, queryB.page)
                 });
             } else {
+                if(meta.aIsSubset) {
+                    return queryB;
+                } else if(meta.bIsSubset) {
+                    return queryA;
+                }
                 // we can't specify which pagination would bring in everything.
                 // but a union does exist.
                 return set.UNDEFINABLE;
@@ -275,6 +280,11 @@ set.defineComparison(BasicQuery, BasicQuery,{
                     page: set.intersection(queryA.page, queryB.page)
                 });
             } else {
+                if(meta.aIsSubset) {
+                    return queryA;
+                } else if(meta.bIsSubset) {
+                    return queryB;
+                }
                 return set.UNKNOWABLE;
                 //throw new Error("same filter, different sorts, non universal pages");
             }
@@ -310,8 +320,10 @@ set.defineComparison(BasicQuery, BasicQuery,{
 			return set.UNDEFINABLE;
 		} else {
 			switch(clause = differentClauses[0]) {
-				case undefined :
-					// if all the clauses are the same, then there can't be a difference
+                // if all the clauses are the same, then there can't be a difference
+                case undefined : {
+                    return set.EMPTY;
+                }
 				case "sort" : {
 					// if order is the only difference, then there can't be a difference
 					// if items are paged but the order is different, though, the sets are not comparable

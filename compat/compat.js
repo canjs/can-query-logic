@@ -175,26 +175,10 @@ var set = {
         },
         ignore: function(prop){
             return {
-                // taking what was given and making it a raw query look
-                // start -> page.start
-                // end -> page.end
                 hydrate: function(raw){
-                    var res = transform(raw, hydrateTransfomer);
-                    if(res.page) {
-                        if(res.page.start) {
-                            res.page.start = parseInt(res.page.start);
-                        }
-                        if(res.page.end) {
-                            res.page.end = parseInt(res.page.end);
-                        }
-                    }
-                    return res;
-                },
-                // taking the normal format and putting it back
-                // page.start -> start
-                // page.end -> end
-                serialize: function(raw){
-                    return transform(raw, serializeTransformer);
+                    var clone = canReflect.assignDeep({}, raw);
+                    delete clone[prop];
+                    return clone;
                 }
             };
         },
