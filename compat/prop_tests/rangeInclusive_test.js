@@ -269,7 +269,7 @@ test('rangeInclusive set.intersection', function(){
 
 
 	res = set.intersection({ start: 0, end: 10, age: 35 }, { start: 0, end: 100, name: "JBM" }, prop);
-	deepEqual(res, true, "got a intersection");
+	deepEqual(res, set.UNDEFINABLE, "got a intersection");
 });
 
 test('rangeInclusive with string numbers (#17)', function(){

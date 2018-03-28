@@ -1,7 +1,7 @@
 var QUnit = require("steal-qunit");
 
-var set = require('../set-core'),
-	props = require("../props");
+var set = require('../compat'),
+	props = set.props;
 
 QUnit.module("can-set props.limitOffset");
 
@@ -45,7 +45,7 @@ test('offsetLimit set.equal', function(){
 
 
 test('offsetLimit set.union', function() {
-	var prop = props.offsetLimit('offset', 'limit');
+	var prop = props.offsetLimit('offset', 'limit'), res;
 
 
 	/*
@@ -54,9 +54,9 @@ test('offsetLimit set.union', function() {
 	 *
 	 * X U Y = [A0, ..., A101]
 	 */
-	var res = set.union({ offset: 0, limit: 100 }, { offset: 50, limit: 52 }, prop);
-	deepEqual(res, { offset: 0, limit: 102 }, "got a union");
-
+	 res = set.union({ offset: 0, limit: 100 }, { offset: 50, limit: 52 }, prop);
+	 deepEqual(res, { offset: 0, limit: 102 }, "got a union");
+	 
 	/*
 	 * X = universal set
 	 * Y = [A0, ..., A10]

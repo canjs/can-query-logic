@@ -75,11 +75,11 @@ canReflect.assign(Query.prototype,{
         if(!identity || identity.length === 0) {
             throw new Error("Provide an an identity property to your schema.");
         } else if(identity.length === 1) {
-            return props[identity[0]];
+            return canReflect.getKeyValue(props, identity[0]);
         } else {
             var id = {};
             identity.forEach(function(key){
-                id[key] = props[key];
+                id[key] = canReflect.getKeyValue(props, key);
             });
             return JSON.stringify(id);
         }
@@ -91,7 +91,17 @@ canReflect.assign(Query.prototype,{
     intersection: makeNewSet("intersection"),
     properSubset: makeReturnValue("isProperSubset"),
     subset: makeReturnValue("isSubset"),
-    union: makeNewSet("union")
+    union: makeNewSet("union"),
+    isSpecial: set.isSpecial,
+    isDefinedAndHasMembers: set.isDefinedAndHasMembers,
+    UNIVERSAL: set.UNIVERSAL,
+    // Nothing
+    EMPTY: set.EMPTY,
+    // The set exists, but we lack the language to represent it.
+    UNDEFINABLE: set.UNDEFINABLE,
+
+    // We don't know if this exists. Intersection between two paginated sets.
+    UNKNOWABLE: set.UNKNOWABLE
 });
 
 module.exports = Query;

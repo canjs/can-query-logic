@@ -11,17 +11,17 @@ test('set.difference', function(){
 	var prop = props.sort('sort'), res;
 
 	res = set.difference({sort: "foo"}, { completed: true }, prop);
-	deepEqual(res, true /*{sort: "foo", completed: {$ne: true}}*/, "diff should be true");
+	deepEqual(res, set.UNDEFINABLE /*{sort: "foo", completed: {$ne: true}}*/, "diff should be true");
 
 	res = set.difference({ completed: true }, { completed: true, sort: "foo" }, prop);
-	equal(res, false, "the same except for sort");
+	equal(res, set.EMPTY, "the same except for sort");
 
 
 	res = set.difference({ completed: true }, { sort: "foo"}, prop);
-	equal(res, false, "nothing in completed:true that isn't in everything");
+	equal(res, set.EMPTY, "nothing in completed:true that isn't in everything");
 
 	res = set.difference({ completed: true }, { foo: 'bar', sort: "foo" }, prop);
-	equal(res, true, "we can diff, it exists, we don't know what it is though");
+	equal(res, set.UNDEFINABLE, "we can diff, it exists, we don't know what it is though");
 });
 
 
@@ -48,7 +48,7 @@ test('set.union', function(){
 	deepEqual(res, {foo: ["bar","zed"]}, "values not equal");
 
 	res = set.union({foo: "bar", sort: "foo"},{name: "A"}, prop);
-	deepEqual(res, true, "values not equal");
+	deepEqual(res, set.UNDEFINABLE, "values not equal");
 });
 
 test('set.union Array', function(){
@@ -278,7 +278,7 @@ test("paginated and sorted is subset (#17)", function(){
 
 	// res = algebra.subset({start: 0, end: 100, sort: "name"},{start: 0, end: 100, sort: "name"});
 	// equal(res, true, "parent:paginate+order child:paginate+order (same set)");
-	
+
 	res = algebra.subset({start: 0, end: 100, sort: "name"},{start: 0, end: 100, sort: "age"});
 	equal(res, undefined, "parent:paginate+order child:paginate+order (different order)");
 

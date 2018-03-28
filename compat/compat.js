@@ -44,6 +44,14 @@ function hasKey(obj, keys, parent, parentKey) {
 var defaultAlgebra;
 
 var set = {
+    UNIVERSAL: SET.UNIVERSAL,
+    // Nothing
+    EMPTY: SET.EMPTY,
+    // The set exists, but we lack the language to represent it.
+    UNDEFINABLE: SET.UNDEFINABLE,
+
+    // We don't know if this exists. Intersection between two paginated sets.
+    UNKNOWABLE: SET.UNKNOWABLE,
     Algebra: function(){
         var mutators = {
             schema: [],
@@ -84,16 +92,18 @@ var set = {
                 return hydrator(last);
             }, {filter: data});
         }, function(data){
-
-            if(data === SET.EMPTY) {
+            if(SET.isSpecial(data)) {
+                return data;
+            }
+            /*if(data === SET.EMPTY) {
                 return false;
             }
             if(data === SET.UNDEFINABLE) {
                 return true;
-            }
+            }*/
             if(Array.isArray(data.filter)){
                 // OR is not supported ...
-                return true;
+                return SET.UNDEFINABLE;
             }
             var out = mutators.serialize.reduce(function(last, serializer){
                 return serializer(last);
@@ -104,7 +114,7 @@ var set = {
                 "$ne": true,
                 "$in": function(val){ return val["$in"]; }
             })) {
-                return true;
+                return SET.UNDEFINABLE;
             }
             delete out.filter;
             return canReflect.assign(out, filter);
@@ -140,6 +150,43 @@ var set = {
                 }
             };
         },
+        offsetLimit: function(offset, limit){
+            offset = offset || "offset";
+            limit = limit || "limit";
+
+            return {
+                // taking what was given and making it a raw query look
+                // start -> page.start
+                // end -> page.end
+                hydrate: function(raw){
+                    var clone = canReflect.serialize(raw);
+                    if((offset in clone.filter) || (limit in clone.filter)) {
+                        clone.page = {};
+                    }
+                    if(offset in clone.filter) {
+                        clone.page.start = parseInt(clone.filter[offset], 10);
+                        delete clone.filter[offset];
+                    }
+                    if(limit in clone.filter) {
+                        clone.page.end = (clone.page.start || 0 ) + parseInt(clone.filter[limit], 10) - 1;
+                        delete clone.filter[limit];
+                    }
+                    return clone;
+                },
+                // taking the normal format and putting it back
+                // page.start -> start
+                // page.end -> end
+                serialize: function(raw){
+                    var clone = canReflect.serialize(raw);
+                    if(clone.page) {
+                        clone[offset] = clone.page.start;
+                        clone[limit] = (clone.page.end - clone.page.start) + 1;
+                        delete clone.page;
+                    }
+                    return clone;
+                }
+            };
+        },
         rangeInclusive: function(start, end){
             var hydrateTransfomer = {};
             hydrateTransfomer["filter."+start] = "page.start";
@@ -157,10 +204,10 @@ var set = {
                     var res = transform(raw, hydrateTransfomer);
                     if(res.page) {
                         if(res.page.start) {
-                            res.page.start = parseInt(res.page.start);
+                            res.page.start = parseInt(res.page.start, 10);
                         }
                         if(res.page.end) {
-                            res.page.end = parseInt(res.page.end);
+                            res.page.end = parseInt(res.page.end, 10);
                         }
                     }
                     return res;

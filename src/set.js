@@ -138,9 +138,9 @@ set = {
     // All values within the "universe". Other sets can equal UNIVERSAL.
     UNIVERSAL: addSerializeToThis({name: "UNIVERSAL"}),
     // Nothing
-    EMPTY: addSerializeToThis({name: "EMPTY"}),
+    EMPTY: addSerializeToThis({name: "EMPTY"}), //-> false
     // The set exists, but we lack the language to represent it.
-    UNDEFINABLE: addSerializeToThis({name: "UNDEFINABLE"}),
+    UNDEFINABLE: addSerializeToThis({name: "UNDEFINABLE"}), //->
 
     // We don't know if this exists. Intersection between two paginated sets.
     UNKNOWABLE: addSerializeToThis({name: "UNKNOWABLE"}),
@@ -148,6 +148,13 @@ set = {
     isSpecial: function(setA){
         return setA === set.UNIVERSAL || setA === set.EMPTY ||
             setA === set.UNDEFINABLE || setA === set.UNKNOWABLE;
+    },
+    isDefinedAndHasMembers: function(setA){
+        if(setA !== set.EMPTY && setA !== set.UNDEFINABLE && setA !== set.UNKNOWABLE){
+            return setA;
+        } else {
+            return false;
+        }
     },
     getType: function(value){
         if(value === set.UNIVERSAL) {

@@ -14,10 +14,10 @@ test("id set.difference", function(){
   deepEqual(res, { color: "red" }, "id changes always false");
 
   res = set.difference({ color: "red" }, { }, idProps);
-  deepEqual(res, false, "id removal always false");
+  deepEqual(res, set.EMPTY, "id removal always false");
 
   res = set.difference({ }, { color: "blue" }, idProps);
-  deepEqual(res, true, "id addition always true");
+  deepEqual(res, set.UNDEFINABLE, "id addition always true");
 
 });
 
@@ -39,7 +39,7 @@ test("id set.difference with where", function() {
   );
 
   res = set.difference({ color: ["red", "green"] }, {  status: "accepted", color: "red" }, a2);
-  deepEqual(res, true, "id addition always true");
+  deepEqual(res, set.UNDEFINABLE, "id addition always true");
 
   res = set.difference({ type: ["light", "dark"] }, {  type: "light" }, algebra);
   deepEqual(res, { type: "dark" }, "no id clause, fall back to where");

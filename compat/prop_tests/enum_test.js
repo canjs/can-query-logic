@@ -91,7 +91,7 @@ test('enum set.difference', function(){
 	 * X / Y = ∅
 	 */
 	res = set.difference({type: ['prep'] } , { type: ['new','prep'] }, prop);
-	deepEqual(res, false, "difference from a superset");
+	deepEqual(res, set.EMPTY, "difference from a superset");
 
 	/*
 	 * {} = {type: []}
@@ -106,7 +106,7 @@ test('enum set.difference', function(){
 	 * X / {} = ∅
 	 */
 	res = set.difference({ type: 'new' },{}, prop);
-	deepEqual(res, false, "all");
+	deepEqual(res, set.EMPTY, "all");
 });
 
 test('enum set.union', function(){
