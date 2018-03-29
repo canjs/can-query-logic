@@ -38,4 +38,4 @@ module.exports = function arrayUnionIntersectionDifference(arr1, arr2){
         union: union,
         difference: difference
     };
-}
+};
