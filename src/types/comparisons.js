@@ -1,5 +1,5 @@
 var set = require("../set");
-var arrayUnionIntersectionDifference = require("../comparators/array-union-intersection-difference");
+var arrayUnionIntersectionDifference = require("../array-union-intersection-difference");
 
 // $ne	Matches all values that are not equal to a specified value.
 // $eq	Matches values that are equal to a specified value.

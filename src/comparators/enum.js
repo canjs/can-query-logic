@@ -1,5 +1,5 @@
 var set = require("../set");
-var arrayUnionIntersectionDifference = require("./array-union-intersection-difference");
+var arrayUnionIntersectionDifference = require("../array-union-intersection-difference");
 
 
 function Enum(values){

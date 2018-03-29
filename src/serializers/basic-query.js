@@ -6,27 +6,60 @@ var comparisonsConverter = require("../serializers/comparisons");
 var Serializer = require("../serializer");
 
 var setTypeSymbol = canSymbol.for("can.SetType");
+var schemaSymbol = canSymbol.for("can.schema");
 
 var defaultQuery = new BasicQuery({});
 
 
+function getSchemaProperties(value) {
+    var constructor = value.constructor;
+    if(constructor && constructor[schemaSymbol]) {
+        var schema = constructor[schemaSymbol]();
+        return schema.properties || {};
+    } else {
+        return {};
+    }
+}
 
+function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
+    schemaProperties = schemaProperties || {};
+
+    function hydrateChild(value) {
+        if(value) {
+            if(Array.isArray(value)) {
+                throw new Error("this should not happen");
+            } else if(canReflect.isPlainObject(value)) {
+                // lets try to get the schema ...
+                return hydrateAndValues(value, getSchemaProperties(value));
+            }
+        }
+        hydrateUnknown && hydrateUnknown(value);
+    }
+
+    canReflect.eachKey(values, function(value, prop){
+        var type = schemaProperties[prop];
+        if(type) {
+            var SetType = type[setTypeSymbol];
+            if(SetType) {
+                values[prop] = new SetType(value);
+            } else {
+                // HERE
+                values[prop] = comparisonsConverter.hydrate(value, hydrateChild);
+            }
+        } else {
+            // HERE {$gt: 1} -> new is.GreaterThan(1)
+            values[prop] = comparisonsConverter.hydrate(value, hydrateChild);
+        }
+    });
+
+    return new BasicQuery.And(values);
+
+}
 
 module.exports = function(schema) {
 
     var id = schema.identity && schema.identity[0];
-    if(!id) {
-        console.warn("can-query given a type without an identity schema.  Using `id` as the identity id.");
-        id = "id";
-    }
-
-
     var properties = schema.properties;
-
-    if(!properties) {
-        console.warn("can-query given a type without a properties schema.  Using an empty schema.");
-        properties = {};
-    }
 
     var serializeMap = [
         [BasicQuery.Or, function(or, serializer){
@@ -79,32 +112,17 @@ module.exports = function(schema) {
 
     return {
         hydrate: function(data){
-            var filter = canReflect.assignDeep({}, data.filter || {});
+            var filter = canReflect.serialize(data.filter);
 
-
-
-
-
-
-
-            canReflect.eachKey(filter, function(value, prop){
-                var type = properties[prop];
-                if(type) {
-                    var SetType = type[setTypeSymbol];
-                    if(SetType) {
-                        filter[prop] = new SetType(value);
-                    } else {
-                        // HERE
-                        filter[prop] = comparisonsConverter.hydrate(value);
-                    }
-                } else {
-                    // HERE {$gt: 1} -> new is.GreaterThan(1)
-                    filter[prop] = comparisonsConverter.hydrate(value);
-                }
-
+            // this mutates
+            var filterAnd = hydrateAndValues(filter, properties, function(value){
+                throw new Error("can-query doesn't support comparison operator: "+JSON.stringify(value));
             });
+
+            // Conver the filter arguments
+
             var query = {
-                filter: new BasicQuery.And(filter)
+                filter: filterAnd
             };
             if(data.page) {
                 query.page = new BasicQuery.RecordRange(data.page.start, data.page.end);

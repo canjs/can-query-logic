@@ -333,14 +333,13 @@ function identityIntersection(v1, v2) {
 function identityDifference(v1, v2){
     return v1 === v2 ? set.EMPTY : v1;
 }
-/*function identityUnion(v1, v2) {
+function identityUnion(v1, v2) {
     return v1 === v2 ? v1 : set.UNDEFINABLE;
-}*/
+}
 var identityComparitor = {
-    mustReturnEmptySet: true,
     intersection: identityIntersection,
     difference: identityDifference,
-    union: identityIntersection
+    union: identityUnion
 };
 set.defineComparison(Identity,Identity, identityComparitor);
 

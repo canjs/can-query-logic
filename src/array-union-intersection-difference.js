@@ -1,4 +1,4 @@
-var set = require("../set");
+var set = require("./set");
 function indexOf(arr, value) {
     for(var i = 0, len = arr.length; i < len; i++) {
         if(set.isEqual(arr[i], value)) {

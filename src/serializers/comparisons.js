@@ -46,7 +46,12 @@ var serializer = new Serializer([
 ]);
 
 module.exports = {
-    hydrate: function(value){
+    hydrate: function(value, hydrateUnknown){
+        if(!hydrateUnknown) {
+            hydrateUnknown = function(){
+                throw new Error("can-query doesn't recognize operator: "+JSON.stringify(value));
+            }
+        }
         if(Array.isArray(value)) {
             return new is.In(value);
         }
@@ -56,12 +61,12 @@ module.exports = {
                 var first = keys[0];
                 var hydrator = hydrateMap[first];
                 if(!hydrator) {
-                    throw new Error("can-query doesn't recognize operator: "+JSON.serialize(value));
+                    return hydrateUnknown(value);
                 } else {
                     return hydrator(value);
                 }
             } else {
-                throw new Error("can-query doesn't support multiple comparison operators: "+JSON.serialize(value));
+                return hydrateUnknown(value);
             }
         } else {
             return new is.In([value]);

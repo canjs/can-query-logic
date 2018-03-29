@@ -2,28 +2,18 @@ var set = require("../set");
 var makeRealNumberRangeInclusive = require("./make-real-number-range-inclusive");
 var assign = require("can-assign");
 var canReflect = require("can-reflect");
-var addAddOrComparators = require("../comparators/and-or");
-var addNotComparitor = require("../comparators/not");
+var andOrNot = require("./and-or-not");
 var helpers = require("../helpers");
 var defineLazyValue = require("can-define-lazy-value");
 
-// Define the sub-types that BasicQuery will use
-function And(values) {
-    this.values = values;
-}
-
-function Or(values) {
-    this.values = values;
-}
-function Not(value) {
-    this.value = value;
-}
+var And = andOrNot.And,
+    Or = andOrNot.Or,
+    Not = andOrNot.Not;
 
 var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
 
 // Wire up the sub-types to be able to compare to each other
-addNotComparitor(Not);
-addAddOrComparators(And, Or, Not);
+
 
 // Define the BasicQuery type
 function BasicQuery(query) {
@@ -56,19 +46,24 @@ canReflect.assignMap(BasicQuery.prototype,{
         var sort = helpers.sorter(this.sort);
         return data.slice(0).sort(sort);
     },
-    filterFrom: function(bData, parentQuery) {
-        parentQuery  = parentQuery || new BasicQuery();
-
-        // if this isn't a subset ... we can't filter
-        if(!set.isSubset(this, parentQuery)) {
-            return undefined;
+    getMembersAndCountFrom: function(bData, parentQuery) {
+        if(parentQuery) {
+            if(!set.isSubset(this, parentQuery)) {
+                throw new Error("can-query: Unable to get members from a set that is not a superset of the current set.");
+            }
+        } else {
+            parentQuery  = new BasicQuery();
         }
 
         // reduce response to items in data that meet where criteria
-        var aData = bData.filter(this.filter.isMember.bind(this.filter));
+        var aData = bData.filter(function(data){
+            return this.filter.isMember(data);
+        }, this);
+
+        var count = aData.length;
 
         // sort the data if needed
-        if( aData.length && (this.sort !== parentQuery.sort) ) {
+        if( count && (this.sort !== parentQuery.sort) ) {
             aData = this.sortData(aData);
         }
 
@@ -77,21 +72,25 @@ canReflect.assignMap(BasicQuery.prototype,{
 
         if(parentIsUniversal) {
             if( thisIsUniversal ) {
-                return aData;
+                return {data: aData, count: count};
             } else {
-                return aData.slice(this.page.start, this.page.end+1);
+                return {data: aData.slice(this.page.start, this.page.end+1), count: count};
             }
         }
         // everything but range is equal
         else if(this.sort === parentQuery.sort && set.isEqual(parentQuery.filter,this.filter) ) {
-            return aData.slice( this.page.start - parentQuery.page.start, this.page.end - parentQuery.page.start + 1 );
+            return {
+                data: aData.slice( this.page.start - parentQuery.page.start, this.page.end - parentQuery.page.start + 1 ),
+                count: count
+            };
         }
         else {
             // parent starts at something ...
-            throw new Error("unable to do right now");
+            throw new Error("can-query: Unable to get members from the parent set for this subset.");
         }
-
-        return aData;
+    },
+    filterFrom: function(bData, parentQuery) {
+        return this.getMembersAndCountFrom(bData, parentQuery).data;
     },
     merge: function(b, aItems, bItems, getId){
         var union = set.union(this,b);

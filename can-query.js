@@ -4,8 +4,31 @@ var canReflect = require("can-reflect");
 var makeBasicQueryConvert = require("./src/serializers/basic-query");
 var schemaSymbol = canSymbol.for("can.schema");
 
+
+// Creates an algebra used to convert primitives to types and back
 function Query(Type, passedHydrator, passedSerializer){
-    var schema = Type[schemaSymbol]();
+    var schema;
+    if(Type[schemaSymbol]) {
+        schema = Type[schemaSymbol]();
+    } else {
+        schema = Type;
+    }
+
+    // check that the basics are here
+
+    var id = schema.identity && schema.identity[0];
+    if(!id) {
+        console.warn("can-query given a type without an identity schema.  Using `id` as the identity id.");
+        schema.identity = ["id"];
+    }
+
+
+    var properties = schema.properties;
+
+    if(!properties) {
+        console.warn("can-query given a type without a properties schema.  Using an empty schema.");
+        schema.properties = {};
+    }
 
     var converter = makeBasicQueryConvert(schema),
         hydrate,
@@ -50,6 +73,9 @@ function makeReturnValue(prop) {
 }
 
 canReflect.assign(Query.prototype,{
+    getIdentityKeys: function(){
+        return this.schema.identity;
+    },
     count: function(a){
         var queryA = this.hydrate(a);
         return queryA.page.end - queryA.page.start + 1;
@@ -60,6 +86,11 @@ canReflect.assign(Query.prototype,{
         var queryA = this.hydrate(a),
             queryB = this.hydrate(b);
         return queryA.filterFrom(bData, queryB);
+    },
+    getMembersAndCountFrom: function(a, b, bData) {
+        var queryA = this.hydrate(a),
+            queryB = this.hydrate(b);
+        return queryA.getMembersAndCountFrom(bData, queryB);
     },
     getUnion: function(a, b, aData, bData) {
         var queryA = this.hydrate(a),
