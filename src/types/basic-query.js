@@ -260,11 +260,19 @@ set.defineComparison(BasicQuery, BasicQuery,{
 
         if(meta.pagesAreUniversal) {
             // We ignore the sort.
-            return new BasicQuery({
-                filter: set.intersection(queryA.filter, queryB.filter),
-                sort: meta.sortIsEqual ? queryA.sort : undefined
-            });
+            var filterResult = set.intersection(queryA.filter, queryB.filter);
+            if(set.isDefinedAndHasMembers(filterResult)) {
+                return new BasicQuery({
+                    filter: filterResult,
+                    sort: meta.sortIsEqual ? queryA.sort : undefined
+                });
+
+            } else {
+                return filterResult;
+            }
         }
+
+
 
         // check if disjoint wheres
         if(set.intersection(queryA.filter, queryB.filter) === set.EMPTY ) {

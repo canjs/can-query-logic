@@ -212,7 +212,8 @@ set = {
             Type2 = set.getType(value2);
         var forwardComparators = set.getComparisons(Type1, Type2);
         if(forwardComparators) {
-
+            // A set is a subset, if it intersects with the set, and it has nothing
+            // outside the other set.
             var intersection = get.intersection(forwardComparators, value1, value2);
             // [a, b] \ [a, b, c]
             var difference = get.difference(forwardComparators, value1, value2);
@@ -228,6 +229,9 @@ set = {
         } else {
             throw new Error("Unable to perform subset comparison between "+Type1.name+" and "+Type2.name);
         }
+    },
+    isProperSubset: function(setA, setB) {
+        return set.isSubset(setA, setB) && !set.isEqual(setA, setB);
     },
     isEqual: function(value1, value2) {
         if(value1 === set.UNKNOWABLE || value2 === set.UNKNOWABLE) {
@@ -250,6 +254,7 @@ set = {
         var reverseComparators = set.getComparisons(Type2, Type1);
         if(forwardComparators && reverseComparators) {
 
+            // Two sets are equal if there's an intersection, but not difference
             var intersection = get.intersection(forwardComparators, value1, value2);
             var difference = get.difference(forwardComparators, value1, value2);
             if(intersection !== set.EMPTY && difference === set.EMPTY) {

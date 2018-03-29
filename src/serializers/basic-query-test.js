@@ -47,3 +47,20 @@ QUnit.test("nested properties", function(){
         name: new logicTypes.And({first: new comparisonTypes.In(["justin"])})
     }), "adds nested ands");
 });
+
+QUnit.skip("nested properties within ors", function(){
+    var query = {
+        filter: {
+            name: [{ first: "justin" }, { last: "meyer" }]
+        }
+    };
+
+    var converter = makeBasicQueryConvert(EmptySchema);
+
+    var basicQuery = converter.hydrate(query);
+
+    debugger;
+    QUnit.deepEqual(basicQuery.filter, new logicTypes.And({
+        name: new logicTypes.And({first: new comparisonTypes.In(["justin"])})
+    }), "adds nested ands");
+});

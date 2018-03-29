@@ -47,7 +47,7 @@ test('enum set.intersection', function(){
 	 * (X ∩ Y) = Y
 	 */
 	res = set.intersection({type: [] } , { type: ['new','prep'] }, prop);
-	deepEqual(res, { }, "empty v array intersection");
+	deepEqual(res, set.EMPTY, "empty v array intersection");
 
 	/*
 	 * x ∈ X | x.type = 'new'

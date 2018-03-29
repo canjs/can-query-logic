@@ -23,7 +23,7 @@ function getSchemaProperties(value) {
 
 function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
     schemaProperties = schemaProperties || {};
-
+    
     function hydrateChild(value) {
         if(value) {
             if(Array.isArray(value)) {

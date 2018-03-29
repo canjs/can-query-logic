@@ -105,20 +105,54 @@ var set = {
                 // OR is not supported ...
                 return SET.UNDEFINABLE;
             }
-            var out = mutators.serialize.reduce(function(last, serializer){
-                return serializer(last);
-            }, data);
 
-            var filter = out.filter;
+            var filter = data.filter;
             if(hasKey(filter, {
                 "$ne": true,
                 "$in": function(val){ return val["$in"]; }
             })) {
                 return SET.UNDEFINABLE;
             }
+
+            var out = mutators.serialize.reduce(function(last, serializer){
+                return serializer(last);
+            }, data);
+
+            filter = out.filter;
             delete out.filter;
             return canReflect.assign(out, filter);
         });
+    },
+    Translate: function(clause, prop){
+        if(clause !== "where") {
+            throw new Error("can-query/compat.Translate is only able to translate the where clause");
+        }
+        return {
+            // {filter: {$where: {a:b}}} -> {filter: {a:b}}
+            hydrate: function(raw){
+                var clone = canReflect.serialize(raw);
+                var value = clone.filter[prop];
+                delete clone.filter[prop];
+                if(value) {
+                    canReflect.assign(clone.filter, value);
+                }
+
+                return clone;
+            },
+            // {filter: {foo:bar}} -> {filter: {where: {foo: bar}}}
+            serialize: function(query){
+
+                if(query.filter) {
+                    var clone = canReflect.serialize(query);
+                    var filter = query.filter;
+                    clone.filter = {};
+                    clone.filter[prop] = filter;
+                    return clone;
+                } else {
+                    return query;
+                }
+            }
+        }
     },
     props: {
 
@@ -224,7 +258,7 @@ var set = {
             return {
                 hydrate: function(raw){
                     var clone = canReflect.serialize(raw);
-                    delete clone[prop];
+                    delete clone.filter[prop];
                     return clone;
                 }
             };
