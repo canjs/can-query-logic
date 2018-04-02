@@ -2,7 +2,7 @@ var QUnit = require("steal-qunit");
 var set = require("../set");
 var RealNumberRangeInclusive = require("./make-real-number-range-inclusive")(-Infinity, Infinity);
 
-QUnit.module("can-query/types/make-real-number-range-inclusive");
+QUnit.module("can-query-logic/types/make-real-number-range-inclusive");
 
 // There is a need for "subset" and "superset"
 // Might have "real numbers"

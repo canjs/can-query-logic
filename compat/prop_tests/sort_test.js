@@ -230,21 +230,21 @@ test("set.index", function(){
 });
 
 
-test("set.getSubset (#14)", function(){
+test("set.filterMembers (#14)", function(){
 	var algebra = new set.Algebra(props.sort('sort'));
-	var subset = algebra.getSubset({sort: "name"},{},[{id: 1, name:"s"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"g"}]);
+	var subset = algebra.filterMembers({sort: "name"},{},[{id: 1, name:"s"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"g"}]);
 	deepEqual(subset, [ {id: 4, name:"g"},{id: 2, name:"j"}, {id: 3, name:"m"},{id: 1, name:"s"}]);
 });
 
 
-test("set.getUnion", function(){
+test("set.unionMembers", function(){
 	var algebra = new set.Algebra(
 		props.sort('sort'),
 		props.boolean('complete')
 	);
 
 	// a,b,aItems, bItems
-	var union = algebra.getUnion(
+	var union = algebra.unionMembers(
 		{sort: "name", complete: true},
 		{sort: "name", complete: false},
 		[{id: 4, name:"g", complete: true}, {id: 3, name:"m", complete: true}],

@@ -49,7 +49,7 @@ module.exports = {
     hydrate: function(value, hydrateUnknown){
         if(!hydrateUnknown) {
             hydrateUnknown = function(){
-                throw new Error("can-query doesn't recognize operator: "+JSON.stringify(value));
+                throw new Error("can-query-logic doesn't recognize operator: "+JSON.stringify(value));
             }
         }
         if(Array.isArray(value)) {

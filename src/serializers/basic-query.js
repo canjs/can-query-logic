@@ -116,7 +116,7 @@ module.exports = function(schema) {
 
             // this mutates
             var filterAnd = hydrateAndValues(filter, properties, function(value){
-                throw new Error("can-query doesn't support comparison operator: "+JSON.stringify(value));
+                throw new Error("can-query-logic doesn't support comparison operator: "+JSON.stringify(value));
             });
 
             // Conver the filter arguments

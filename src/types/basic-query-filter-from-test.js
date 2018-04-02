@@ -1,7 +1,7 @@
 var BasicQuery = require("./basic-query");
 var QUnit = require("steal-qunit");
 
-QUnit.module("can-query/types/basic-query filterFrom");
+QUnit.module("can-query-logic/types/basic-query filterFrom");
 
 
 var getId = function(d){ return d.id; };

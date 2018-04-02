@@ -1,8 +1,8 @@
 module.exports = function(algebra, props, items){
-	var id = algebra.id(props);
+	var id = algebra.memberIdentity(props);
 
 	for(var i = 0; i < items.length; i++) {
-		var connId = algebra.id(items[i]);
+		var connId = algebra.memberIdentity(items[i]);
 		if( id == connId) {
 			return i;
 		}

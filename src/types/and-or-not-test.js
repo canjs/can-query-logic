@@ -5,7 +5,7 @@ var makeEnum = require("../types/make-enum");
 
 
 
-QUnit.module("can-query/and-or");
+QUnit.module("can-query-logic/and-or");
 
 // There is a need for "subset" and "superset"
 // Might have "real numbers"
@@ -246,7 +246,7 @@ QUnit.test("And nested objects", function(){
 
 
 
-QUnit.module("can-query/not");
+QUnit.module("can-query-logic/not");
 
 // There is a need for "subset" and "superset"
 // Might have "real numbers"

@@ -283,14 +283,14 @@ test('rangeInclusive with string numbers (#17)', function(){
 		),
 		".subset" );
 
-	var res = algebra.getSubset({start: "2",end: "3"},{start: "1",end: "4"},[{id: 1},{id: 2},{id: 3},{id: 4}]);
-	deepEqual(res, [{id: 2},{id: 3}], ".getSubset");
+	var res = algebra.filterMembers({start: "2",end: "3"},{start: "1",end: "4"},[{id: 1},{id: 2},{id: 3},{id: 4}]);
+	deepEqual(res, [{id: 2},{id: 3}], ".filterMembers");
 
-	res = algebra.getUnion(
+	res = algebra.unionMembers(
 		{start: "2",end: "3"},
 		{start: "1",end: "4"},
 		[{id: 2},{id: 3}],
 		[{id: 1},{id: 2},{id: 3},{id: 4}]);
-	deepEqual(res, [{id: 1},{id: 2},{id: 3},{id: 4}], ".getUnion");
+	deepEqual(res, [{id: 1},{id: 2},{id: 3},{id: 4}], ".unionMembers");
 
 });

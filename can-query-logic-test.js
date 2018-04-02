@@ -9,7 +9,7 @@ require("./src/serializers/basic-query-test");
 require("./compat/compat-test");
 
 var QUnit = require("steal-qunit");
-var Query = require("can-query");
+var QueryLogic = require("can-query-logic");
 var canReflect = require("can-reflect");
 var makeEnum = require("./src/types/make-enum");
 
@@ -43,10 +43,10 @@ var TODO = canReflect.assignSymbols({},{
     }
 });
 
-var algebra = new Query(TODO);
+var algebra = new QueryLogic(TODO);
 
 
-QUnit.module("can-query");
+QUnit.module("can-query-logic");
 
 QUnit.test("union - enum", function(){
 
@@ -121,7 +121,7 @@ QUnit.test("subset without enum", function(){
 });
 
 QUnit.test("has without enum", function(){
-    var hasResult = algebra.has({
+    var hasResult = algebra.isMember({
         filter: {
             name: "Bohdi"
         }
@@ -132,8 +132,8 @@ QUnit.test("has without enum", function(){
     QUnit.deepEqual(hasResult,true);
 });
 
-QUnit.test("getSubset basics", function(){
-    var subset = algebra.getSubset({
+QUnit.test("filterMembers basics", function(){
+    var subset = algebra.filterMembers({
         filter: {
             name: {$in: ["Bohdi","Ramiya"]}
         }
@@ -151,8 +151,8 @@ QUnit.test("getSubset basics", function(){
 });
 
 
-QUnit.test("getUnion basics", function(){
-    var union = algebra.getUnion({
+QUnit.test("unionMembers basics", function(){
+    var union = algebra.unionMembers({
         filter: {
             name: "Bohdi"
         }
@@ -218,7 +218,7 @@ QUnit.test('index basics', function(){
             };
         }
     });
-    var algebra2 = new Query(TODO_id);
+    var algebra2 = new QueryLogic(TODO_id);
 
     index = algebra2.index(
 		{},
@@ -258,8 +258,8 @@ QUnit.test("query basics", function(){
     // has(set, member)
     //
     //
-    // getSubset(a,b, bData) //-> both sets are needed if pagination is being performed
-    // getUnion(a,b, aItems, bItems)
+    // filterMembers(a,b, bData) //-> both sets are needed if pagination is being performed
+    // unionMembers(a,b, aItems, bItems)
     //
     //
     // id(member)

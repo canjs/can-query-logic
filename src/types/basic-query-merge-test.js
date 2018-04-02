@@ -1,7 +1,7 @@
 var BasicQuery = require("./basic-query");
 var QUnit = require("steal-qunit");
 
-QUnit.module("can-query/types/basic-query merge");
+QUnit.module("can-query-logic/types/basic-query merge");
 
 
 var getId = function(d){ return d.id; };
@@ -27,7 +27,7 @@ QUnit.test("basics", function(){
 	deepEqual(res, items);
 });
 
-QUnit.test("getUnion against ranged sets", function(){
+QUnit.test("unionMembers against ranged sets", function(){
     var a = new BasicQuery({
         page: new BasicQuery.RecordRange(10,13)
     });
@@ -46,7 +46,7 @@ QUnit.test("getUnion against ranged sets", function(){
 
 });
 
-QUnit.test("getUnion against overlapping ranged sets", function(){
+QUnit.test("unionMembers against overlapping ranged sets", function(){
     var a = new BasicQuery({
         page: new BasicQuery.RecordRange(10,13)
     });
@@ -85,7 +85,7 @@ QUnit.test("getUnion against overlapping ranged sets", function(){
 	deepEqual(union, items);
 });
 
-QUnit.test("getUnion filters for uniqueness", function(){
+QUnit.test("unionMembers filters for uniqueness", function(){
 	var aItems = items.filter(function(a) {
 		return a.type === "critical";
 	});

@@ -74,7 +74,7 @@ function makeReturnValue(prop) {
 
 canReflect.assign(Query.prototype,{
     // identity keys
-    getIdentityKeys: function(){
+    identityKeys: function(){
         return this.schema.identity;
     },
     count: function(a){
@@ -83,31 +83,31 @@ canReflect.assign(Query.prototype,{
     },
     difference: makeNewSet("difference"),
     equal: makeReturnValue("isEqual"),
-    // filterMembers
-    getSubset: function(a, b, bData){
+
+    filterMembers: function(a, b, bData){
         var queryA = this.hydrate(a),
             queryB = this.hydrate(b);
         return queryA.filterFrom(bData, queryB);
     },
     // filterMembersAndGetCount
-    getMembersAndCountFrom: function(a, b, bData) {
+    filterMembersAndGetCount: function(a, b, bData) {
         var queryA = this.hydrate(a),
             queryB = this.hydrate(b);
-        return queryA.getMembersAndCountFrom(bData, queryB);
+        return queryA.filterMembersAndGetCount(bData, queryB);
     },
     // unionMembers
-    getUnion: function(a, b, aData, bData) {
+    unionMembers: function(a, b, aData, bData) {
         var queryA = this.hydrate(a),
             queryB = this.hydrate(b);
 
-        return queryA.merge(queryB, aData, bData, this.id.bind(this));
+        return queryA.merge(queryB, aData, bData, this.memberIdentity.bind(this));
     },
     // isMember
-    has: function(query, props) {
+    isMember: function(query, props) {
         return this.hydrate(query).isMember(props);
     },
-    // identity
-    id: function(props) {
+
+    memberIdentity: function(props) {
         var identity = this.schema.identity;
         if(!identity || identity.length === 0) {
             throw new Error("Provide an an identity property to your schema.");
@@ -124,23 +124,24 @@ canReflect.assign(Query.prototype,{
     index: function(query, items, props){
         return this.hydrate(query).index(props, items);
     },
-    // index
     intersection: makeNewSet("intersection"),
     properSubset: makeReturnValue("isProperSubset"),
     subset: makeReturnValue("isSubset"),
     union: makeNewSet("union"),
     isSpecial: set.isSpecial,
     isDefinedAndHasMembers: set.isDefinedAndHasMembers,
-    UNIVERSAL: set.UNIVERSAL,
-    // Nothing
-    EMPTY: set.EMPTY,
-    // The set exists, but we lack the language to represent it.
-    UNDEFINABLE: set.UNDEFINABLE,
 
-    // We don't know if this exists. Intersection between two paginated sets.
-    UNKNOWABLE: set.UNKNOWABLE
 });
 
+Query.UNIVERSAL = set.UNIVERSAL;
+// Nothing
+Query.EMPTY = set.EMPTY;
+// The set exists, but we lack the language to represent it.
+Query.UNDEFINABLE = set.UNDEFINABLE;
 
+// We don't know if this exists. Intersection between two paginated sets.
+Query.UNKNOWABLE = set.UNKNOWABLE;
+
+Query.defineComparison = set.defineComparison;
 
 module.exports = Query;

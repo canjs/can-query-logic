@@ -1,11 +1,11 @@
 {
-  "name": "can-query",
+  "name": "can-query-logic",
   "version": "0.1.1",
   "description": "query data",
   "homepage": "",
   "repository": {
     "type": "git",
-    "url": "git://github.com/canjs/can-query.git"
+    "url": "git://github.com/canjs/can-query-logic.git"
   },
   "author": {
     "name": "Bitovi",
@@ -23,13 +23,12 @@
     "release:major": "npm version major && npm publish",
     "develop": "done-serve --static --develop --port 8080"
   },
-  "main": "can-query",
+  "main": "can-query-logic",
   "keywords": [
     "",
     "donejs-plugin"
   ],
   "steal": {
-    "main": "can-query",
     "configDependencies": [
       "live-reload"
     ],
@@ -47,7 +46,7 @@
   "dependencies": {
     "can-assign": "^1.1.1",
     "can-define-lazy-value": "^1.0.2",
-    "can-get": "^0.2.0",
+    "can-get": "<2.0.0",
     "can-reflect": "^1.13.3",
     "can-symbol": "^1.6.1"
   },

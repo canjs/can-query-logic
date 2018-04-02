@@ -2,7 +2,7 @@ var compare = require("./comparisons");
 var set = require("../set");
 var is = compare;
 
-QUnit.module("can-query/types/is")
+QUnit.module("can-query-logic/types/is")
 
 var tests = {
     // In

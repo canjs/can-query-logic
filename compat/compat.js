@@ -1,5 +1,5 @@
 // for can-set compat
-var Query = require("../can-query");
+var Query = require("../can-query-logic");
 var canReflect = require("can-reflect");
 var transform = require("can-get/transform/transform");
 var makeEnum = require("../src/types/make-enum");
@@ -63,7 +63,7 @@ var set = {
                 if(mutators[prop]) {
                     mutators[prop].push(value[prop]);
                 } else {
-                    throw new Error("can-query: This type of configuration is not supported. Please use can-query directly.")
+                    throw new Error("can-query-logic: This type of configuration is not supported. Please use can-query-logic directly.")
                 }
 
             }
@@ -125,7 +125,7 @@ var set = {
     },
     Translate: function(clause, prop){
         if(clause !== "where") {
-            throw new Error("can-query/compat.Translate is only able to translate the where clause");
+            throw new Error("can-query-logic/compat.Translate is only able to translate the where clause");
         }
         return {
             // {filter: {$where: {a:b}}} -> {filter: {a:b}}
@@ -268,7 +268,7 @@ var set = {
                 prop = "sort";
             }
             if(sortFunc) {
-                throw new Error("can-query/compat.sort - sortFunc is not supported");
+                throw new Error("can-query-logic/compat.sort - sortFunc is not supported");
             }
             var hydrateTransfomer = {};
             hydrateTransfomer["filter."+prop] = "sort";

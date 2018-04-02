@@ -1,6 +1,6 @@
-# can-query
+# can-query-logic
 
-[![Build Status](https://travis-ci.org/canjs/can-query.svg?branch=master)](https://travis-ci.org/canjs/can-query)
+[![Build Status](https://travis-ci.org/canjs/can-query-logic.svg?branch=master)](https://travis-ci.org/canjs/can-query-logic)
 
 query data
 

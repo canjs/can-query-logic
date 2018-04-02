@@ -188,39 +188,39 @@ test('set.has', function(){
         set.props.ignore("kind")
 	);
 
-	ok( algebra.has({$where: {someId: 5}}, {someId: 5, name: "foo"}), 'contains');
+	ok( algebra.isMember({$where: {someId: 5}}, {someId: 5, name: "foo"}), 'contains');
 
 	var res;
 
-	res = algebra.has({$where:{ type: 'FOLDER' }}, { type: 'FOLDER' });
+	res = algebra.isMember({$where:{ type: 'FOLDER' }}, { type: 'FOLDER' });
 	ok(res, 'equal sets');
 
-	res = algebra.has({$where:{ type: 'FOLDER', parentId: 5 }}, { type: 'FOLDER' });
+	res = algebra.isMember({$where:{ type: 'FOLDER', parentId: 5 }}, { type: 'FOLDER' });
 	equal(res, false, 'doesnt match');
 
-	res = algebra.has({$where:{ type: 'FOLDER' }}, { type: 'FOLDER', parentId: 5 });
+	res = algebra.isMember({$where:{ type: 'FOLDER' }}, { type: 'FOLDER', parentId: 5 });
 	ok(true, 'is a subset');
 
-	res = algebra.has(
+	res = algebra.isMember(
 		{$where:{ type: 'FOLDER', parentId: 7 }},
 		{ type: 'FOLDER', parentId: 5 }
 	);
 	ok(!res, 'different values');
 
-	res = algebra.has(
+	res = algebra.isMember(
 		{$where:{ type: 'FOLDER', count: 5 }},
 		{ type: 'FOLDER' },
 		{ count: ignoreProp }
 	);
 	ok(res, 'count ignored');
 
-	res = algebra.has(
+	res = algebra.isMember(
 		{$where:{ type: 'FOLDER', kind: 'tree' }},
 		{ type: 'FOLDER', foo: true, bar: true }
 	);
 	ok(res, 'understands a subset');
 
-	res = algebra.has(
+	res = algebra.isMember(
 		{$where:{ type: 'FOLDER', foo: true, bar: true }},
 		{ type: 'FOLDER', kind: 'tree' }
 	);

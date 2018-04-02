@@ -46,10 +46,10 @@ canReflect.assignMap(BasicQuery.prototype,{
         var sort = helpers.sorter(this.sort);
         return data.slice(0).sort(sort);
     },
-    getMembersAndCountFrom: function(bData, parentQuery) {
+    filterMembersAndGetCount: function(bData, parentQuery) {
         if(parentQuery) {
             if(!set.isSubset(this, parentQuery)) {
-                throw new Error("can-query: Unable to get members from a set that is not a superset of the current set.");
+                throw new Error("can-query-logic: Unable to get members from a set that is not a superset of the current set.");
             }
         } else {
             parentQuery  = new BasicQuery();
@@ -86,11 +86,11 @@ canReflect.assignMap(BasicQuery.prototype,{
         }
         else {
             // parent starts at something ...
-            throw new Error("can-query: Unable to get members from the parent set for this subset.");
+            throw new Error("can-query-logic: Unable to get members from the parent set for this subset.");
         }
     },
     filterFrom: function(bData, parentQuery) {
-        return this.getMembersAndCountFrom(bData, parentQuery).data;
+        return this.filterMembersAndGetCount(bData, parentQuery).data;
     },
     merge: function(b, aItems, bItems, getId){
         var union = set.union(this,b);

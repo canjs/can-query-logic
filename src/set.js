@@ -1,4 +1,4 @@
-// # can-query/set.js
+// # can-query-logic/set.js
 // This file defines the set mechanics of types.
 // It provides ways for types to define how to perform
 // `union`, `difference`, `intersection` operations.

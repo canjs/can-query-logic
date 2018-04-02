@@ -168,7 +168,7 @@ var tasks = [
   }
 ]
 
-var result = query.getSubset({
+var result = query.filterMembers({
   where: {complete: true}
 }, tasks);
 

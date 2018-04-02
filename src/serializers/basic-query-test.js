@@ -4,7 +4,7 @@ var canReflect = require("can-reflect");
 var logicTypes = require("../types/and-or-not");
 var comparisonTypes = require("../types/comparisons");
 
-QUnit.module("can-query/serializers/basic-query");
+QUnit.module("can-query-logic/serializers/basic-query");
 
 var EmptySchema = {
     kind: "record",
