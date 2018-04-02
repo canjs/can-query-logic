@@ -73,6 +73,7 @@ function makeReturnValue(prop) {
 }
 
 canReflect.assign(Query.prototype,{
+    // identity keys
     getIdentityKeys: function(){
         return this.schema.identity;
     },
@@ -82,25 +83,30 @@ canReflect.assign(Query.prototype,{
     },
     difference: makeNewSet("difference"),
     equal: makeReturnValue("isEqual"),
+    // filterMembers
     getSubset: function(a, b, bData){
         var queryA = this.hydrate(a),
             queryB = this.hydrate(b);
         return queryA.filterFrom(bData, queryB);
     },
+    // filterMembersAndGetCount
     getMembersAndCountFrom: function(a, b, bData) {
         var queryA = this.hydrate(a),
             queryB = this.hydrate(b);
         return queryA.getMembersAndCountFrom(bData, queryB);
     },
+    // unionMembers
     getUnion: function(a, b, aData, bData) {
         var queryA = this.hydrate(a),
             queryB = this.hydrate(b);
 
         return queryA.merge(queryB, aData, bData, this.id.bind(this));
     },
+    // isMember
     has: function(query, props) {
         return this.hydrate(query).isMember(props);
     },
+    // identity
     id: function(props) {
         var identity = this.schema.identity;
         if(!identity || identity.length === 0) {
@@ -134,5 +140,7 @@ canReflect.assign(Query.prototype,{
     // We don't know if this exists. Intersection between two paginated sets.
     UNKNOWABLE: set.UNKNOWABLE
 });
+
+
 
 module.exports = Query;
