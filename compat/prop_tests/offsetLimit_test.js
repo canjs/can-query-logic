@@ -12,7 +12,7 @@ test('offsetLimit set.equal', function(){
 	 * Y = [A0, ..., An]
 	 */
 	ok(
-		set.isEqual(
+		set.isEqual
 			{offset: 0, limit: 99},
 			{offset: 0, limit: 99},
 			props.offsetLimit("offset", "limit")),
