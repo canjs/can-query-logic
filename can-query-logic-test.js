@@ -8,70 +8,21 @@ require("./src/types/basic-query-merge-test");
 require("./src/serializers/basic-query-test");
 require("./compat/compat-test");
 require("./test/special-comparison-logic-test");
+require("./test/make-enum-logic-test");
 
 var QUnit = require("steal-qunit");
 var QueryLogic = require("can-query-logic");
 var canReflect = require("can-reflect");
-var makeEnum = require("./src/types/make-enum");
 
 
-function Color(){}
-makeEnum(Color, ["red","green","blue"]);
-
-// var Todo = DefineMap.extend({
-//     id: {identity: true, type: "number"},
-//     status: Colors,
-//     complete: "boolean",
-//     name: String
-// });
-
-// union (Number|String)
-// application Array<String> Object<string, number>
-// record {foo: String}
-var TODO = canReflect.assignSymbols({},{
-    "can.schema": function(){
-        return {
-            kind: "record",
-            identity: ["id"],
-            keys: {
-                id: Number,
-                points: Number,
-                status: Color,
-                complete: Boolean,
-                name: String
-            }
-        };
-    }
-});
-
-var algebra = new QueryLogic(TODO);
+var algebra = new QueryLogic();
 
 
 QUnit.module("can-query-logic");
 
-QUnit.test("union - enum", function(){
 
-    var unionResult = algebra.union({
-        filter: {
-            name: "Justin",
-            status: "red"
-        }
-    },{
-        filter: {
-            name: "Justin",
-            status: "green"
-        }
-    });
 
-    QUnit.deepEqual(unionResult, {
-        filter: {
-            name: "Justin",
-            status: ["red","green"]
-        }
-    });
-});
-
-QUnit.test("union without enum", function(){
+QUnit.test("union", function(){
     var unionResult = algebra.union({
         filter: {
             name: "Ramiya"
@@ -89,7 +40,7 @@ QUnit.test("union without enum", function(){
     });
 });
 
-QUnit.test("difference without enum", function(){
+QUnit.test("difference", function(){
     var differenceResult = algebra.difference({
         filter: {
             name: {$in: ["Ramiya", "Bohdi"]}
@@ -107,7 +58,7 @@ QUnit.test("difference without enum", function(){
     });
 });
 
-QUnit.test("subset without enum", function(){
+QUnit.test("subset", function(){
     var subsetResult = algebra.isSubset({
         filter: {
             name: "Bohdi"
@@ -121,7 +72,7 @@ QUnit.test("subset without enum", function(){
     QUnit.deepEqual(subsetResult,true);
 });
 
-QUnit.test("has without enum", function(){
+QUnit.test("isMember", function(){
     var hasResult = algebra.isMember({
         filter: {
             name: "Bohdi"
@@ -212,7 +163,6 @@ QUnit.test('index basics', function(){
                 keys: {
                     id: Number,
                     points: Number,
-                    status: Color,
                     complete: Boolean,
                     name: String
                 }
@@ -231,48 +181,3 @@ QUnit.test('index basics', function(){
 	//var algebra = new set.Algebra(set.props.id("id"));
 
 });
-
-/*
-
-QUnit.test("union - MustBeNumber", function(){
-
-    var unionResult = algebra.union({
-        filter: {
-            points: {$gt: 5}
-        }
-    },{
-        filter: {
-            points: {$gt: 3}
-        }
-    });
-
-    QUnit.deepEqual(unionResult, {
-        filter: {
-            points: {$gt: 3}
-        }
-    });
-});
-
-QUnit.test("query basics", function(){
-
-    // count(set, member)
-    // has(set, member)
-    //
-    //
-    // filterMembers(a,b, bData) //-> both sets are needed if pagination is being performed
-    // unionMembers(a,b, aItems, bItems)
-    //
-    //
-    // id(member)
-    // index(set, items, item) //-> really about sort
-    //
-    // query.index()
-    //
-    //
-    // set.union()
-    // set.member()
-    //
-    // isProperSubset
-
-
-});*/

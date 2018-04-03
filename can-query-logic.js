@@ -7,6 +7,7 @@ var schemaSymbol = canSymbol.for("can.schema");
 
 // Creates an algebra used to convert primitives to types and back
 function Query(Type, options){
+    Type = Type || {};
     var passedHydrator = options && options.toQuery;
     var passedSerializer = options && options.toParams;
     var schema;
@@ -86,15 +87,15 @@ canReflect.assign(Query.prototype,{
     isSpecial: set.isSpecial,
     isDefinedAndHasMembers: set.isDefinedAndHasMembers,
 
-    // identity keys
-    identityKeys: function(){
-        return this.schema.identity;
-    },
     count: function(a){
         var queryA = this.hydrate(a);
         return queryA.page.end - queryA.page.start + 1;
     },
 
+    // identity keys
+    identityKeys: function(){
+        return this.schema.identity;
+    },
 
     filterMembers: function(a, b, bData){
         var queryA = this.hydrate(a),
