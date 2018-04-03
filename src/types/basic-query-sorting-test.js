@@ -324,7 +324,7 @@ QUnit.skip('rangeInclusive with string numbers (#17)', function(){
 		props.rangeInclusive('start','end')
 	);
 	ok(
-		algebra.subset(
+		algebra.isSubset(
 			{start: "1", end: "100"},
 			{start: "0", end: "100"}
 		),

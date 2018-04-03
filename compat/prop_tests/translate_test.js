@@ -16,13 +16,13 @@ QUnit.test('set.equal', function(){
 
 	var res;
 
-	res = algebra.equal(
+	res = algebra.isEqual(
 		{$where: {type: 'FOLDER' } },
 		{$where: { type: 'FOLDER', count: 5 }}
 	);
 	ok(res, 'count ignored');
 
-	res = algebra.equal(
+	res = algebra.isEqual(
 		{$where: { type: 'FOLDER' }},
 		{$where: { type: 'FOLDER' }}
 	);
@@ -32,7 +32,7 @@ QUnit.test('set.equal', function(){
 });
 
 
-QUnit.test('set.subset', function(){
+QUnit.test('set.isSubset', function(){
 
 	var algebra = new set.Algebra(
 		new set.Translate("where","$where"),
@@ -44,34 +44,34 @@ QUnit.test('set.subset', function(){
 
 	var res;
 
-	res = algebra.subset({$where:{ type: 'FOLDER' }}, {$where:{ type: 'FOLDER' }});
+	res = algebra.isSubset({$where:{ type: 'FOLDER' }}, {$where:{ type: 'FOLDER' }});
 	ok(res, 'equal sets');
 
-	res = algebra.subset({$where:{ type: 'FOLDER', parentId: 5 }}, {$where:{ type: 'FOLDER' }});
+	res = algebra.isSubset({$where:{ type: 'FOLDER', parentId: 5 }}, {$where:{ type: 'FOLDER' }});
 	ok(res, 'sub set');
 
-	res = algebra.subset({$where:{ type: 'FOLDER' }}, {$where:{ type: 'FOLDER', parentId: 5 }});
+	res = algebra.isSubset({$where:{ type: 'FOLDER' }}, {$where:{ type: 'FOLDER', parentId: 5 }});
 	ok(!res, 'wrong way');
 
-	res = algebra.subset(
+	res = algebra.isSubset(
 		{$where:{ type: 'FOLDER', parentId: 7 }},
 		{$where:{ type: 'FOLDER', parentId: 5 }}
 	);
 	ok(!res, 'different values');
 
-	res = algebra.subset(
+	res = algebra.isSubset(
 		{$where:{ type: 'FOLDER', count: 5 }},
 		{$where:{ type: 'FOLDER' }}
 	);
 	ok(res, 'count ignored');
 
-	res = algebra.subset(
+	res = algebra.isSubset(
 		{$where:{ type: 'FOLDER', category: 'tree' }},
 		{$where:{ type: 'FOLDER', foo: true, bar: true }}
 	);
 	ok(res, 'understands a subset');
 
-	res = algebra.subset(
+	res = algebra.isSubset(
 		{$where:{ type: 'FOLDER', foo: true, bar: true }},
 		{$where:{ type: 'FOLDER', kind: 'tree' }}
 	);
@@ -79,14 +79,14 @@ QUnit.test('set.subset', function(){
 
 });
 
-test('set.properSubset', function(){
+test('set.isProperSubset', function(){
 	var algebra = new set.Algebra(
 		new set.Translate("where","$where")
 	);
 
-	equal( algebra.properSubset( {$where:{foo: "bar"}}, {$where:{}}), true );
-	equal( algebra.properSubset({$where:{}},{$where:{}}), false );
-	equal( algebra.properSubset({$where:{}},{$where:{foo: "bar"}}), false );
+	equal( algebra.isProperSubset( {$where:{foo: "bar"}}, {$where:{}}), true );
+	equal( algebra.isProperSubset({$where:{}},{$where:{}}), false );
+	equal( algebra.isProperSubset({$where:{}},{$where:{foo: "bar"}}), false );
 });
 
 

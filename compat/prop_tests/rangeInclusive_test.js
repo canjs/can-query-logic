@@ -12,7 +12,7 @@ test('rangeInclusive set.equal', function(){
 	 * Y = [A0, ..., An]
 	 */
 	ok(
-		set.equal(
+		set.isEqual(
 			{start: 0, end: 100},
 			{start: 0, end: 100},
 			props.rangeInclusive("start", "end")),
@@ -23,7 +23,7 @@ test('rangeInclusive set.equal', function(){
 	 * Y = [A0, ..., A(n+1)]
 	 */
 	ok(
-		!set.equal(
+		!set.isEqual(
 			{start: 0, end: 100},
 			{start: 0, end: 101},
 			props.rangeInclusive("start", "end")),
@@ -34,20 +34,20 @@ test('rangeInclusive set.equal', function(){
 	 * Y = [A1, ..., An]
 	 */
 	ok(
-		!set.equal(
+		!set.isEqual(
 			{start: 0, end: 100},
 			{start: 1, end: 100},
 			props.rangeInclusive("start", "end")),
 		"they are not equal" );
 });
 
-test('rangeInclusive set.subset', function(){
+test('rangeInclusive set.isSubset', function(){
 	/*
 	 * X = [A0, ..., An]
 	 * Y = [A0, ..., An]
 	 */
 	ok(
-		set.subset(
+		set.isSubset(
 			{start: 0, end: 100},
 			{start: 0, end: 100},
 			props.rangeInclusive("start", "end")),
@@ -58,7 +58,7 @@ test('rangeInclusive set.subset', function(){
 	 * Y = [A0, ..., A(n+1)]
 	 */
 	ok(
-		set.subset(
+		set.isSubset(
 			{start: 0, end: 100},
 			{start: 0, end: 101},
 			props.rangeInclusive("start", "end")),
@@ -69,7 +69,7 @@ test('rangeInclusive set.subset', function(){
 	 * Y = [A0, ..., A(n+1)]
 	 */
 	ok(
-		!set.subset(
+		!set.isSubset(
 			{start: 0, end: 101},
 			{start: 0, end: 100},
 			props.rangeInclusive("start", "end")),
@@ -80,7 +80,7 @@ test('rangeInclusive set.subset', function(){
 	 * Y = [A0, ..., An]
 	 */
 	ok(
-		set.subset(
+		set.isSubset(
 			{start: 1, end: 100},
 			{start: 0, end: 100},
 			props.rangeInclusive("start", "end")),
@@ -91,7 +91,7 @@ test('rangeInclusive set.subset', function(){
 	 * Y = [A0, ..., An]
 	 */
 	ok(
-		!set.subset(
+		!set.isSubset(
 			{start: 0, end: 100},
 			{start: 1, end: 100},
 			props.rangeInclusive("start", "end")),
@@ -277,7 +277,7 @@ test('rangeInclusive with string numbers (#17)', function(){
 		props.rangeInclusive('start','end')
 	);
 	ok(
-		algebra.subset(
+		algebra.isSubset(
 			{start: "1", end: "100"},
 			{start: "0", end: "100"}
 		),

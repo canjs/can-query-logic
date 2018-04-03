@@ -174,7 +174,7 @@ test('enum set.equal', function(){
 	 *
 	 * {} != Y
 	 */
-	//res = set.equal({} , { type: 'new' }, prop);
+	//res = set.isEqual({} , { type: 'new' }, prop);
 	//deepEqual(res, false, "proper subset is not the universal set");
 
 	/*
@@ -183,7 +183,7 @@ test('enum set.equal', function(){
 	 *
 	 * {} = Y
 	 */
-	res = set.equal({} , { type: ['new','prep','deliver','delivered'] }, prop);
+	res = set.isEqual({} , { type: ['new','prep','deliver','delivered'] }, prop);
 	deepEqual(res, true, "subset of all possible enums is the same as universal set");
 
 	/*
@@ -192,7 +192,7 @@ test('enum set.equal', function(){
 	 *
 	 * X = Y
 	 */
-	res = set.equal({type: ['prep'] } , { type: ['prep'] }, prop);
+	res = set.isEqual({type: ['prep'] } , { type: ['prep'] }, prop);
 	deepEqual(res, true, "identical sets with single array enum are equal");
 
 	/*
@@ -201,7 +201,7 @@ test('enum set.equal', function(){
 	 *
 	 * X = Y
 	 */
-	res = set.equal({type: 'prep'} , { type: 'prep' }, prop);
+	res = set.isEqual({type: 'prep'} , { type: 'prep' }, prop);
 	deepEqual(res, true, "identical sets with single property enum are equal");
 
 	/*
@@ -210,12 +210,12 @@ test('enum set.equal', function(){
 	 *
 	 * Y != X
 	 */
-	res = set.equal({ type: 'new' },{type: 'prep'}, prop);
+	res = set.isEqual({ type: 'new' },{type: 'prep'}, prop);
 	deepEqual(res, false, "two sets with different enum properties are not equal");
 
 });
 
-test('enum set.subset', function(){
+test('enum set.isSubset', function(){
 	var prop = props["enum"]('type',['new','prep','deliver','delivered']);
 	/*
 	 * x ∈ X | x.type ∈ ['new', 'prep', 'deliver', 'delivered']
@@ -227,35 +227,35 @@ test('enum set.subset', function(){
 	 * Y ⊂ {}
 	 * {} ⊄ Y
 	 */
-	var res = set.subset({} , { type: 'new' }, prop);
+	var res = set.isSubset({} , { type: 'new' }, prop);
 	deepEqual(res, false, "universal set is not a subset");
 
 	/*
 	 * y ∈ Y | y.type = 'new'
 	 * Y ⊆ X ∀ Y
 	 */
-	res = set.subset({ type: 'new' }, {} , prop);
+	res = set.isSubset({ type: 'new' }, {} , prop);
 	deepEqual(res, true, "any single enum is a subset of universal set");
 
 	/*
 	 * Y = {}
 	 * Y ⊆ X ∀ Y
 	 */
-	res = set.subset({} , { type: ['new','prep','deliver','delivered'] }, prop);
+	res = set.isSubset({} , { type: ['new','prep','deliver','delivered'] }, prop);
 	deepEqual(res, true, "enum set matching definition of universal set is a subset of universal set");
 
 	/*
 	 * y ∈ Y | x.type ∈ ['prep']
 	 * Y ⊆ X ∀ Y
 	 */
-	res = set.subset({type: ['prep'] } , { type: ['prep'] }, prop);
+	res = set.isSubset({type: ['prep'] } , { type: ['prep'] }, prop);
 	deepEqual(res, true, "any list of possible enums are subset of universal set");
 
 	/*
 	 * y ∈ Y | x.type = 'prep'
 	 * Y ⊆ X ∀ Y
 	 */
-	res = set.subset({type: 'prep'} , { type: 'prep' }, prop);
+	res = set.isSubset({type: 'prep'} , { type: 'prep' }, prop);
 	deepEqual(res, true, "intersection");
 
 	/*
@@ -264,13 +264,13 @@ test('enum set.subset', function(){
 	 *
 	 * X ⊄ Y
 	 */
-	res = set.subset({ type: 'new' },{type: 'prep'}, prop);
+	res = set.isSubset({ type: 'new' },{type: 'prep'}, prop);
 	deepEqual(res, false, "all");
 
 	/*
 	 * x ∈ X | x.type ∈ ['new', 'prep', 'deliver', 'delivered']
 	 * Y ⊆ X ∀ Y
 	 */
-	res = set.subset({type: 'prep'} , { type: ['new','prep','deliver','delivered'] }, prop);
+	res = set.isSubset({type: 'prep'} , { type: ['new','prep','deliver','delivered'] }, prop);
 	deepEqual(res, true, "intersection");
 });

@@ -74,7 +74,7 @@ var set = {
                 var schema = {
                     kind: "record",
                     identity: [],
-                    properties: {}
+                    keys: {}
                 };
                 mutators.schema.forEach(function(updateSchema){
                     updateSchema(schema);
@@ -86,41 +86,43 @@ var set = {
                 return schema;
             }
         });
-        return new Query(obj, function(data){
+        return new Query(obj, {
+            toQuery: function(data){
+                return mutators.hydrate.reduce(function(last, hydrator){
+                    return hydrator(last);
+                }, {filter: data});
+            },
+            toParams: function(data){
+                if(SET.isSpecial(data)) {
+                    return data;
+                }
+                /*if(data === SET.EMPTY) {
+                    return false;
+                }
+                if(data === SET.UNDEFINABLE) {
+                    return true;
+                }*/
+                if(Array.isArray(data.filter)){
+                    // OR is not supported ...
+                    return SET.UNDEFINABLE;
+                }
 
-            return mutators.hydrate.reduce(function(last, hydrator){
-                return hydrator(last);
-            }, {filter: data});
-        }, function(data){
-            if(SET.isSpecial(data)) {
-                return data;
-            }
-            /*if(data === SET.EMPTY) {
-                return false;
-            }
-            if(data === SET.UNDEFINABLE) {
-                return true;
-            }*/
-            if(Array.isArray(data.filter)){
-                // OR is not supported ...
-                return SET.UNDEFINABLE;
-            }
+                var filter = data.filter;
+                if(hasKey(filter, {
+                    "$ne": true,
+                    "$in": function(val){ return val["$in"]; }
+                })) {
+                    return SET.UNDEFINABLE;
+                }
 
-            var filter = data.filter;
-            if(hasKey(filter, {
-                "$ne": true,
-                "$in": function(val){ return val["$in"]; }
-            })) {
-                return SET.UNDEFINABLE;
+                var out = mutators.serialize.reduce(function(last, serializer){
+                    return serializer(last);
+                }, data);
+
+                filter = out.filter;
+                delete out.filter;
+                return canReflect.assign(out, filter);
             }
-
-            var out = mutators.serialize.reduce(function(last, serializer){
-                return serializer(last);
-            }, data);
-
-            filter = out.filter;
-            delete out.filter;
-            return canReflect.assign(out, filter);
         });
     },
     Translate: function(clause, prop){
@@ -160,7 +162,7 @@ var set = {
             // create boolean or enum
             return {
                 schema: function(schema) {
-                    schema.properties[prop] = IsBoolean;
+                    schema.keys[prop] = IsBoolean;
                 }
             };
         },
@@ -173,7 +175,7 @@ var set = {
             makeEnum(Enum, propertyValues);
             return {
                 schema: function(schema) {
-                    schema.properties[property] = Enum;
+                    schema.keys[property] = Enum;
                 }
             };
         },
@@ -307,9 +309,9 @@ function makeFromTwoQueries(prop) {
 makeFromTwoQueries("difference");
 makeFromTwoQueries("union");
 makeFromTwoQueries("intersection");
-makeFromTwoQueries("subset");
-makeFromTwoQueries("equal");
-makeFromTwoQueries("properSubset");
+makeFromTwoQueries("isSubset");
+makeFromTwoQueries("isEqual");
+makeFromTwoQueries("isProperSubset");
 
 set.count = function(query, algebra) {
     return makeAlgebra(algebra).count(query);

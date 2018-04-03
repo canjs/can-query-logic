@@ -80,20 +80,20 @@ test('strings false and true are treated as booleans', function(){
 	var prop = props.boolean('completed');
 	var res;
 
-	res = set.subset({} , { completed: "true" }, prop);
+	res = set.isSubset({} , { completed: "true" }, prop);
 	ok(!res, "{} and 'true' not a subset");
-	res = set.subset({} , { completed: "false" }, prop);
+	res = set.isSubset({} , { completed: "false" }, prop);
 	ok(!res, "{} and 'false' not a subset");
 
-	res = set.subset({ completed: "true" }, {}, prop);
+	res = set.isSubset({ completed: "true" }, {}, prop);
 	ok(res, "subset");
 
-	res = set.subset({ completed: "false" }, {}, prop);
+	res = set.isSubset({ completed: "false" }, {}, prop);
 	ok(res, "subset");
 
 	res = set.union({completed: 'false'} , { completed: 'true' }, prop);
 	deepEqual(res, {}, "union of true and false is entire boolean set");
 
-	res = set.equal({completed: false} , { completed: "false" }, prop);
+	res = set.isEqual({completed: false} , { completed: "false" }, prop);
 	ok(res, "false and 'false'");
 });

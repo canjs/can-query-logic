@@ -15,7 +15,7 @@ function getSchemaProperties(value) {
     var constructor = value.constructor;
     if(constructor && constructor[schemaSymbol]) {
         var schema = constructor[schemaSymbol]();
-        return schema.properties || {};
+        return schema.keys || {};
     } else {
         return {};
     }
@@ -23,7 +23,7 @@ function getSchemaProperties(value) {
 
 function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
     schemaProperties = schemaProperties || {};
-    
+
     function hydrateChild(value) {
         if(value) {
             if(Array.isArray(value)) {
@@ -59,7 +59,7 @@ function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
 module.exports = function(schema) {
 
     var id = schema.identity && schema.identity[0];
-    var properties = schema.properties;
+    var keys = schema.keys;
 
     var serializeMap = [
         [BasicQuery.Or, function(or, serializer){
@@ -115,7 +115,7 @@ module.exports = function(schema) {
             var filter = canReflect.serialize(data.filter);
 
             // this mutates
-            var filterAnd = hydrateAndValues(filter, properties, function(value){
+            var filterAnd = hydrateAndValues(filter, keys, function(value){
                 throw new Error("can-query-logic doesn't support comparison operator: "+JSON.stringify(value));
             });
 

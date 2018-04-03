@@ -23,12 +23,12 @@ module.exports = function(Type, allValues, hydrate){
     Type[setTypeSymbol] = Enum;
     Type[isMemberSymbol] = function(value){
         return allValues.some(function(val){
-            return set.equal( val, value);
+            return set.isEqual(val, value);
         });
     };
     Enum[isMemberSymbol] = function(value){
         return this.values.some(function(val){
-            return set.equal( val, value);
+            return set.isEqual(val, value);
         });
     };
 

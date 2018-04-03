@@ -7,6 +7,7 @@ require("./src/types/basic-query-filter-from-test");
 require("./src/types/basic-query-merge-test");
 require("./src/serializers/basic-query-test");
 require("./compat/compat-test");
+require("./test/special-comparison-logic-test");
 
 var QUnit = require("steal-qunit");
 var QueryLogic = require("can-query-logic");
@@ -32,7 +33,7 @@ var TODO = canReflect.assignSymbols({},{
         return {
             kind: "record",
             identity: ["id"],
-            properties: {
+            keys: {
                 id: Number,
                 points: Number,
                 status: Color,
@@ -107,7 +108,7 @@ QUnit.test("difference without enum", function(){
 });
 
 QUnit.test("subset without enum", function(){
-    var subsetResult = algebra.subset({
+    var subsetResult = algebra.isSubset({
         filter: {
             name: "Bohdi"
         }
@@ -208,7 +209,7 @@ QUnit.test('index basics', function(){
             return {
                 kind: "record",
                 identity: ["_id"],
-                properties: {
+                keys: {
                     id: Number,
                     points: Number,
                     status: Color,
@@ -271,7 +272,7 @@ QUnit.test("query basics", function(){
     // set.union()
     // set.member()
     //
-    // properSubset
+    // isProperSubset
 
 
 });*/

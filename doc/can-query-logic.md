@@ -4,6 +4,7 @@
 @group can-query-logic.static 0 static
 @group can-query-logic.prototype 1 prototype
 @group can-query-logic/query-format 2 Query Format
+@outline 2
 
 @description Perform data queries and compare
 queries against each other. Provides logic useful for
@@ -113,29 +114,8 @@ keys on a [can-query/QueryObject]. This is done with either:
   - `toParams(query)` - Converts from the standard [can-query/QueryObject]
     to the parameters used by the server.
 
-  For example, the following changes the resulting `query` to use `where`
-  for filtering instead of `filter`:
-
-  ```js
-  var TodoQuery = new Query(Todo, {
-    toQuery(params){
-      var where = params.where;
-      delete params.where;
-      params.filter = where;
-      return params;
-    },
-    toParams(query){
-      var where = query.filter;
-      delete query.filter;
-      query.where = where;
-      return query;
-    }
-  });
-  ```
-
-  The _Special Comparison Logic_ section below describes how to use this
-  to match your query's logic to your servers.
-
+  The _Special Comparison Logic_ section below describes how to use these
+  options to match your query's logic to your servers.
 
 
 
@@ -219,7 +199,46 @@ your application's [can-service].
 
 ## Special Comparison Logic
 
+### Changing the query structure
 
+To change queries to use `where` instead of `filter` so that queries can be
+made like:
+
+```js
+Todo.getList({
+    where: {complete: true}
+})
+```
+
+You can use the `options`'s `toQuery` and `toParams` functions
+to set the `filter` property value to the passed in `where` property value.
+
+```js
+// 1. DEFINE YOUR TYPE
+const Todo = DefineMap.extend({...});
+
+var todoQueryLogic = new QueryLogic(Todo, {
+    toQuery(params){
+        var where = params.where;
+        delete params.where;
+        params.filter = where;
+        return params;
+    },
+    toParams(query){
+        var where = query.filter;
+        delete query.filter;
+        query.where = where;
+        return query;
+    }
+});
+
+// 2. CREATE YOUR CONNECTION
+realTimeRest({
+  url: "/todos",
+  Map: Todo,
+  queryLogic: todoQueryLogic
+});
+```
 
 For example,
 we can define a `StringIgnoreCaseSet` which will be used to compare

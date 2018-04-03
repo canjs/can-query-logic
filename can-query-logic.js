@@ -6,7 +6,9 @@ var schemaSymbol = canSymbol.for("can.schema");
 
 
 // Creates an algebra used to convert primitives to types and back
-function Query(Type, passedHydrator, passedSerializer){
+function Query(Type, options){
+    var passedHydrator = options && options.toQuery;
+    var passedSerializer = options && options.toParams;
     var schema;
     if(Type[schemaSymbol]) {
         schema = Type[schemaSymbol]();
@@ -73,6 +75,17 @@ function makeReturnValue(prop) {
 }
 
 canReflect.assign(Query.prototype,{
+    union: makeNewSet("union"),
+    difference: makeNewSet("difference"),
+    intersection: makeNewSet("intersection"),
+
+    isEqual: makeReturnValue("isEqual"),
+    isProperSubset: makeReturnValue("isProperSubset"),
+    isSubset: makeReturnValue("isSubset"),
+
+    isSpecial: set.isSpecial,
+    isDefinedAndHasMembers: set.isDefinedAndHasMembers,
+
     // identity keys
     identityKeys: function(){
         return this.schema.identity;
@@ -81,8 +94,7 @@ canReflect.assign(Query.prototype,{
         var queryA = this.hydrate(a);
         return queryA.page.end - queryA.page.start + 1;
     },
-    difference: makeNewSet("difference"),
-    equal: makeReturnValue("isEqual"),
+
 
     filterMembers: function(a, b, bData){
         var queryA = this.hydrate(a),
@@ -123,13 +135,7 @@ canReflect.assign(Query.prototype,{
     },
     index: function(query, items, props){
         return this.hydrate(query).index(props, items);
-    },
-    intersection: makeNewSet("intersection"),
-    properSubset: makeReturnValue("isProperSubset"),
-    subset: makeReturnValue("isSubset"),
-    union: makeNewSet("union"),
-    isSpecial: set.isSpecial,
-    isDefinedAndHasMembers: set.isDefinedAndHasMembers,
+    }
 
 });
 

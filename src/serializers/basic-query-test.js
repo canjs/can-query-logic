@@ -9,7 +9,7 @@ QUnit.module("can-query-logic/serializers/basic-query");
 var EmptySchema = {
     kind: "record",
     identity: ["id"],
-    properties: {}
+    keys: {}
 };
 
 

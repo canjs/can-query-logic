@@ -12,7 +12,7 @@ test('offsetLimit set.equal', function(){
 	 * Y = [A0, ..., An]
 	 */
 	ok(
-		set.equal(
+		set.isEqual(
 			{offset: 0, limit: 99},
 			{offset: 0, limit: 99},
 			props.offsetLimit("offset", "limit")),
@@ -23,7 +23,7 @@ test('offsetLimit set.equal', function(){
 	 * Y = [A0, ..., A(n+1)]
 	 */
 	ok(
-		!set.equal(
+		!set.isEqual(
 			{offset: 0, limit: 100},
 			{offset: 0, limit: 101},
 			props.offsetLimit("offset", "limit")),
@@ -34,7 +34,7 @@ test('offsetLimit set.equal', function(){
 	 * Y = [A1, ..., An]
 	 */
 	ok(
-		!set.equal(
+		!set.isEqual(
 			{offset: 0, limit: 100},
 			{offset: 1, limit: 100},
 			props.offsetLimit("offset", "limit")),
@@ -56,7 +56,7 @@ test('offsetLimit set.union', function() {
 	 */
 	 res = set.union({ offset: 0, limit: 100 }, { offset: 50, limit: 52 }, prop);
 	 deepEqual(res, { offset: 0, limit: 102 }, "got a union");
-	 
+
 	/*
 	 * X = universal set
 	 * Y = [A0, ..., A10]

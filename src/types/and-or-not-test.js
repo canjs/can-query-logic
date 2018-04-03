@@ -3,8 +3,6 @@ var QUnit = require("steal-qunit");
 var set = require("../set");
 var makeEnum = require("../types/make-enum");
 
-
-
 QUnit.module("can-query-logic/and-or");
 
 // There is a need for "subset" and "superset"

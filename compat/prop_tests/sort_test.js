@@ -90,7 +90,7 @@ test('set.intersection Array', function(){
 	deepEqual(res , {foo: "a"}, "intersection");
 });
 
-test('set.subset', function(){
+test('set.isSubset', function(){
 
 	var algebra = new set.Algebra(props.sort('sort'),
 		set.props.ignore("foo"),
@@ -99,41 +99,41 @@ test('set.subset', function(){
 		set.props.ignore("count")
 	);
 
-	ok( algebra.subset(
+	ok( algebra.isSubset(
 		{ type : 'FOLDER', sort: "thing" },
 		{ type : 'FOLDER' } ), 'equal sets with sort on the left');
 
-	ok( algebra.subset(
+	ok( algebra.isSubset(
 		{ type : 'FOLDER' },
 		{ type : 'FOLDER', sort: "thing" } ), 'equal sets with sort on the right');
 
-	ok( algebra.subset(
+	ok( algebra.isSubset(
 		{ type : 'FOLDER', parentId : 5, sort: 'thing' },
 		{ type : 'FOLDER'} ), 'sub set with sort on the left');
 
-	ok( algebra.subset(
+	ok( algebra.isSubset(
 		{ type : 'FOLDER', parentId : 5 },
 		{ type : 'FOLDER', sort: 'thing'} ), 'sub set with sort on the right');
 
-	ok(!algebra.subset(
+	ok(!algebra.isSubset(
 		{ type: 'FOLDER', sort: 'thing' },
 		{ type: 'FOLDER', parentId: 5 }), 'wrong way with sort on the left');
 
-	ok(!algebra.subset(
+	ok(!algebra.isSubset(
 		{ type: 'FOLDER' },
 		{ type: 'FOLDER', parentId: 5, sort: 'thing' }), 'wrong way with sort on the right');
 
-	ok(!algebra.subset(
+	ok(!algebra.isSubset(
 		{ type: 'FOLDER', parentId: 7, sort: 'thing' },
 		{ type: 'FOLDER', parentId: 5 }), 'different values with sort on the left');
 
-	ok(!algebra.subset(
+	ok(!algebra.isSubset(
 		{ type: 'FOLDER', parentId: 7 },
 		{ type: 'FOLDER', parentId: 5, sort: 'thing' }), 'different values with sort on the right');
 
 });
 
-test('set.subset with range', function(){
+test('set.isSubset with range', function(){
 	var algebra = new set.Algebra(props.sort('sort'),props.rangeInclusive('start','end'));
 
 	// add sort .. same .. different
@@ -208,7 +208,7 @@ test('set.subset with range', function(){
 	};
 	var assertSubset = function(methods, result){
 		var sets = make.apply(null, methods);
-		equal( algebra.subset(sets.left, sets.right), result, JSON.stringify(sets.left)+" ⊂ "+JSON.stringify(sets.right)+" = "+result );
+		equal( algebra.isSubset(sets.left, sets.right), result, JSON.stringify(sets.left)+" ⊂ "+JSON.stringify(sets.right)+" = "+result );
 	};
 
 	//assertSubset([sets.superRight, range.right, sort.right], false);
@@ -276,44 +276,44 @@ test("paginated and sorted is subset (#17)", function(){
 		props.rangeInclusive('start','end')
 	), res;
 
-	// res = algebra.subset({start: 0, end: 100, sort: "name"},{start: 0, end: 100, sort: "name"});
+	// res = algebra.isSubset({start: 0, end: 100, sort: "name"},{start: 0, end: 100, sort: "name"});
 	// equal(res, true, "parent:paginate+order child:paginate+order (same set)");
 
-	res = algebra.subset({start: 0, end: 100, sort: "name"},{start: 0, end: 100, sort: "age"});
+	res = algebra.isSubset({start: 0, end: 100, sort: "name"},{start: 0, end: 100, sort: "age"});
 	equal(res, undefined, "parent:paginate+order child:paginate+order (different order)");
 
 	// REMOVE FROM THE parent
 	// parent:order
-	res = algebra.subset({start: 0, end: 100, sort: "name"},{sort: "name"});
+	res = algebra.isSubset({start: 0, end: 100, sort: "name"},{sort: "name"});
 	equal(res, true, "parent:order child:paginate+order");
 
-	res = algebra.subset({sort: "name"},{sort: "name"});
+	res = algebra.isSubset({sort: "name"},{sort: "name"});
 	equal(res, true, "parent:order child:order (same)");
-	res = algebra.subset({sort: "name"},{sort: "age"});
+	res = algebra.isSubset({sort: "name"},{sort: "age"});
 	equal(res, true, "parent:order child:order (different)");
 
-	res = algebra.subset({start: 0, end: 100},{sort: "name"});
+	res = algebra.isSubset({start: 0, end: 100},{sort: "name"});
 	equal(res, true, "parent:order child:paginate");
 
-	res = algebra.subset({start: 0, end: 100, sort: "age"},{sort: "name"});
+	res = algebra.isSubset({start: 0, end: 100, sort: "age"},{sort: "name"});
 	equal(res, true, "parent:order child:paginate+order");
 
 	// parent:paginate
-	res = algebra.subset({start: 0, end: 100, sort: "name"},{start: 0, end: 100});
+	res = algebra.isSubset({start: 0, end: 100, sort: "name"},{start: 0, end: 100});
 	equal(res, undefined, "parent:paginate child:paginate+order");
 
-	res = algebra.subset({sort: "name"},{start: 0, end: 100});
+	res = algebra.isSubset({sort: "name"},{start: 0, end: 100});
 	equal(res, false, "parent:paginate child:order (same)");
 
 
-	res = algebra.subset({start: 0, end: 100, sort: "name"},{});
+	res = algebra.isSubset({start: 0, end: 100, sort: "name"},{});
 	equal(res, true, "parent:-- child:paginate+order");
 
 
 
-	res = algebra.subset({start: 10, end: 90, sort: "name"},{start: 0, end: 100, sort: "name"});
+	res = algebra.isSubset({start: 10, end: 90, sort: "name"},{start: 0, end: 100, sort: "name"});
 	equal(res, true, "child in smaller range, same sort");
 
-	res = algebra.subset({start: 10, end: 90, sort: "name"},{start: 0, end: 100, sort: "age"});
+	res = algebra.isSubset({start: 10, end: 90, sort: "name"},{start: 0, end: 100, sort: "age"});
 	equal(res, undefined, "child in smaller range, but different sort");
 });
