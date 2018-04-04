@@ -1,5 +1,6 @@
 var QueryLogic = require("../can-query-logic");
 var QUnit = require("steal-qunit");
+var canReflect = require("can-reflect");
 
 QUnit.module("can-query-logic special comparison logic");
 
@@ -38,10 +39,16 @@ QUnit.test("Searchable string", function(){
     function SearchableStringSet(value) {
         this.value = value;
     }
-    // Returns if the name on a todo is actually a member of the set.
-    SearchableStringSet.prototype[Symbol.for("can.isMember")] = function(value){
-        return value.includes(this.value);
-    };
+
+    canReflect.assignSymbols(SearchableStringSet.prototype,{
+        // Returns if the name on a todo is actually a member of the set.
+        "can.isMember": function(value){
+            return value.includes(this.value);
+        },
+        "can.serialize": function(){
+            return this.value;
+        }
+    });
 
     // Specify how to do the fundamental set comparisons.
     QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
@@ -52,7 +59,7 @@ QUnit.test("Searchable string", function(){
             if(searchB.value.includes(searchA.value)) {
                 return searchA;
             }
-            return new QueryLogic.Or(searchA, searchB);
+            return new QueryLogic.Or([searchA, searchB]);
         },
         // a aa
         intersection(searchA, searchB){
@@ -93,7 +100,6 @@ QUnit.test("Searchable string", function(){
 
     }
 
-
     SearchableString[Symbol.for("can.SetType")] = SearchableStringSet;
 
     var todoQueryLogic = new QueryLogic({
@@ -101,8 +107,6 @@ QUnit.test("Searchable string", function(){
             name: SearchableString
         }
     });
-
-
 
     var res = todoQueryLogic.isSubset({
         filter: {name: "beat"}
@@ -119,5 +123,97 @@ QUnit.test("Searchable string", function(){
     });
 
     QUnit.equal(res, false, "not subset");
+
+    var hydrated = todoQueryLogic.hydrate({
+        filter: {name: "eat"}
+    });
+
+    QUnit.deepEqual(hydrated.filter, new QueryLogic.And({
+        name: new SearchableStringSet("eat")
+    }), "hydrated right");
+
+    res = todoQueryLogic.union({
+        filter: {name: "eat"}
+    },{
+        filter: {name: "foo"}
+    });
+
+    QUnit.deepEqual(res, {
+        filter: {
+            name: ["eat","foo"]
+        }
+    });
+
+    QUnit.ok(
+        todoQueryLogic.isMember({
+            filter: {name: "eat"}
+        },{id: 1, name: "eat beans"}),
+        "isMember true");
+
+    QUnit.notOk(
+        todoQueryLogic.isMember({
+            filter: {name: "eat"}
+        },{id: 1, name: "foo bar"}),
+        "isMember false");
+
+});
+
+QUnit.test("value type", function(){
+
+    function DateStringSet(dateStr){
+        this.dateStr = dateStr;
+    }
+
+    DateStringSet.prototype.valueOf = function(){
+        return new Date(this.dateStr).valueOf();
+    };
+    canReflect.assignSymbols(DateStringSet,{
+        "can.serialize": function(){
+            return this.dateStr;
+        }
+    });
+
+    function DateString(){
+
+    }
+
+    canReflect.assignSymbols(DateString,{
+        "can.SetType": DateStringSet
+    });
+
+
+
+    var queryLogic = new QueryLogic({
+        keys: {
+            date: DateString
+        }
+    });
+
+    var oct20_1982 = new Date(1982,9,20);
+
+    // new And({
+    //   date: new GT( new DateStringSet("string") )
+    // })
+    // The problem is that GT is going to test
+    //    `new DateStringSet("10-20") > "10-20"
+    // How do we indicate that these tests should use the underlying type "converter"?
+    //  - seems like not a great idea to use the `this.value` type to wrap the property value.
+    //  - Can't really call `isMember` b/c
+    //  - could just pass a serialize / hydrate thing ..
+    //
+    var result = queryLogic.filterMembers({
+        filter: {date: {$gt: oct20_1982.toString()}}
+    },[
+        {id: 1, date: new Date(1981,9,20).toString()},
+        {id: 2, date: new Date(1982,9,20).toString()},
+        {id: 3, date: new Date(1983,9,20).toString()},
+        {id: 4, date: new Date(1984,9,20).toString()},
+    ]);
+
+    QUnit.deepEqual(
+        result.map(function(item){ return item.id;}),
+        [3,4],
+        "filtered correctly");
+
 
 });

@@ -36,11 +36,21 @@ var comparisons = {
 		this.value = value;
 	}
 };
+
+
+
 comparisons.In.test = function(values, b) {
-	return values.some(function(value){ return value === b; });
+	return values.some(function(value){
+		var values = set.ownAndMemberValue(value, b)
+		return values.own === values.member;
+	});
 };
+
 comparisons.NotIn.test = function(values, b) {
 	return !comparisons.In.test(values, b);
+};
+comparisons.NotIn.testValue = function(value, b) {
+	return !comparisons.In.testValue(value, b);
 };
 
 comparisons.GreaterThan.test = function(a, b) {
@@ -55,16 +65,20 @@ comparisons.LessThan.test = function(a, b) {
 comparisons.LessThanEqual.test = function(a, b) {
 	return a <= b;
 };
+
+
+
 function isMemberThatUsesTest(value) {
-	return this.constructor.test(this.value, value);
+	var values = set.ownAndMemberValue(this.value, value);
+	return this.constructor.test(values.member, values.own);
 }
-[comparisons.GreaterThan, comparisons.GreaterThanEqual, comparisons.LessThan, comparisons.LessThanEqual].forEach(function(Type){
+[comparisons.GreaterThan, comparisons.GreaterThanEqual, comparisons.LessThan, comparisons.LessThanEqual, comparisons.LessThan].forEach(function(Type){
 	Type.prototype.isMember = isMemberThatUsesTest;
 });
 function isMemberThatUsesTestOnValues(value) {
 	return this.constructor.test(this.values, value);
 }
-[comparisons.In, comparisons.NotIn, comparisons.LessThan].forEach(function(Type){
+[comparisons.In, comparisons.NotIn].forEach(function(Type){
 	Type.prototype.isMember = isMemberThatUsesTestOnValues;
 });
 
@@ -77,6 +91,12 @@ function makeEnum(type, Type, emptyResult) {
 		} else {
 			return emptyResult || set.EMPTY;
 		}
+	};
+}
+
+function swapArgs(fn){
+	return function(a, b) {
+		return fn(b, a)
 	};
 }
 
@@ -124,7 +144,26 @@ function make_InIfEqual_else_andIf(Comparison, Type) {
 	};
 }
 
+function make_filterFirstValues(Comparison, Type, defaultReturn) {
+	return function(inSet, gt) {
+		var values = inSet.values.filter(function(value) {
+			return Comparison.test(value, gt.value);
+		});
+		return values.length ?
+			new Type(values) : defaultReturn || set.EMPTY ;
+	};
+}
 
+
+function combineFilterFirstValues(options) {
+	return function(inSet, gt) {
+		var values = inSet.values.filter(function(value) {
+			return options.values.test(value, gt.value);
+		});
+		return values.length ?
+			options.combinedUsing([new options.arePut(values), gt]) : gt;
+	};
+}
 
 function makeAnd(ands) {
 	return comparisons.And ? new comparisons.And(ands) : set.UNDEFINABLE;
@@ -146,27 +185,83 @@ var comparators = {
 		difference: makeSecondValue(is.NotIn, "values")
 	},
 
-	In_NotIn: {},
-	NotIn_In: {},
+	In_NotIn: {
+		union: swapArgs( makeEnum("difference", is.NotIn, set.UNIVERSAL) ),
+		// what does In have on its own
+		intersection: makeEnum("difference", is.In),
+		difference: makeEnum("intersection", is.In)
+	},
+	NotIn_In: {
+		difference: makeEnum("union", is.NotIn)
+	},
 
 	In_GreaterThan: {
-		union: function(inSet, gt) {
-			var allGt = inSet.values.every(function(value) {
-				return value > gt.value;
-			});
-			return allGt ? gt : makeOr([inSet, gt]);
-		}
+		union: combineFilterFirstValues({
+			values: is.LessThanEqual,
+			arePut: is.In,
+			combinedUsing: makeOr
+		}),
+		intersection: make_filterFirstValues(is.GreaterThan, is.In, set.EMPTY),
+		difference: make_filterFirstValues(is.LessThanEqual, is.In, set.EMPTY)
 	},
-	GreaterThan_In: {},
+	GreaterThan_In: {
+		difference: swapArgs(combineFilterFirstValues({
+			values: is.GreaterThan,
+			arePut: is.NotIn,
+			combinedUsing: makeAnd
+		}))
+	},
 
-	In_GreaterThanEqual: {},
-	GreaterThanEqual_In: {},
+	In_GreaterThanEqual: {
+		union: combineFilterFirstValues({
+			values: is.LessThan,
+			arePut: is.In,
+			combinedUsing: makeOr
+		}),
+		intersection: make_filterFirstValues(is.GreaterThanEqual, is.In, set.EMPTY),
+		difference: make_filterFirstValues(is.LessThan, is.In, set.EMPTY)
+	},
+	GreaterThanEqual_In: {
+		difference: swapArgs(combineFilterFirstValues({
+			values: is.GreaterThanEqual,
+			arePut: is.NotIn,
+			combinedUsing: makeAnd
+		}))
+	},
 
-	In_LessThan: {},
-	LessThan_In: {},
+	In_LessThan: {
+		union: combineFilterFirstValues({
+			values: is.GreaterThanEqual,
+			arePut: is.In,
+			combinedUsing: makeOr
+		}),
+		intersection: make_filterFirstValues(is.LessThan, is.In, set.EMPTY),
+		difference: make_filterFirstValues(is.GreaterThanEqual, is.In, set.EMPTY)
+	},
+	LessThan_In: {
+		difference: swapArgs(combineFilterFirstValues({
+			values: is.LessThan,
+			arePut: is.NotIn,
+			combinedUsing: makeAnd
+		}))
+	},
 
-	In_LessThanEqual: {},
-	LessThanEqual_In: {},
+	In_LessThanEqual: {
+		union: combineFilterFirstValues({
+			values: is.GreaterThan,
+			arePut: is.In,
+			combinedUsing: makeOr
+		}),
+		intersection: make_filterFirstValues(is.LessThanEqual, is.In, set.EMPTY),
+		difference: make_filterFirstValues(is.GreaterThan, is.In, set.EMPTY)
+	},
+	LessThanEqual_In: {
+		difference: swapArgs(combineFilterFirstValues({
+			values: is.LessThanEqual,
+			arePut: is.NotIn,
+			combinedUsing: makeAnd
+		}))
+	},
 
 	// NotIn
 	NotIn_NotIn: {

@@ -2,11 +2,13 @@ var set = require("./src/set");
 var canSymbol = require("can-symbol");
 var canReflect = require("can-reflect");
 var makeBasicQueryConvert = require("./src/serializers/basic-query");
+var BasicQuery = require("./src/types/basic-query");
 var schemaSymbol = canSymbol.for("can.schema");
 
 
+
 // Creates an algebra used to convert primitives to types and back
-function Query(Type, options){
+function QueryLogic(Type, options){
     Type = Type || {};
     var passedHydrator = options && options.toQuery;
     var passedSerializer = options && options.toParams;
@@ -21,7 +23,7 @@ function Query(Type, options){
 
     var id = schema.identity && schema.identity[0];
     if(!id) {
-        console.warn("can-query given a type without an identity schema.  Using `id` as the identity id.");
+        //console.warn("can-query given a type without an identity schema.  Using `id` as the identity id.");
         schema.identity = ["id"];
     }
 
@@ -29,7 +31,7 @@ function Query(Type, options){
     var properties = schema.properties;
 
     if(!properties) {
-        console.warn("can-query given a type without a properties schema.  Using an empty schema.");
+        //console.warn("can-query given a type without a properties schema.  Using an empty schema.");
         schema.properties = {};
     }
 
@@ -75,7 +77,7 @@ function makeReturnValue(prop) {
     };
 }
 
-canReflect.assign(Query.prototype,{
+canReflect.assign(QueryLogic.prototype,{
     union: makeNewSet("union"),
     difference: makeNewSet("difference"),
     intersection: makeNewSet("intersection"),
@@ -98,9 +100,14 @@ canReflect.assign(Query.prototype,{
     },
 
     filterMembers: function(a, b, bData){
-        var queryA = this.hydrate(a),
-            queryB = this.hydrate(b);
-        return queryA.filterFrom(bData, queryB);
+        var queryA = this.hydrate(a);
+        if(arguments.length >= 3) {
+            var queryB = this.hydrate(b);
+            return queryA.filterFrom(bData, queryB);
+        } else {
+            return queryA.filterFrom(b);
+        }
+
     },
     // filterMembersAndGetCount
     filterMembersAndGetCount: function(a, b, bData) {
@@ -140,15 +147,18 @@ canReflect.assign(Query.prototype,{
 
 });
 
-Query.UNIVERSAL = set.UNIVERSAL;
+QueryLogic.UNIVERSAL = set.UNIVERSAL;
 // Nothing
-Query.EMPTY = set.EMPTY;
+QueryLogic.EMPTY = set.EMPTY;
 // The set exists, but we lack the language to represent it.
-Query.UNDEFINABLE = set.UNDEFINABLE;
+QueryLogic.UNDEFINABLE = set.UNDEFINABLE;
 
 // We don't know if this exists. Intersection between two paginated sets.
-Query.UNKNOWABLE = set.UNKNOWABLE;
+QueryLogic.UNKNOWABLE = set.UNKNOWABLE;
 
-Query.defineComparison = set.defineComparison;
+QueryLogic.defineComparison = set.defineComparison;
 
-module.exports = Query;
+QueryLogic.And = BasicQuery.And;
+QueryLogic.Or = BasicQuery.Or;
+
+module.exports = QueryLogic;

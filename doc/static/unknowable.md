@@ -1,2 +1,2 @@
 @function can-query-logic.UNKNOWABLE UNKNOWABLE
-@parent can-query-logic.static
+@parent can-query-logic.static-types

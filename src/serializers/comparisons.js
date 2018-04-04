@@ -8,9 +8,13 @@ function makeNew(Constructor) {
 }
 var hydrateMap = {};
 function addHydrateFrom(key, hydrate) {
-    hydrateMap[key] = function(value) {
-        return hydrate(value[key]);
+    hydrateMap[key] = function(value, unknownHydrator) {
+        return hydrate( unknownHydrator ? unknownHydrator(value[key]) : value[key]);
     };
+    Object.defineProperty(hydrateMap[key], "name", {
+		value: "hydrate "+key,
+		writable: true
+	});
 }
 
 // https://docs.mongodb.com/manual/reference/operator/query-comparison/
@@ -63,7 +67,7 @@ module.exports = {
                 if(!hydrator) {
                     return hydrateUnknown(value);
                 } else {
-                    return hydrator(value);
+                    return hydrator(value, hydrateUnknown);
                 }
             } else {
                 return hydrateUnknown(value);

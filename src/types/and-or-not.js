@@ -3,6 +3,7 @@ var assign = require("can-assign");
 var arrayUnionIntersectionDifference = require("../array-union-intersection-difference");
 var canReflect = require("can-reflect");
 var canGet = require("can-get");
+var canSymbol = require("can-symbol");
 
 // Define the sub-types that BasicQuery will use
 function And(values) {
@@ -16,12 +17,16 @@ function And(values) {
     });
 }
 
+var isMemberSymbol = canSymbol.for("can.isMember");
+
+
 And.prototype.isMember = function(props, root, rootKey){
     var equal = true;
     var preKey = rootKey ? rootKey + "." : "";
     canReflect.eachKey(this.values, function(value, key){
-        if(value && value.isMember) {
-            if(!value.isMember( canGet(props,key), root || props, preKey+key) ) {
+        var isMember = value && (value[isMemberSymbol] || value.isMember);
+        if(isMember) {
+            if(!isMember.call(value, canGet(props,key), root || props, preKey+key) ) {
                 equal = false;
             }
         } else {

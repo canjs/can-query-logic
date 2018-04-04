@@ -1,2 +1,2 @@
 @function can-query-logic.UNIVERSAL UNIVERSAL
-@parent can-query-logic.static
+@parent can-query-logic.static-types

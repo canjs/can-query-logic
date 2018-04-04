@@ -174,6 +174,17 @@ set = {
         }
         return value.constructor;
     },
+    ownAndMemberValue: function(startOwnValue, startMemberValue) {
+    	if(startOwnValue != null && startMemberValue != null) {
+    		var ownValue = startOwnValue.valueOf(),
+    			memberValue = startMemberValue.valueOf();
+    		if(ownValue.constructor !== memberValue.constructor) {
+    			memberValue = new startOwnValue.constructor(memberValue).valueOf()
+    		}
+            return {own: ownValue, member: memberValue};
+    	}
+    	return {own: startMemberValue, member: startOwnValue};
+    },
     getComparisons: function(Type1, Type2){
         var comparisons = Type1[setComparisonsSymbol];
         if(comparisons) {
@@ -183,6 +194,9 @@ set = {
                 return subMap.get(Type2);
             }
         }
+    },
+    hasComparisons: function(Type) {
+        return !!Type[setComparisonsSymbol];
     },
     defineComparison: function(type1, type2, comparators) {
         addComparators(type1, type2, comparators);
@@ -267,7 +281,14 @@ set = {
                 return false;
             }
         } else {
-            throw new Error("Unable to perform equal comparison between "+Type1.name+" and "+Type2.name);
+            var values = set.ownAndMemberValue(value1, value2);
+            if(canReflect.isPrimitive(values.own) && canReflect.isPrimitive(values.member)){
+                return values.own === values.member;
+            } else {
+                // try to convert ...
+                throw new Error("Unable to perform equal comparison between "+Type1.name+" and "+Type2.name);
+            }
+
         }
     },
 

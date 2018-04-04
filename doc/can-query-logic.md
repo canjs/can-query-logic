@@ -1,10 +1,12 @@
 @module {function} can-query-logic
 @parent can-data-modeling
 @collection can-core
-@group can-query-logic.static 0 static
 @group can-query-logic.prototype 1 prototype
-@group can-query-logic/query-format 2 Query Format
-@outline 2
+@group can-query-logic/query-format 2 query format
+@group can-query-logic.static 3 static methods
+
+@group can-query-logic.static-types 4 static types
+@outline 3
 
 @description Perform data queries and compare
 queries against each other. Provides logic useful for
@@ -74,7 +76,7 @@ format.  It supports a variety of operators and options.  It looks like:
 ```
 
 @param {function|can-reflect/schema} schemaOrType Defines the behavior of
-keys on a [can-query/QueryObject]. This is done with either:
+keys on a [can-query-logic/query]. This is done with either:
 
   - A constructor function that supports the `can.schema` symbol. Currently, [can-define/map/map] supports the `can.schema` symbol:
     ```js
@@ -107,11 +109,11 @@ keys on a [can-query/QueryObject]. This is done with either:
   works is explained in the _Special Comparison Logic_ section below.
 
 @param {Object} [options] The following _optional_ options are used to translate
-  between the standard [can-query/QueryObject] and the parameters the server expects:
+  between the standard [can-query-logic/query] and the parameters the server expects:
 
   - `toQuery(params)` - Converts from the parameters used by the server to
-    the standard [can-query/QueryObject].
-  - `toParams(query)` - Converts from the standard [can-query/QueryObject]
+    the standard [can-query-logic/query].
+  - `toParams(query)` - Converts from the standard [can-query-logic/query]
     to the parameters used by the server.
 
   The _Special Comparison Logic_ section below describes how to use these
@@ -121,87 +123,165 @@ keys on a [can-query/QueryObject]. This is done with either:
 
 @body
 
+## Purpose
 
+`can-query-logic` is used to give CanJS an _understanding_ of what __the parameters used to
+retrieve a list of data__ represent.  This awareness helps other libraries like
+[can-connect] and [can-fixture] provide real-time, caching and other behaviors.
 
-The `can-query` package provides methods that
-perform data queries and compare queries against
-each other.
+__The parameters used to retrieve a list of data?__
 
-For example, the following gets all completed
-tasks from a list of tasks:
+In many applications, you request a list of data by making a `fetch` or `XMLHTTPRequest`
+to a url like:
 
-```js
-var tasks = [
-  {
-      id: 1,
-      attributes: {
-          name: "do the dishes",
-          complete: true
-      }
-  },
-  {
-      id: 2,
-      attributes: {
-          name: "wash the car",
-          complete: false
-      }
-  }
-]
-
-var result = query.filterMembers({
-  where: {complete: true}
-}, tasks);
-
-result //-> [
-  {
-      id: 1,
-      attributes: {
-          name: "do the dishes",
-          complete: true
-      }
-  }
-]
+```
+/api/todos?filter[complete]=true&sort=name+asc
 ```
 
-`can-query` is most unique in that it can
-can compare queries themselves.  For example,
-the returns a query that represents the
-combination of two other queries:
-
-```js
-var result = query.union({
-  where: {complete: true}
-},{
-  where: {complete: false}
-})
-
-result //-> {}
-```
-
-`can-query` uses a [can-query/types/query standard query format] that
-looks like:
+The values after the `?` are used to control the data that comes back. Those values [can-deparam]-ed into
+a query object look like this:
 
 ```js
 {
-  where: {name: {$ne: null}},
-  page: {skip: 20, limit: 10},
-  sort: {name: 1}
+    filter: {complete: true},
+    sort: "name asc"
 }
 ```
 
-`can-query` assumes data in a [JSON API format](http://jsonapi.org/format/).
+This object represent a [can-query-logic/query Query]. This specific query indicates to
+request completed todos and have them sorted by their _name_.  
 
-There are packages that provide functions used to
-translate between different query and
-data formats.  These are used to configure
-your application's [can-service].
+A `QueryLogic` instance _understands_ what a `Query` represents. For example, it can filter items
+that match a particular query:
+
+```js
+var todos = [
+  { id: 1, name: "learn CanJS",   complete: true  },
+  { id: 2, name: "wash the car",  complete: false },
+  { id: 3, name: "do the dishes", complete: true  }
+]
+
+var queryLogic = new QueryLogic();
+
+var result = queryLogic.filterMembers({
+  filter: {complete: true}
+}, todos);
+
+result //-> [
+//  { id: 3, name: "do the dishes", complete: true  },
+//  { id: 1, name: "learn CanJS",   complete: true  }
+//]
+```
+
+A [can-query-logic.prototype.isMember] to see if a particular item
+belongs to a query and [can-query-logic.prototype.index] to get the location where that
+item should be inserted.  This is particularly useful for creating real-time behaviors.
+
+## Use
+
+There are two main uses of `can-query-logic`:
+
+- Configuring a `QueryLogic` instance to match your service behavior.
+- Using a `QueryLogic` instance to create a new [can-connect] behavior.
 
 
-## Special Comparison Logic
+
+## Configuration
+
+Most people will only ever need to configure a
+`QueryLogic` logic instance.  Once properly configured, all [can-connect] behaviors will
+work correctly.  If your service parameters matches the [can-query-logic/query default query structure],
+you likely don't need to use `can-query-logic` directly at all.  However, if your service parameters differ from
+the [can-query-logic/query default query structure] or they need additional logic, some configuration will be necessary.
+
+### Matching the default query structure
+
+By default, `can-query-logic` assumes your service layer will match a [can-query-logic/query default query structure]
+that looks like:
+
+```js
+{
+    // Selects only the todos that match.
+    filter: {
+        complete: false
+    },
+    // Sort the results of the selection
+    sort: "name desc",
+    // Selects a range of the sorted result
+    page: {start: 0, end: 19}
+}
+```
+
+There's:
+
+- a `filter` property for filtering records,
+- a `sort` property for specifying the order to sort records, and
+- a `page` property that selects a range of the sorted result.
+
+If you control the service layer, we __encourage__ you to make it match the default
+[can-query-logic/query].  The default query structure also supports the following [can-query-logic/comparison-operators]: `$eq`, `$gt`, `$gte`, `$in`, `$lt`, `$lte`, `$ne`, `$nin`.
+
+If you support the default structure, it's very likely all the configuration you need to perform will
+happen on the data type you pass to your [can-connect can-connect connection]. For example,
+you might create a `Todo` data type and pass it to a connection like this:
+
+```js
+import DefineMap from "can-define/map/map";
+import realTimeRest from "can-real-time-rest";
+
+const Todo = DefineMap.extend({
+  id: {
+    identity: true,
+    type: "number"
+  },
+  complete: "boolean",
+  name: "string"
+});
+
+realTimeRest({
+  url: "/todos",
+  Map: Todo
+});
+```
+@highlight 4,15
+
+Internally, `realTimeRest` is using `Todo` to create and configure a `QueryLogic`
+instance for you.  The previous example is equivalent to:
+
+```js
+import DefineMap from "can-define/map/map";
+import realTimeRest from "can-real-time-rest";
+import QueryLogic from "can-query-logic";
+
+const Todo = DefineMap.extend({
+  id: {
+    identity: true,
+    type: "number"
+  },
+  complete: "boolean",
+  name: "string"
+});
+
+var todoQueryLogic = new QueryLogic(Todo);
+
+realTimeRest({
+  url: "/todos",
+  Map: Todo,
+  queryLogic: todoQueryLogic
+});
+```
+@highlight 14,19
+
+If your services don't match the default query structure or logic, read on to
+see how to configure your query to match your service layer.
 
 ### Changing the query structure
 
-To change queries to use `where` instead of `filter` so that queries can be
+If the logic of your service layer matches the logic of the [can-query-logic/query default query], but the form
+of the query parameters is different, the easiest way to configure the `QueryLogic` is to
+translate your parameter structure to the [can-query-logic/query default query structure].
+
+For example, to change queries to use `where` instead of `filter` so that queries can be
 made like:
 
 ```js
@@ -240,6 +320,70 @@ realTimeRest({
 });
 ```
 
+
+### Defining filter properties with special logic
+
+If the logic of the [can-query-logic/query default query] is not adequate to represent
+the behavior of your service layer queries, you can define special behaviors called `SetType`s to
+provide the additional logic.
+
+Depending on your needs, this can be quite complex or rather simple. The following sections
+provide configuration examples in increasing complexity.
+
+Before reading the following sections, it's useful to have some background information on
+how `can-query-logic` works.
+
+`can-query-logic` uses [set theory](https://en.wikipedia.org/wiki/Set_theory)
+
+#### Built-in special types
+
+`can-query-logic` comes with functionality that can be used to create special logic. For example,
+the [can-query-logic.makeEnum] method can be used to build a `Status` type that contains ONLY the
+enumerated values:
+
+```js
+import QueryLogic from "can-query-logic";
+import DefineMap from "can-define/map/map";
+
+const Status = QueryLogic.makeEnum(["new","assigned","complete"]);
+
+const Todo = DefineMap.extend({
+    id: "number",
+    status: Status,
+    complete: "boolean",
+    name: "string"
+});
+
+const todoLogic = new QueryLogic(Todo);
+todoLogic.union(
+    {filter: {status: ["new","assigned"] }},
+    {filter: {status: "complete" }}
+) //-> {}
+```
+
+
+#### Custom types that work with the comparison operators
+
+If your type can be represented by a number or string, then you can
+
+
+```js
+class DateStr(){
+    constructor(value){
+        this.value = value;
+    }
+    valueOf(){
+        return new Date(this.value).getTime()
+    }
+}
+```
+
+
+#### Completely custom types
+
+
+
+
 For example,
 we can define a `StringIgnoreCaseSet` which will be used to compare
 `status` query values:
@@ -262,4 +406,29 @@ new Query({
         status: StringIgnoreCaseSet
     }
 });
+```
+
+
+### Testing your QueryLogic
+
+It can be very useful to test your `QueryLogic` before using it with [can-connect].
+
+```js
+Type = DefineMap.extend({ ... })
+
+var queryLogic = new QueryLogic(Todo, {
+    toQuery(params){ ... },
+    toParams(query){ ... }
+})
+
+unit.test("isMember", function(){
+    var result = queryLogic.isMember({
+        filter: {special: "SOMETHING SPECIAL"}
+    },{
+        id: 0,
+        name: "I'm very special"
+    });
+    assert.ok(result, "is member");
+})
+
 ```

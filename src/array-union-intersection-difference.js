@@ -8,8 +8,12 @@ function indexOf(arr, value) {
     return -1;
 }
 
+function getValue(value){
+    return value == null ? value : value.valueOf();
+}
+
 module.exports = function arrayUnionIntersectionDifference(arr1, arr2){
-    var map = {};
+    var set = new Set();
 
     var intersection = [];
     var union = [];
@@ -17,12 +21,12 @@ module.exports = function arrayUnionIntersectionDifference(arr1, arr2){
 
 
     arr1.forEach(function(value){
-        map[value] = true;
+        set.add(getValue(value));
         union.push(value);
     });
 
     arr2.forEach(function(value){
-        if(map[value]) {
+        if(set.has(getValue(value))) {
             intersection.push(value);
             var index = indexOf(difference, value);
             if(index !== -1) {

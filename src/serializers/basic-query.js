@@ -27,13 +27,17 @@ function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
     function hydrateChild(value) {
         if(value) {
             if(Array.isArray(value)) {
-                throw new Error("this should not happen");
+                return value.map(hydrateUnknown);
             } else if(canReflect.isPlainObject(value)) {
                 // lets try to get the schema ...
                 return hydrateAndValues(value, getSchemaProperties(value));
             }
         }
-        hydrateUnknown && hydrateUnknown(value);
+        if(hydrateUnknown) {
+            return hydrateUnknown(value);
+        } else {
+            return value;
+        }
     }
 
     canReflect.eachKey(values, function(value, prop){
@@ -41,7 +45,14 @@ function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
         if(type) {
             var SetType = type[setTypeSymbol];
             if(SetType) {
-                values[prop] = new SetType(value);
+                if(set.hasComparisons(SetType)) {
+                    values[prop] = new SetType(value);
+                } else {
+                    values[prop] = comparisonsConverter.hydrate(value, function(value){
+                        return new SetType(value);
+                    });
+                }
+
             } else {
                 // HERE
                 values[prop] = comparisonsConverter.hydrate(value, hydrateChild);
@@ -116,7 +127,11 @@ module.exports = function(schema) {
 
             // this mutates
             var filterAnd = hydrateAndValues(filter, keys, function(value){
-                throw new Error("can-query-logic doesn't support comparison operator: "+JSON.stringify(value));
+                if(canReflect.isBuiltIn(value)) {
+                    return value;
+                } else {
+                    throw new Error("can-query-logic doesn't support comparison operator: "+JSON.stringify(value));
+                }
             });
 
             // Conver the filter arguments
