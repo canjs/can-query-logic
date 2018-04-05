@@ -148,8 +148,8 @@ a query object look like this:
 }
 ```
 
-This object represent a [can-query-logic/query Query]. This specific query indicates to
-request completed todos and have them sorted by their _name_.  
+This object represents a [can-query-logic/query Query]. This specific query indicates to
+request completed todos and have the todos sorted by their _name_.  
 
 A `QueryLogic` instance _understands_ what a `Query` represents. For example, it can filter items
 that match a particular query:
@@ -190,7 +190,7 @@ There are two main uses of `can-query-logic`:
 
 Most people will only ever need to configure a
 `QueryLogic` logic instance.  Once properly configured, all [can-connect] behaviors will
-work correctly.  If your service parameters matches the [can-query-logic/query default query structure],
+work correctly.  If your service parameters match the [can-query-logic/query default query structure],
 you likely don't need to use `can-query-logic` directly at all.  However, if your service parameters differ from
 the [can-query-logic/query default query structure] or they need additional logic, some configuration will be necessary.
 
@@ -221,7 +221,7 @@ There's:
 If you control the service layer, we __encourage__ you to make it match the default
 [can-query-logic/query].  The default query structure also supports the following [can-query-logic/comparison-operators]: `$eq`, `$gt`, `$gte`, `$in`, `$lt`, `$lte`, `$ne`, `$nin`.
 
-If you support the default structure, it's very likely all the configuration you need to perform will
+If you support the default structure, it's very likely the entire configuration you need to perform will
 happen on the data type you pass to your [can-connect can-connect connection]. For example,
 you might create a `Todo` data type and pass it to a connection like this:
 
@@ -364,7 +364,7 @@ todoLogic.union(
 
 #### Custom types that work with the comparison operators
 
-If your type can be represented by a number or string, then you can create a `SetType` class
+If a number or string can represent your type, then you can create a `SetType` class
 that can be used with the comparison operators.
 
 The `SetType` needs to be able to translate back and forth from
@@ -592,21 +592,25 @@ unit.test("isMember", function(){
 
 The following gives a rough overview of how `can-query-logic` works:
 
-__1. Define your types:__
+__1. Types are defined:__
+
+A user defines the type of data that will be loaded from the server:
 
 ```js
-Todo = DefineMap.extend({
+const Todo = DefineMap.extend({
   id: {
     identity: true,
     type: Number
   },
   complete: Boolean,
   name: String,
-  status: makeEnum(["assigned","in-progress","complete"])
+  status: QueryLogic.makeEnum(["assigned","in-progress","complete"])
 })
 ```
 
-__2. This creates a schema:__
+__2. The defined type exposes a schema:__
+
+[can-define/map/map]'s expose this type information as a schema:
 
 ```js
 var todoSchema = canReflect.getSchema(Todo);
@@ -634,7 +638,7 @@ todoQuery.union(
 )
 ```
 
-These queries (`{ filter: {name: "assigned"} }`) are hydrated to set types like:
+The queries (ex: `{ filter: {name: "assigned"} }`) are hydrated to set types like:
 
 ```js
 var assignedSet = new BasicQuery({
@@ -644,27 +648,54 @@ var assignedSet = new BasicQuery({
 });
 ```
 
-Then `can-query/set` is used to perform the union:
+The following is a more complex query and what it gets hydrated to:
 
 ```js
-set.union(assignedSet, completeSet)
+// query
+{
+    filter: {
+        age: {$gt: 22}
+    },
+    sort: "name desc",
+    page: {start: 0, end: 9}
+}
+
+// hydrated set types
+new BasicQuery({
+    filter: new And({
+        age: new GreaterThan(22)
+    }),
+    sort: "name desc",
+    page: new RealNumberRangeInclusive(0,9)
+});
 ```
 
-This will look for comparator functions specified on their constructor's
-`can.setComparisons` symbol property:
+
+Once queries are hydrated, `can-query/src/set` is used to perform the union:
 
 ```js
-BasicQuery[can.setComparisons] = Map({
-    [type1]: Map({[type2]: {union, difference, intersection}})
-})
+set.union(assignedSet, completeSet);
+```
+
+`set.union` looks for comparator functions specified on their constructor's
+`can.setComparisons` symbol property.  For example, `BasicQuery` has
+a `can.setComparisons` property and value like the following:
+
+```js
+BasicQuery[Symbol.for("can.setComparisons")] = new Map([
+    [BasicQuery]: new Map([
+        [BasicQuery]: {union, difference, intersection}
+        [QueryLogic.UNIVERSAL]: {difference}
+    ])
+]);
 ```
 
 Types like `BasicQuery` and `And` are "composer" types.  Their
- `union`, `difference` and `intersection` methods will often perform
+ `union`, `difference` and `intersection` methods perform
  `union`, `difference` and `intersection` on their children types.
 
 In this case, `set.union` will call `BasicQuery`'s union with
-itself.  This will see that the `sort` and `pagination` results match
+itself.  This will see that the `sort` and `page` results match
 and simply return a new `BasicQuery` with the union of the filters:
 
 ```js
