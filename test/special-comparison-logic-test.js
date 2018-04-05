@@ -189,7 +189,8 @@ QUnit.test("value type", function(){
         }
     });
 
-    var oct20_1982 = new Date(1982,9,20);
+    var oct20_1982 = new Date(1982,9,20),
+        date90s = new Date(1990,0,1);
 
     // new And({
     //   date: new GT( new DateStringSet("string") )
@@ -215,5 +216,17 @@ QUnit.test("value type", function(){
         [3,4],
         "filtered correctly");
 
+
+    var union = queryLogic.union({
+        filter: {date: [oct20_1982.toString()]}
+    },{
+        filter: {date: [date90s.toString()]}
+    });
+
+    QUnit.deepEqual(union,
+        {
+            filter: {date: {$in: [oct20_1982.toString(), date90s.toString()]}}
+        }
+    );
 
 });

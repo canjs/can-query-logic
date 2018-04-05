@@ -364,49 +364,204 @@ todoLogic.union(
 
 #### Custom types that work with the comparison operators
 
-If your type can be represented by a number or string, then you can
+If your type can be represented by a number or string, then you can create a `SetType` class
+that can be used with the comparison operators.
 
+The `SetType` needs to be able to translate back and forth from
+the values in the query to a number or string.
+
+For example, you might want to represent a date with a string like:
 
 ```js
-class DateStr(){
+{
+    filter: {date: {$gt: "Wed Apr 04 2018 10:00:00 GMT-0500 (CDT)"}}
+}
+```
+
+The following creates a `DateStringSet` that translates a date string to a number:
+
+```js
+class DateStringSet {
     constructor(value){
         this.value = value;
     }
+    // used to convert to a number
     valueOf(){
         return new Date(this.value).getTime()
     }
 }
 ```
 
+These classes must provide:
 
-#### Completely custom types
+- `constructor` - initialized with the the value passed to a comparator (ex: `"Wed Apr 04 2018 10:00:00 GMT-0500 (CDT)"`).
+- [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf valueOf] - return a string or number
+  used to compare (ex: `1522854000000`).
 
-
-
-
-For example,
-we can define a `StringIgnoreCaseSet` which will be used to compare
-`status` query values:
+To configure a `QueryLogic` to use a `SetType`, it must be the `can.SetType` property on a
+schema's `keys` object.  This can be done directly like:
 
 ```js
-class StringIgnoreCaseSet {
-    constructor(value) {
-        this.value = value.toLowerCase();
-    }
-    isMember(value) {
-        return this.value === value.toLowerCase()
-    }
-    valueOf() {
-        return this.value;
-    }
-}
-
-new Query({
+new QueryLogic({
     keys: {
-        status: StringIgnoreCaseSet
+        date: {[Symbol.for("can.SetType")]: DateStringSet}
     }
 });
 ```
+
+More commonly, `DateStringSet` is the `can.SetType` symbol of a type like:
+
+```js
+const DateString = {
+    [Symbol.for("can.SetType")]: DateStringSet
+};
+```
+
+Then this `DateString` is used to configure your data type like:
+
+```js
+const Todo = DefineMap.extend({
+    id: {type: "number", identity: true},
+    name: "string",
+    date: DateString
+})
+```
+
+> NOTE: Types like `DateString` need to be distinguished from `SetType`s like
+> `DateStringSet` because types like `DateString` have different values. For example,
+> a `DateStringSet` might have a value like "yesterday", but this would not be a valid
+> `DateString`.
+
+
+#### Completely custom types
+
+If you want total control over filtering logic, you can create a `SetType` that
+provides the following:
+
+- methods:
+  - `can.isMember` - A function that returns if an object belongs to the query.
+  - `can.serialize` - A function that returns the serialized form of the type for the query.
+- comparisons:
+  - `union` - The result of taking a union of two `SetType`s.
+  - `intersection` - The result of taking an intersection of two `SetType`s.
+  - `difference` - The result of taking a difference of two `SetType`s.
+
+The following creates a `SearchableStringSet` that is able to perform searches that match
+the provided text like:
+
+```js
+var recipes = [
+    {id: 1, name: "garlic chicken"},
+    {id: 2, name: "ice cream"},
+    {id: 3, name: "chicken kiev"}
+];
+
+var result = queryLogic.filterMembers({
+    filter: {name: "chicken"}
+}, recipes);
+
+result //-> [
+       // {id: 1, name: "garlic chicken"},
+       // {id: 3, name: "chicken kiev"}
+       // ]
+```
+
+Notice how all values that match `chicken` are returned.
+
+
+```js
+// Takes the value of `name` (ex: `"chicken"`)
+function SearchableStringSet(value) {
+    this.value = value;
+}
+
+canReflect.assignSymbols(SearchableStringSet.prototype,{
+    // Returns if the name on a todo is actually a member of the set.
+    "can.isMember": function(value){
+        return value.includes(this.value);
+    },
+    // Converts back to a value that can be in a query.
+    "can.serialize": function(){
+        return this.value;
+    }
+});
+
+// Specify how to do the fundamental set comparisons.
+QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
+    union(searchA, searchB){
+        // if searchA's text contains searchB's text, then
+        // searchB will include searchA's results.
+        if(searchA.value.includes(searchB.value)) {
+            return searchB;
+        }
+        if(searchB.value.includes(searchA.value)) {
+            return searchA;
+        }
+        return new QueryLogic.Or([searchA, searchB]);
+    },
+    intersection(searchA, searchB){
+        // if searchA's text contains searchB's text, then
+        // searchA is the shared search results.
+        if(searchA.value.includes(searchB.value)) {
+            return searchA;
+        }
+        if(searchB.value.includes(searchA.value)) {
+            return searchB;
+        }
+        return QueryLogic.UNDEFINABLE;
+    },
+    difference(searchA, searchB){
+        // if searchA's text contains searchB's text, then
+        // searchA has outside what searchB would return.
+        if(searchA.value.includes(searchB.value)) {
+            return QueryLogic.EMPTY;
+        }
+        // If searchA has results outside searchB's results
+        // then there are items, but we aren't able to
+        // create a string that represents this.
+        if(searchB.value.includes(searchA.value)) {
+            return QueryLogic.UNDEFINABLE;
+        }
+        // If there's another situation, we
+        // aren't able to tell if there is a difference.
+        return QueryLogic.UNKNOWABLE;
+    }
+});
+```
+
+To configure a `QueryLogic` to use a `SetType`, it must be the `can.SetType` property on a
+schema's `keys` object.  This can be done directly like:
+
+```js
+new QueryLogic({
+    keys: {
+        date: {[Symbol.for("can.SetType")]: SearchableStringSet}
+    }
+});
+```
+
+More commonly, `SearchableStringSet` is the `can.SetType` symbol of a type like:
+
+```js
+const SearchableString = {
+    [Symbol.for("can.SetType")]: SearchableStringSet
+};
+```
+
+Then this `SearchableString` is used to configure your data type like:
+
+```js
+const Todo = DefineMap.extend({
+    id: {type: "number", identity: true},
+    name: SearchableString,
+    date: DateString
+})
+```
+
+> NOTE: Types like `SearchableString` need to be distinguished from `SetType`s like
+> `SearchableStringSet` because types like `SearchableString` have different values. For example,
+> a `SearchableStringSet` might have a value like "yesterday", but this would not be a valid
+> `SearchableString`.
 
 
 ### Testing your QueryLogic
@@ -432,3 +587,112 @@ unit.test("isMember", function(){
 })
 
 ```
+
+## How it works
+
+The following gives a rough overview of how `can-query-logic` works:
+
+__1. Define your types:__
+
+```js
+Todo = DefineMap.extend({
+  id: {
+    identity: true,
+    type: Number
+  },
+  complete: Boolean,
+  name: String,
+  status: makeEnum(["assigned","in-progress","complete"])
+})
+```
+
+__2. This creates a schema:__
+
+```js
+var todoSchema = canReflect.getSchema(Todo);
+todoSchema /*-> {
+  identity: ["id"],
+  keys: {
+    id: Number,
+    complete: Boolean,
+    name: String,
+    status: Status
+  }
+}*/
+```
+
+__3. The schema is used by `can-query-logic` to create set instances:__
+
+When a call to `.union()` happens like:
+
+```js
+var todoQuery = new QueryLogic(todoSchema);
+
+todoQuery.union(
+    { filter: {name: "assigned"} },
+    { filter: {name: "complete"} }
+)
+```
+
+These queries (`{ filter: {name: "assigned"} }`) are hydrated to set types like:
+
+```js
+var assignedSet = new BasicQuery({
+    filter: new And({
+        name: new Status[Symbol.for("can.SetType")]("assigned")
+    })
+});
+```
+
+Then `can-query/set` is used to perform the union:
+
+```js
+set.union(assignedSet, completeSet)
+```
+
+This will look for comparator functions specified on their constructor's
+`can.setComparisons` symbol property:
+
+```js
+BasicQuery[can.setComparisons] = Map({
+    [type1]: Map({[type2]: {union, difference, intersection}})
+})
+```
+
+Types like `BasicQuery` and `And` are "composer" types.  Their
+ `union`, `difference` and `intersection` methods will often perform
+ `union`, `difference` and `intersection` on their children types.
+
+In this case, `set.union` will call `BasicQuery`'s union with
+itself.  This will see that the `sort` and `pagination` results match
+and simply return a new `BasicQuery` with the union of the filters:
+
+```js
+new BasicQuery({
+    filter: set.union( assignedSet.filter, completeSet.filter )
+})
+```
+
+This will eventually result in a query like:
+
+```js
+new BasicQuery({
+    filter: new And({
+        name: new Status[Symbol.for("can.SetType")]("assigned", "complete")
+    })
+})
+```
+
+__4. The resulting query is serialized:__
+
+Finally, this set will be serialized to:
+
+```js
+{
+    filter: {
+        name: ["assigned", "complete"]
+    }
+}
+```
+
+And this is what is returned as a result of the union.
