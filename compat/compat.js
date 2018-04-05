@@ -1,7 +1,7 @@
 // for can-set compat
 var Query = require("../can-query-logic");
 var canReflect = require("can-reflect");
-var transform = require("can-get/transform/transform");
+var transform = require("can-key/transform/transform");
 var makeEnum = require("../src/types/make-enum");
 var SET = require("../src/set");
 

@@ -2,7 +2,7 @@ var set = require("../set");
 var assign = require("can-assign");
 var arrayUnionIntersectionDifference = require("../array-union-intersection-difference");
 var canReflect = require("can-reflect");
-var canGet = require("can-get");
+var canGet = require("can-key/get/get");
 var canSymbol = require("can-symbol");
 
 // Define the sub-types that BasicQuery will use

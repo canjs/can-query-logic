@@ -46,7 +46,7 @@
   "dependencies": {
     "can-assign": "^1.1.1",
     "can-define-lazy-value": "^1.0.2",
-    "can-get": "<2.0.0",
+    "can-key": "<2.0.0",
     "can-reflect": "^1.13.3",
     "can-symbol": "^1.6.1"
   },

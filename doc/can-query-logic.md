@@ -50,7 +50,7 @@ todoQueryLogic.filterMembers({
     filter: {
         complete: false
     },
-    sort: "name desc",
+    sort: "-name",
     page: {start: 0, end: 19}
 },[
     {id: 1, name: "do dishes", complete: false},
@@ -69,7 +69,7 @@ format.  It supports a variety of operators and options.  It looks like:
         complete: false
     },
     // Sort the results of the selection
-    sort: "name desc",
+    sort: "-name",
     // Selects a range of the sorted result
     page: {start: 0, end: 19}
 }
@@ -92,7 +92,7 @@ keys on a [can-query-logic/query]. This is done with either:
     ```
   - A schema object that looks like:
     ```js
-    new Query({
+    new QueryLogic({
         // keys that uniquely represent this type
         identity: ["id"],
         keys: {
@@ -104,9 +104,9 @@ keys on a [can-query-logic/query]. This is done with either:
     ```
 
   By default, filter properties like `status` in `{filter: {status: "complete"}}`
-  are hydrated to one of the [can-query/types/comparisons comparison types] like
+  are used to create to one of the [can-query/types/comparisons comparison instances] like
   `GreaterThan`. A matching schema key will overwrite this behavior. How this
-  works is explained in the _Special Comparison Logic_ section below.
+  works is explained in the [Defining filter properties with special logic](#Definingfilterpropertieswithspeciallogic) section below.
 
 @param {Object} [options] The following _optional_ options are used to translate
   between the standard [can-query-logic/query] and the parameters the server expects:
@@ -116,8 +116,7 @@ keys on a [can-query-logic/query]. This is done with either:
   - `toParams(query)` - Converts from the standard [can-query-logic/query]
     to the parameters used by the server.
 
-  The _Special Comparison Logic_ section below describes how to use these
-  options to match your query's logic to your servers.
+  The [Changing the query structure](#Changingthequerystructure) section below describes how to use these options to match your query's logic to your servers.
 
 
 
@@ -135,21 +134,21 @@ In many applications, you request a list of data by making a `fetch` or `XMLHTTP
 to a url like:
 
 ```
-/api/todos?filter[complete]=true&sort=name+asc
+/api/todos?filter[complete]=true&sort=name
 ```
 
-The values after the `?` are used to control the data that comes back. Those values [can-deparam]-ed into
+The values after the `?` are used to control the data that comes back. Those values are
+[can-deparam deserialized] into
 a query object look like this:
 
 ```js
 {
     filter: {complete: true},
-    sort: "name asc"
+    sort: "name"
 }
 ```
 
-This object represents a [can-query-logic/query Query]. This specific query indicates to
-request completed todos and have the todos sorted by their _name_.  
+This object represents a [can-query-logic/query Query]. This specific query is for requesting completed todos and have the todos sorted by their _name_.  
 
 A `QueryLogic` instance _understands_ what a `Query` represents. For example, it can filter items
 that match a particular query:
@@ -173,9 +172,26 @@ result //-> [
 //]
 ```
 
-A [can-query-logic.prototype.isMember] to see if a particular item
-belongs to a query and [can-query-logic.prototype.index] to get the location where that
-item should be inserted.  This is particularly useful for creating real-time behaviors.
+The [can-query-logic.prototype.filterMembers] method allows `QueryLogic` to be used similar to a database. `QueryLogic` instances methods help solve other problems too:
+
+- __real-time__ - [can-query-logic.prototype.isMember] returns if a particular item
+belongs to a query and [can-query-logic.prototype.index] returns the location where that item belongs.
+- __caching__ - [can-query-logic.prototype.isSubset] can tell you if you've already loaded
+  data you are looking for.  [can-query-logic.prototype.difference] can tell you what data
+  you need to load that already isn't in your cache.
+
+In fact, `can-query-logic`'s most unique ability is to be able to directly compare
+queries that represent sets of data instead of having to compare
+the data itself. For example, if you already loaded all completed todos,
+`can-query-logic` can tell you how to get all remaining todos:
+
+```js
+var completedTodosQuery = {filter: {complete: false}};
+var allTodosQuery = {};
+var remainingTodosQuery = queryLogic.difference(allTodosQuery, completedTodosQuery);
+
+remainingTodosQuery //-> {filter: {complete: {$ne: false}}}
+```
 
 ## Use
 
@@ -203,20 +219,25 @@ that looks like:
 {
     // Selects only the todos that match.
     filter: {
-        complete: false
+        complete: {$in: [false, null]}
     },
     // Sort the results of the selection
-    sort: "name desc",
+    sort: "-name",
     // Selects a range of the sorted result
     page: {start: 0, end: 19}
 }
 ```
 
+This structures follows the [Fetching Data JSONAPI specification](http://jsonapi.org/format/#fetching).
+
 There's:
 
-- a `filter` property for filtering records,
-- a `sort` property for specifying the order to sort records, and
-- a `page` property that selects a range of the sorted result.
+- a [filter](http://jsonapi.org/format/#fetching-filtering) property for filtering records,
+- a [sort](http://jsonapi.org/format/#fetching-sorting) property for specifying the order to sort records, and
+- a [page](http://jsonapi.org/format/#fetching-pagination) property that selects a range of the sorted result. _The range indexes are inclusive_.
+
+> __NOTE__: [can-connect] does not follow the rest of the JSONAPI specification. Specifically
+> [can-connect] expects your server to send back JSON data in a different format.
 
 If you control the service layer, we __encourage__ you to make it match the default
 [can-query-logic/query].  The default query structure also supports the following [can-query-logic/comparison-operators]: `$eq`, `$gt`, `$gte`, `$in`, `$lt`, `$lte`, `$ne`, `$nin`.
@@ -294,16 +315,21 @@ You can use the `options`'s `toQuery` and `toParams` functions
 to set the `filter` property value to the passed in `where` property value.
 
 ```js
-// 1. DEFINE YOUR TYPE
+// DEFINE YOUR TYPE
 const Todo = DefineMap.extend({...});
 
+// CREATE YOUR QUERY LOGIC
 var todoQueryLogic = new QueryLogic(Todo, {
+    // Takes what your service expects: {where: {...}}
+    // Returns what QueryLogic expects: {filter: {...}}
     toQuery(params){
         var where = params.where;
         delete params.where;
         params.filter = where;
         return params;
     },
+    // Takes what QueryLogic expects: {filter: {...}}
+    // Returns what your service expects: {where: {...}}
     toParams(query){
         var where = query.filter;
         delete query.filter;
@@ -312,7 +338,7 @@ var todoQueryLogic = new QueryLogic(Todo, {
     }
 });
 
-// 2. CREATE YOUR CONNECTION
+// PASS YOUR QueryLogic TO YOUR CONNECTION
 realTimeRest({
   url: "/todos",
   Map: Todo,
@@ -324,16 +350,14 @@ realTimeRest({
 ### Defining filter properties with special logic
 
 If the logic of the [can-query-logic/query default query] is not adequate to represent
-the behavior of your service layer queries, you can define special behaviors called `SetType`s to
+the behavior of your service layer queries, you can define special classes called `SetType`s to
 provide the additional logic.
 
 Depending on your needs, this can be quite complex or rather simple. The following sections
 provide configuration examples in increasing complexity.
 
 Before reading the following sections, it's useful to have some background information on
-how `can-query-logic` works.
-
-`can-query-logic` uses [set theory](https://en.wikipedia.org/wiki/Set_theory)
+how `can-query-logic` works.  We suggest reading the [How it works](#Howitworks) section.
 
 #### Built-in special types
 
@@ -355,12 +379,17 @@ const Todo = DefineMap.extend({
 });
 
 const todoLogic = new QueryLogic(Todo);
-todoLogic.union(
+var unionQuery = todoLogic.union(
     {filter: {status: ["new","assigned"] }},
     {filter: {status: "complete" }}
-) //-> {}
+)
+
+unionQuery //-> {}
 ```
 
+> NOTE: `unionQuery` is empty because if we loaded all todos that
+> are new, assigned, and complete, we've loaded every todo.  
+> The `{}` query would load every todo.
 
 #### Custom types that work with the comparison operators
 
@@ -488,43 +517,60 @@ canReflect.assignSymbols(SearchableStringSet.prototype,{
 
 // Specify how to do the fundamental set comparisons.
 QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
+    // Return a set that would load all items in searchA and searchB.
     union(searchA, searchB){
-        // if searchA's text contains searchB's text, then
+        // If searchA's text contains searchB's text, then
         // searchB will include searchA's results.
         if(searchA.value.includes(searchB.value)) {
+            // A:`food` ∪ B:`foo` => `foo`
             return searchB;
         }
         if(searchB.value.includes(searchA.value)) {
+            // A:`foo` ∪ B:`food` => `foo`
             return searchA;
         }
+        // A:`ice` ∪ B:`cream` => `ice` || `cream`
         return new QueryLogic.Or([searchA, searchB]);
     },
+    // Return a set that would load items shared by searchA and searchB.
     intersection(searchA, searchB){
-        // if searchA's text contains searchB's text, then
+        // If searchA's text contains searchB's text, then
         // searchA is the shared search results.
         if(searchA.value.includes(searchB.value)) {
+            // A:`food` ∩ B:`foo` => `food`
             return searchA;
         }
         if(searchB.value.includes(searchA.value)) {
+            // A:`foo` ∩ B:`food` => `food`
             return searchB;
         }
+        // A:`ice` ∩ B:`cream` => `ice` && `cream`
+        // But there is no `QueryLogic.AndValues`,
+        // So we return `UNDEFINABLE`.
         return QueryLogic.UNDEFINABLE;
     },
+    // Return a set that would load items in searchA that are not in
+    // searchB.
     difference(searchA, searchB){
         // if searchA's text contains searchB's text, then
         // searchA has outside what searchB would return.
         if(searchA.value.includes(searchB.value)) {
+            // A:`food` \ B:`foo` => ∅
             return QueryLogic.EMPTY;
         }
         // If searchA has results outside searchB's results
         // then there are items, but we aren't able to
         // create a string that represents this.
         if(searchB.value.includes(searchA.value)) {
+            // A:`foo` \ B:`food` => UNDEFINABLE
             return QueryLogic.UNDEFINABLE;
         }
+
+        // A:`ice` \ B:`cream` => `ice` && !`cream`
         // If there's another situation, we
-        // aren't able to tell if there is a difference.
-        return QueryLogic.UNKNOWABLE;
+        // aren't able to express the difference
+        // so we return UNDEFINABLE.
+        return QueryLogic.UNDEFINABLE;
     }
 });
 ```
@@ -610,7 +656,7 @@ const Todo = DefineMap.extend({
 
 __2. The defined type exposes a schema:__
 
-[can-define/map/map]'s expose this type information as a schema:
+[can-define/map/map]s expose this type information as a schema:
 
 ```js
 var todoSchema = canReflect.getSchema(Todo);
@@ -638,7 +684,7 @@ todoQuery.union(
 )
 ```
 
-The queries (ex: `{ filter: {name: "assigned"} }`) are hydrated to set types like:
+The queries (ex: `{ filter: {name: "assigned"} }`) are hydrated to `SetType`s like:
 
 ```js
 var assignedSet = new BasicQuery({
@@ -648,6 +694,10 @@ var assignedSet = new BasicQuery({
 });
 ```
 
+> NOTE: __hydrated__ is the opposite of serialization. It means we take
+> a plain JavaScript object like `{ filter: {name: "assigned"} }` and
+> create instances of types with it.
+
 The following is a more complex query and what it gets hydrated to:
 
 ```js
@@ -656,7 +706,7 @@ The following is a more complex query and what it gets hydrated to:
     filter: {
         age: {$gt: 22}
     },
-    sort: "name desc",
+    sort: "-name",
     page: {start: 0, end: 9}
 }
 
@@ -665,7 +715,7 @@ new BasicQuery({
     filter: new And({
         age: new GreaterThan(22)
     }),
-    sort: "name desc",
+    sort: "-name",
     page: new RealNumberRangeInclusive(0,9)
 });
 ```
@@ -693,6 +743,10 @@ BasicQuery[Symbol.for("can.setComparisons")] = new Map([
 Types like `BasicQuery` and `And` are "composer" types.  Their
  `union`, `difference` and `intersection` methods perform
  `union`, `difference` and `intersection` on their children types.
+
+`can-query-logic`s methods reflect [set theory](https://en.wikipedia.org/wiki/Set_theory)
+ operations.  That's why most types need a `union`, `intersection`, and `difference`
+ method.  With that, other methods like `isEqual` and `isSubset` can be derived.
 
 In this case, `set.union` will call `BasicQuery`'s union with
 itself.  This will see that the `sort` and `page` results match
@@ -726,4 +780,4 @@ Finally, this set will be serialized to:
 }
 ```
 
-And this is what is returned as a result of the union.
+The serialized output above is what is returned as a result of the union.
