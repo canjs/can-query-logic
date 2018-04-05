@@ -68,7 +68,7 @@ QUnit.test("ordered ascending and paginated", function() {
     var query = new BasicQuery({
         filter: new BasicQuery.And({ type: 'critical'}),
         page: new BasicQuery.RecordRange(1,3),
-        sort: 'note AsC'
+        sort: 'note'
     });
     var res = query.filterFrom(items);
 
@@ -94,7 +94,7 @@ QUnit.test("ordered descending and paginated", function() {
     var query = new BasicQuery({
         filter: new BasicQuery.And({ type: 'critical'}),
         page: new BasicQuery.RecordRange(1,3),
-        sort: 'note deSc'
+        sort: '-note'
     });
     var res = query.filterFrom(items);
 

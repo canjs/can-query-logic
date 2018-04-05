@@ -43,11 +43,11 @@ var helpers =  {
         // bisect by calling sortFunc
     },
     sortData: function (sortPropValue) {
-        var parts = sortPropValue.split(' ');
-        return {
-            prop: parts[0],
-            desc: (parts[1] || '').toLowerCase()	=== 'desc'
-        };
+        if(sortPropValue[0] === "-") {
+            return {prop: sortPropValue.slice(1), desc: true};
+        } else {
+            return {prop: sortPropValue, desc: false};
+        }
     },
     sorter: function (sortPropValue) {
         var data = helpers.sortData(sortPropValue);

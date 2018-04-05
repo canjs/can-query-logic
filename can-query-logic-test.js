@@ -141,6 +141,12 @@ QUnit.test('index basics', function(){
 	equal(index, 2);
 
     index = algebra.index(
+		{sort: "-name"},
+		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}].reverse(),
+		{name: "k"});
+	equal(index, 2);
+
+    index = algebra.index(
 		{},
 		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}],
 		{id: 0, name: "k"});
@@ -180,4 +186,13 @@ QUnit.test('index basics', function(){
 
 	//var algebra = new set.Algebra(set.props.id("id"));
 
+});
+
+QUnit.test("filterMembers with reverse sort", function(){
+    var sortedMembers = algebra.filterMembers(
+		{sort: "-name"},
+		[{id: 1, name:"a"}, {id: 2, name:"z"}, {id: 3, name:"f"}, {id: 4, name:"s"}]);
+
+    QUnit.deepEqual(sortedMembers,
+        [{id: 2, name:"z"}, {id: 4, name:"s"}, {id: 3, name:"f"}, {id: 1, name:"a"}]);
 });

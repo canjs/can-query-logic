@@ -25,7 +25,7 @@ function BasicQuery(query) {
         this.page = new RecordRange();
     }
     if(!this.sort) {
-        this.sort = "id ASC";
+        this.sort = "id";
     }
 }
 

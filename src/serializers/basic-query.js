@@ -106,7 +106,7 @@ module.exports = function(schema) {
                 }
             }
 
-            if(basicQuery.sort !== id+" ASC") {
+            if(basicQuery.sort !== id) {
                 res.sort = basicQuery.sort;
             }
             return res;
@@ -145,7 +145,7 @@ module.exports = function(schema) {
             if(data.sort) {
                 query.sort = data.sort;
             } else {
-                query.sort = id+" ASC";
+                query.sort = id;
             }
             return new BasicQuery(query);
         },

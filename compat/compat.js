@@ -2,8 +2,11 @@
 var Query = require("../can-query-logic");
 var canReflect = require("can-reflect");
 var transform = require("can-key/transform/transform");
+var deleteKey = require("can-key/delete/delete");
+var getKey = require("can-key/get/get");
 var makeEnum = require("../src/types/make-enum");
 var SET = require("../src/set");
+var helpers = require("../src/helpers");
 
 var IsBoolean = function(){
 
@@ -39,6 +42,17 @@ function hasKey(obj, keys, parent, parentKey) {
         }
     }
     return false;
+}
+
+function convertToJSONAPISort(sortPropValue){
+    var parts = sortPropValue.split(' ');
+    var isDesc = (parts[1] || '').toLowerCase()	=== 'desc';
+
+    return isDesc ? "-"+parts[0] : parts[0];
+}
+function convertToLegacySort(value) {
+    var result = helpers.sortData(value);
+    return result.desc ? "-"+result.prop : result.prop;
 }
 
 var defaultAlgebra;
@@ -266,25 +280,39 @@ var set = {
             };
         },
         sort: function(prop, sortFunc){
+            /**
+             * var parts = sortPropValue.split(' ');
+                 return {
+                     prop: parts[0],
+                     desc: (parts[1] || '').toLowerCase()	=== 'desc'
+                 };
+             */
             if(!prop) {
                 prop = "sort";
             }
             if(sortFunc) {
                 throw new Error("can-query-logic/compat.sort - sortFunc is not supported");
             }
-            var hydrateTransfomer = {};
-            hydrateTransfomer["filter."+prop] = "sort";
 
-            var serializeTransformer = {
-                "sort": prop
-            };
             return {
                 hydrate: function(raw){
-                    return transform(raw, hydrateTransfomer);
+                    var clone = canReflect.serialize(raw);
+                    var sort = getKey(clone,"filter."+prop);
+                    if(sort !== undefined) {
+                        deleteKey(clone,"filter."+prop);
+                        clone.sort = convertToJSONAPISort(sort);
+                    }
+
+                    return clone;
                 },
                 serialize: function(raw){
-                    // TODO: fix bug in transform so it doesn't delete props
-                    return prop === "sort" ? raw : transform(raw, serializeTransformer);
+                    var clone = canReflect.serialize(raw);
+                    var sort = clone.sort;
+                    if(sort !== undefined) {
+                        delete clone.sort;
+                        clone[prop] = convertToLegacySort(sort);
+                    }
+                    return clone;
                 }
             };
         }
