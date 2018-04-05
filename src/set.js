@@ -179,7 +179,7 @@ set = {
     		var ownValue = startOwnValue.valueOf(),
     			memberValue = startMemberValue.valueOf();
     		if(ownValue.constructor !== memberValue.constructor) {
-    			memberValue = new startOwnValue.constructor(memberValue).valueOf()
+    			memberValue = new startOwnValue.constructor(memberValue).valueOf();
     		}
             return {own: ownValue, member: memberValue};
     	}
