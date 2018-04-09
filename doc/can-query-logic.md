@@ -553,7 +553,7 @@ QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
     // searchB.
     difference(searchA, searchB){
         // if searchA's text contains searchB's text, then
-        // searchA has outside what searchB would return.
+        // searchA has nothing outside what searchB would return.
         if(searchA.value.includes(searchB.value)) {
             // A:`food` \ B:`foo` => ∅
             return QueryLogic.EMPTY;

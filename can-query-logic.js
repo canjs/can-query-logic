@@ -77,6 +77,12 @@ function makeReturnValue(prop) {
     };
 }
 
+canReflect.assignSymbols(QueryLogic.prototype,{
+    "can.getSchema": function(){
+        return this.schema;
+    }
+});
+
 canReflect.assign(QueryLogic.prototype,{
     union: makeNewSet("union"),
     difference: makeNewSet("difference"),
@@ -96,6 +102,7 @@ canReflect.assign(QueryLogic.prototype,{
 
     // identity keys
     identityKeys: function(){
+        console.warn("you probably can get the identity keys some other way");
         return this.schema.identity;
     },
 
@@ -128,21 +135,23 @@ canReflect.assign(QueryLogic.prototype,{
     },
 
     memberIdentity: function(props) {
-        var identity = this.schema.identity;
-        if(!identity || identity.length === 0) {
-            throw new Error("Provide an an identity property to your schema.");
-        } else if(identity.length === 1) {
-            return canReflect.getKeyValue(props, identity[0]);
-        } else {
-            var id = {};
-            identity.forEach(function(key){
-                id[key] = canReflect.getKeyValue(props, key);
-            });
-            return JSON.stringify(id);
-        }
+        console.warn("you probably can get the member identity some other way");
+        return canReflect.getIdentity(props, this.schema);
     },
     index: function(query, items, props){
         return this.hydrate(query).index(props, items);
+    },
+
+    insert: function(query, items, item){
+    	var index = this.index(query, items, item);
+    	if(index === undefined) {
+    		index = items.length;
+    	}
+
+    	var copy = items.slice(0);
+    	copy.splice(index, 0, item);
+
+    	return copy;
     }
 
 });
