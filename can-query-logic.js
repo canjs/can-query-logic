@@ -166,6 +166,8 @@ QueryLogic.UNDEFINABLE = set.UNDEFINABLE;
 QueryLogic.UNKNOWABLE = set.UNKNOWABLE;
 
 QueryLogic.defineComparison = set.defineComparison;
+QueryLogic.isSpecial = set.isSpecial;
+QueryLogic.isDefinedAndHasMembers = QueryLogic.isDefinedAndHasMembers;
 
 QueryLogic.And = BasicQuery.And;
 QueryLogic.Or = BasicQuery.Or;
