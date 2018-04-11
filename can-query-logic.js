@@ -127,7 +127,10 @@ canReflect.assign(QueryLogic.prototype,{
         var queryA = this.hydrate(a),
             queryB = this.hydrate(b);
 
-        return queryA.merge(queryB, aData, bData, this.memberIdentity.bind(this));
+        var schema = this.schema;
+        return queryA.merge(queryB, aData, bData, function(obj){
+            return canReflect.getIdentity(obj, schema);
+        });
     },
     // isMember
     isMember: function(query, props) {
