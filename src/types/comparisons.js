@@ -34,9 +34,14 @@ var comparisons = {
 	},
 	LessThanEqual: function LessThanEqual(value) {
 		this.value = value;
+	},
+	And: function ValueAnd(ands) {
+	    this.values = ands;
+	},
+	Or: function ValueOr(ors) {
+	    this.values = ors;
 	}
 };
-
 
 
 comparisons.In.test = function(values, b) {
@@ -53,18 +58,39 @@ comparisons.NotIn.testValue = function(value, b) {
 	return !comparisons.In.testValue(value, b);
 };
 
-comparisons.GreaterThan.test = function(a, b) {
+function nullIsFalse(test) {
+	return function(arg1, arg2) {
+		if(arg1 == null || arg2 == null) {
+			return false;
+		} else {
+			return test(arg1, arg2);
+		}
+	};
+}
+function nullIsFalseTwoIsOk(test) {
+	return function(arg1, arg2) {
+		if(arg1 === arg2) {
+			return true;
+		} else if(arg1 == null || arg2 == null) {
+			return false;
+		} else {
+			return test(arg1, arg2);
+		}
+	};
+}
+
+comparisons.GreaterThan.test = nullIsFalse(function(a, b) {
 	return a > b;
-};
-comparisons.GreaterThanEqual.test = function(a, b) {
+});
+comparisons.GreaterThanEqual.test = nullIsFalseTwoIsOk(function(a, b) {
 	return a >= b;
-};
-comparisons.LessThan.test = function(a, b) {
+});
+comparisons.LessThan.test = nullIsFalse(function(a, b) {
 	return a < b;
-};
-comparisons.LessThanEqual.test = function(a, b) {
+});
+comparisons.LessThanEqual.test = nullIsFalseTwoIsOk(function(a, b) {
 	return a <= b;
-};
+});
 
 
 
@@ -82,6 +108,14 @@ function isMemberThatUsesTestOnValues(value) {
 	Type.prototype.isMember = isMemberThatUsesTestOnValues;
 });
 
+function makeNot(Type) {
+	return {
+		test: function(vA, vB){
+			return !Type.test(vA, vB);
+		}
+	}
+}
+
 
 function makeEnum(type, Type, emptyResult) {
 	return function(a, b) {
@@ -93,6 +127,8 @@ function makeEnum(type, Type, emptyResult) {
 		}
 	};
 }
+
+
 
 function swapArgs(fn){
 	return function(a, b) {
@@ -160,8 +196,9 @@ function combineFilterFirstValues(options) {
 		var values = inSet.values.filter(function(value) {
 			return options.values.test(value, gt.value);
 		});
+		var range = options.with ? new options.with(gt.value) : gt;
 		return values.length ?
-			options.combinedUsing([new options.arePut(values), gt]) : gt;
+			options.combinedUsing([new options.arePut(values),range]) : range;
 	};
 }
 
@@ -202,7 +239,7 @@ var comparators = {
 			combinedUsing: makeOr
 		}),
 		intersection: make_filterFirstValues(is.GreaterThan, is.In, set.EMPTY),
-		difference: make_filterFirstValues(is.LessThanEqual, is.In, set.EMPTY)
+		difference: make_filterFirstValues(makeNot(is.GreaterThan), is.In, set.EMPTY)
 	},
 	GreaterThan_In: {
 		difference: swapArgs(combineFilterFirstValues({
@@ -219,7 +256,7 @@ var comparators = {
 			combinedUsing: makeOr
 		}),
 		intersection: make_filterFirstValues(is.GreaterThanEqual, is.In, set.EMPTY),
-		difference: make_filterFirstValues(is.LessThan, is.In, set.EMPTY)
+		difference: make_filterFirstValues(makeNot(is.GreaterThanEqual), is.In, set.EMPTY)
 	},
 	GreaterThanEqual_In: {
 		difference: swapArgs(combineFilterFirstValues({
@@ -236,7 +273,7 @@ var comparators = {
 			combinedUsing: makeOr
 		}),
 		intersection: make_filterFirstValues(is.LessThan, is.In, set.EMPTY),
-		difference: make_filterFirstValues(is.GreaterThanEqual, is.In, set.EMPTY)
+		difference: make_filterFirstValues(makeNot(is.LessThan), is.In, set.EMPTY)
 	},
 	LessThan_In: {
 		difference: swapArgs(combineFilterFirstValues({
@@ -253,7 +290,7 @@ var comparators = {
 			combinedUsing: makeOr
 		}),
 		intersection: make_filterFirstValues(is.LessThanEqual, is.In, set.EMPTY),
-		difference: make_filterFirstValues(is.GreaterThan, is.In, set.EMPTY)
+		difference: make_filterFirstValues(makeNot(is.LessThanEqual), is.In, set.EMPTY)
 	},
 	LessThanEqual_In: {
 		difference: swapArgs(combineFilterFirstValues({
@@ -261,6 +298,17 @@ var comparators = {
 			arePut: is.NotIn,
 			combinedUsing: makeAnd
 		}))
+	},
+	In_And: {
+		difference: function(inA, valueAnd){
+			// the values inA that are not in the sets of valueAnd
+			var values = inA.values.filter(function(value){
+				return valueAnd.values.some(function(set){
+					return set.isMember(value)
+				})
+			});
+			return values.length ? new is.In(values) : set.EMPTY;
+		}
 	},
 
 	// NotIn
@@ -282,7 +330,14 @@ var comparators = {
 	NotIn_LessThan: {},
 	LessThan_NotIn: {},
 
-	NotIn_LessThanEqual: {},
+	NotIn_LessThanEqual: {
+		difference: combineFilterFirstValues({
+			values: makeNot(is.LessThanEqual),
+			arePut: is.NotIn,
+			combinedUsing: makeAnd,
+			with: is.GreaterThan
+		})
+	},
 	LessThanEqual_NotIn: {},
 
 	// GreaterThan
@@ -309,7 +364,15 @@ var comparators = {
 	GreaterThan_LessThan: {},
 	LessThan_GreaterThan: {},
 
-	GreaterThan_LessThanEqual: {},
+	GreaterThan_LessThanEqual: {
+		intersection: function(gt, lte) {
+			if(gt.value <= lte.value) {
+				return set.UNIVERSAL;
+			} else {
+				return makeAnd([gt, lte]);
+			}
+		}
+	},
 	LessThanEqual_GreaterThan: {},
 
 	// GreaterThanEqual

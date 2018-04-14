@@ -333,8 +333,11 @@ set = {
         }
     },
     difference: function(value1, value2){
-        if(value1 === set.EMPTY || value2 === set.EMPTY) {
+        if(value1 === set.EMPTY ) {
             return set.EMPTY;
+        }
+        if(value2 === set.EMPTY) {
+            return value1;
         }
         if(value1 === set.UNKNOWABLE || value2 === set.UNKNOWABLE) {
             return set.UNKNOWABLE;

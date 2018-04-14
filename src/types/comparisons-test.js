@@ -226,6 +226,15 @@ var tests = {
                 set.difference(a, b),
                 new is.In([2,4])
             );
+
+            a = new is.In([null,undefined]);
+            b = new is.GreaterThan(8);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.In([null,undefined]),
+                "handles weird types"
+            );
         }
     },
     GreaterThan_In: {
@@ -680,7 +689,48 @@ var tests = {
     NotIn_LessThan: {},
     LessThan_NotIn: {},
 
-    NotIn_LessThanEqual: {},
+    NotIn_LessThanEqual: {
+        difference: function(assert){
+            var a = new is.NotIn([5,6]);
+            var b = new is.LessThanEqual(7);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.GreaterThan(7)
+            );
+
+            a = new is.NotIn([5,6]);
+            b = new is.LessThanEqual(6);
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.GreaterThan(6)
+            );
+
+            a = new is.NotIn([2,4]);
+            b = new is.LessThanEqual(3);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.NotIn([4]), new is.GreaterThan(3)])
+            );
+
+            a = new is.NotIn([2,4]);
+            b = new is.LessThanEqual(1);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.NotIn([2,4]), new is.GreaterThan(1)])
+            );
+
+            a = new is.NotIn([undefined]);
+            b = new is.LessThanEqual(3);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.NotIn([undefined]), new is.GreaterThan(3)])
+            );
+        }
+    },
     LessThanEqual_NotIn: {},
 
     // GreaterThan
@@ -1237,12 +1287,7 @@ names.forEach(function(name1, i){
     }
 });
 
-is.And = function(ands) {
-    this.values = ands;
-};
-is.Or = function(ors) {
-    this.values = ors;
-};
+
 
 QUnit.test("Able to do membership, union, difference with GreaterThan", function(){
 

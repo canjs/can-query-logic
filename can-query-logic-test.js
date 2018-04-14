@@ -6,9 +6,11 @@ require("./src/types/basic-query-sorting-test");
 require("./src/types/basic-query-filter-from-test");
 require("./src/types/basic-query-merge-test");
 require("./src/serializers/basic-query-test");
+require("./src/types/maybe-test");
 require("./compat/compat-test");
 require("./test/special-comparison-logic-test");
 require("./test/make-enum-logic-test");
+
 
 var QUnit = require("steal-qunit");
 var QueryLogic = require("can-query-logic");
