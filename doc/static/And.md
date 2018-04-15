@@ -1,2 +1,2 @@
-@function can-query-logic.And And
+@function can-query-logic.AndKeys AndKeys
 @parent can-query-logic.static-types

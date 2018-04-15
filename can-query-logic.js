@@ -172,7 +172,7 @@ QueryLogic.defineComparison = set.defineComparison;
 QueryLogic.isSpecial = set.isSpecial;
 QueryLogic.isDefinedAndHasMembers = QueryLogic.isDefinedAndHasMembers;
 
-QueryLogic.And = BasicQuery.And;
+QueryLogic.And = BasicQuery.AndKeys;
 QueryLogic.Or = BasicQuery.Or;
 
 module.exports = QueryLogic;

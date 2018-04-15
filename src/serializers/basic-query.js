@@ -63,7 +63,7 @@ function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
         }
     });
 
-    return new BasicQuery.And(values);
+    return new BasicQuery.AndKeys(values);
 
 }
 
@@ -78,7 +78,7 @@ module.exports = function(schema) {
                 return serializer(value);
             });
         }],
-        [BasicQuery.And, function(and, serializer){
+        [BasicQuery.AndKeys, function(and, serializer){
             var result = {};
             canReflect.eachKey(and.values, function(value, key){
                 // is value universal ... if not, we don't need to add anything

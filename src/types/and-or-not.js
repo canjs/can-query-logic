@@ -6,11 +6,11 @@ var canGet = require("can-key/get/get");
 var canSymbol = require("can-symbol");
 
 // Define the sub-types that BasicQuery will use
-function And(values) {
+function AndKeys(values) {
     var vals = this.values = {};
     canReflect.eachKey(values, function(value, key){
         if(canReflect.isPlainObject(value) && !set.isSpecial(value)) {
-            vals[key] = new And(value);
+            vals[key] = new AndKeys(value);
         } else {
             vals[key] = value;
         }
@@ -20,7 +20,7 @@ function And(values) {
 var isMemberSymbol = canSymbol.for("can.isMember");
 
 
-And.prototype.isMember = function(props, root, rootKey){
+AndKeys.prototype.isMember = function(props, root, rootKey){
     var equal = true;
     var preKey = rootKey ? rootKey + "." : "";
     canReflect.eachKey(this.values, function(value, key){
@@ -167,7 +167,7 @@ function difference(objA, objB){
         // {color: [RED, GREEN], ...X...} \ {color: [RED], ...X...} -> {color: [GREEN], ...X...}
         else if(productAbleKeys.length === 1){
             assign(sharedKeysAndValues, singleProductKeyAndValue);
-            return new And(sharedKeysAndValues);
+            return new AndKeys(sharedKeysAndValues);
         } else {
             // {...X...} \ {...X...} -> EMPTY
             return set.EMPTY;
@@ -184,7 +184,7 @@ function difference(objA, objB){
             aOnlyKeys.forEach(function(key){
                 sharedKeysAndValues[key] = valuesA[key];
             });
-            return new And(sharedKeysAndValues);
+            return new AndKeys(sharedKeysAndValues);
         } else {
             // sharedKeysAndValues
             return set.EMPTY;
@@ -214,11 +214,11 @@ function difference(objA, objB){
         var ands = bOnlyKeys.map(function(key){
             var shared = assign({},sharedKeysAndValues);
             var result = shared[key] = set.difference(set.UNIVERSAL, valuesB[key]);
-            return result === set.EMPTY ? result : new And(shared);
+            return result === set.EMPTY ? result : new AndKeys(shared);
         }).filter(notEmpty);
 
         if(productAbleOr) {
-            ands.push(new And(productAbleOr))
+            ands.push(new AndKeys(productAbleOr))
         }
 
         // {c: "g"}
@@ -251,7 +251,7 @@ function difference(objA, objB){
             var key = bOnlyKeys[0];
             var shared = assign({},sharedKeysAndValues);
             shared[key] = set.difference(set.UNIVERSAL,valuesB[key]);
-            return new And(shared);
+            return new AndKeys(shared);
         }
         // {foo: "bar"} \\ {name: "Justin", age: 35} -> UNDEFINABLE
         else {
@@ -261,12 +261,12 @@ function difference(objA, objB){
     }
 }
 
-// And comaprisons
+// AndKeys comaprisons
 
 
 
 
-set.defineComparison(And, And,{
+set.defineComparison(AndKeys, AndKeys,{
     // {name: "Justin"} or {age: 35} -> new OR[{name: "Justin"},{age: 35}]
     // {age: 2} or {age: 3} -> {age: new OR[2,3]}
     // {age: 3, name: "Justin"} OR {age: 4} -> {age: 3, name: "Justin"} OR {age: 4}
@@ -299,7 +299,7 @@ set.defineComparison(And, And,{
 
                 // if there is only one property, we can just return the universal set
                 return canReflect.size(sameKeys) === 1 && set.isEqual(result, set.UNIVERSAL) ?
-                    set.UNIVERSAL : new And(sameKeys);
+                    set.UNIVERSAL : new AndKeys(sameKeys);
             }  else if(aAndBKeysThatAreNotEqual.length === 0){
                 // these things are equal
                 return objA;
@@ -343,7 +343,7 @@ set.defineComparison(And, And,{
         if(foundEmpty) {
             return set.EMPTY;
         } else {
-            return new And(resultValues);
+            return new AndKeys(resultValues);
         }
 
     },
@@ -351,7 +351,7 @@ set.defineComparison(And, And,{
     difference: difference
 });
 
-set.defineComparison(set.UNIVERSAL,And,{
+set.defineComparison(set.UNIVERSAL,AndKeys,{
     // A \ B -> what's in A, but not in B
     difference: function(universe, and){
         return difference({values: {}}, and);
@@ -445,7 +445,7 @@ set.defineComparison(Identity, NotIdentity,{
 });
 
 module.exports = {
-    And: And,
+    AndKeys: AndKeys,
     Or: Or,
     Not: NotIdentity
 };

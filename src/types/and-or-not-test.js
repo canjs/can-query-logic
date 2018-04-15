@@ -10,7 +10,7 @@ QUnit.module("can-query-logic/and-or");
 // But want even and odds and integers
 // Can't "build up" to real with all those other combinations
 QUnit.test("AND intersection basics", function(){
-    var AndObject = types.And;
+    var AndObject = types.AndKeys;
 
     var isJustin = new AndObject({
         name: "Justin"
@@ -45,7 +45,7 @@ QUnit.test("AND intersection basics", function(){
 
 QUnit.test("AND union basics", function(){
 
-    var AndObject = types.And;
+    var AndObject = types.AndKeys;
 
     var isJustin = new AndObject({
         name: "Justin"
@@ -61,16 +61,16 @@ QUnit.test("AND union basics", function(){
 QUnit.test("AND / OR / NOT union", function(){
 
 
-    var isJustin = new types.And({name: "Justin"}),
-        isNotJustin = new types.And({name: new types.Not("Justin")});
+    var isJustin = new types.AndKeys({name: "Justin"}),
+        isNotJustin = new types.AndKeys({name: new types.Not("Justin")});
 
     QUnit.equal( set.union(isJustin,isNotJustin), set.UNIVERSAL, "{name: 'j'} U {name: NOT('j')}");
 
-    var everything = new types.And({});
+    var everything = new types.AndKeys({});
 
     QUnit.equal( set.union(isJustin,everything), set.UNIVERSAL, "{name: 'j'} U {}");
 
-    var isJustinAnd21 = new types.And({name: "Justin", age: 22});
+    var isJustinAnd21 = new types.AndKeys({name: "Justin", age: 22});
 
     QUnit.equal( set.union(isJustin,isJustinAnd21), isJustin, "super and subset");
 
@@ -82,10 +82,10 @@ QUnit.test("AND / OR / NOT difference", function(){
 
     // CASE: prop in A not in B
     //  `{name: "Justin"} \ {age: 35} -> {name: "justin", age: NOT(35)}`
-    var is35 = new types.And({age: 35}),
-        isJustin = new types.And({name: "Justin"}),
-        isJustinAnd35 = new types.And({name: "Justin", age: 35}),
-        isJustinAndNot35 = new types.And({
+    var is35 = new types.AndKeys({age: 35}),
+        isJustin = new types.AndKeys({name: "Justin"}),
+        isJustinAnd35 = new types.AndKeys({name: "Justin", age: 35}),
+        isJustinAndNot35 = new types.AndKeys({
             name: "Justin",
             age: new types.Not(35)
         }),
@@ -110,24 +110,24 @@ QUnit.test("AND / OR / NOT difference", function(){
 
     // CASE: DISJOINT - same prop different values
     //  `{age: 35} \ {age: 32} -> {age: 35}`
-    result = set.difference(is35, new types.And({age: 32}));
+    result = set.difference(is35, new types.AndKeys({age: 32}));
 
-    QUnit.deepEqual(result, new types.And({age: 35}),
+    QUnit.deepEqual(result, new types.AndKeys({age: 35}),
         'DISJOINT: {age: 35} \\ {age: 32} -> {age: 35}');
 
 
     // CASE: DISJOINT - completely disjoint - no intersection of values
     //  `{age: 34, name: "Justin"} \ {age: 35}  -> {age: 34, name: "Justin"}`
-    result = set.difference(new types.And({age: 34, name: "Justin"}), is35);
+    result = set.difference(new types.AndKeys({age: 34, name: "Justin"}), is35);
 
-    QUnit.deepEqual(result, new types.And({age: 34, name: "Justin"}),
+    QUnit.deepEqual(result, new types.AndKeys({age: 34, name: "Justin"}),
         'DISJOINT: {age: 34, name: "Justin"} \\ {age: 35} -> {age: 34, name: "Justin"}');
 
     // CASE: DISJOINT - can't peform -> double NOT of props
     // {foo: "bar"} \ {name: "Justin", age: 35}  -> {foo: "bar", NOT(And(name: "J", age: 35)) }
     // this kind of property based and can not be done.
     result = set.difference(
-        new types.And({foo: "bar"}),
+        new types.AndKeys({foo: "bar"}),
         isJustinAnd35
         );
     QUnit.deepEqual(result,set.UNDEFINABLE,
@@ -138,8 +138,8 @@ QUnit.test("AND / OR / NOT difference", function(){
 
     result = set.difference(set.UNIVERSAL, isJustinAnd35);
     var compare =  new types.Or([
-        new types.And({name: new types.Not("Justin")}),
-        new types.And({age: new types.Not(35)})
+        new types.AndKeys({name: new types.Not("Justin")}),
+        new types.AndKeys({age: new types.Not(35)})
     ]);
 
     QUnit.deepEqual(result,compare,
@@ -148,7 +148,7 @@ QUnit.test("AND / OR / NOT difference", function(){
 
     // CASE:
     //   {} \ {bar: IS_UNIVERSAL}
-    result = set.difference(new types.And({foo: 2}), new types.And({foo: 2, bar : set.UNIVERSAL}));
+    result = set.difference(new types.AndKeys({foo: 2}), new types.AndKeys({foo: 2, bar : set.UNIVERSAL}));
 
     QUnit.deepEqual(result,set.EMPTY,
         'UNIVESAL: {foo:2} \ {foo:2, bar: IS_UNIVERSAL} -> set.EMPTY');
@@ -165,18 +165,18 @@ QUnit.test("AND / OR / NOT isSubset", function(){
 
 
     var res;
-	res = set.isSubset( new types.And({ type: 'FOLDER' }), new types.And({ type: 'FOLDER' }) );
+	res = set.isSubset( new types.AndKeys({ type: 'FOLDER' }), new types.AndKeys({ type: 'FOLDER' }) );
 	QUnit.ok(res, 'equal sets');
 
-	res = set.isSubset( new types.And({ type: 'FOLDER', parentId: 5 }), new types.And({ type: 'FOLDER' }));
+	res = set.isSubset( new types.AndKeys({ type: 'FOLDER', parentId: 5 }), new types.AndKeys({ type: 'FOLDER' }));
 	QUnit.ok(res, 'sub set');
 
-	res = set.isSubset( new types.And({ type: 'FOLDER' }), new types.And({ type: 'FOLDER', parentId: 5 }) );
+	res = set.isSubset( new types.AndKeys({ type: 'FOLDER' }), new types.AndKeys({ type: 'FOLDER', parentId: 5 }) );
 	QUnit.notOk(res, 'wrong way');
 
 	res = set.isSubset(
-		new types.And({ type: 'FOLDER', parentId: 7 }),
-		new types.And({ type: 'FOLDER', parentId: 5 })
+		new types.AndKeys({ type: 'FOLDER', parentId: 7 }),
+		new types.AndKeys({ type: 'FOLDER', parentId: 5 })
 	);
 	QUnit.ok(!res, 'different values');
 
@@ -188,14 +188,14 @@ QUnit.test("union AND with ENUM", function(){
 
     var ColorSet = makeEnum(Color, ["red","green","blue"]);
 
-    var qA = new types.And({ type: 'FOLDER', status: new ColorSet("red") }),
-        qB = new types.And({ type: 'FOLDER', status: new ColorSet("green") });
+    var qA = new types.AndKeys({ type: 'FOLDER', status: new ColorSet("red") }),
+        qB = new types.AndKeys({ type: 'FOLDER', status: new ColorSet("green") });
 
 
     var res = set.union(qA, qB);
 
     QUnit.deepEqual(res,
-        new types.And({
+        new types.AndKeys({
             type: 'FOLDER',
             status: new ColorSet(["red","green"])
         }),
@@ -205,7 +205,7 @@ QUnit.test("union AND with ENUM", function(){
 
 QUnit.test("AND isMember", function(){
 
-    var folderAnd35 = new types.And({ type: 'FOLDER', age: 35 });
+    var folderAnd35 = new types.AndKeys({ type: 'FOLDER', age: 35 });
 
     QUnit.ok( folderAnd35.isMember({type: 'FOLDER', age: 35}) );
     QUnit.ok( folderAnd35.isMember({type: 'FOLDER', age: 35, extra: "value"}) );
@@ -218,8 +218,8 @@ QUnit.test("AND isMember", function(){
 
 QUnit.test("OR isMember", function(){
 
-    var isFolder =  new types.And({ type: 'FOLDER'}),
-        is35 = new types.And({  age: 35 }),
+    var isFolder =  new types.AndKeys({ type: 'FOLDER'}),
+        is35 = new types.AndKeys({  age: 35 }),
         isFolderOr35 = new types.Or([isFolder, is35]);
 
     QUnit.ok( isFolderOr35.isMember({type: 'FOLDER', age: 35}), "both" );
@@ -235,8 +235,8 @@ QUnit.test("OR isMember", function(){
 QUnit.test("And nested objects", function(){
     var res;
 
-    var isNameFirstJustin = new types.And({ name: {first: "Justin"}});
-    var isNameFirstJustin2 = new types.And({ name: {first: "Justin"}});
+    var isNameFirstJustin = new types.AndKeys({ name: {first: "Justin"}});
+    var isNameFirstJustin2 = new types.AndKeys({ name: {first: "Justin"}});
     res = set.isEqual(isNameFirstJustin, isNameFirstJustin2);
     QUnit.equal(res, true);
 
@@ -270,11 +270,11 @@ QUnit.test("And with nested.properties", function(){
 
     QUnit.equal(
         set.isSubset(
-            new types.And({
+            new types.AndKeys({
                 "name.first": "Justin",
                 "name.last": "Meyer"
             }),
-            new types.And({
+            new types.AndKeys({
                 "name.last": "Meyer"
             })
         ),
@@ -283,7 +283,7 @@ QUnit.test("And with nested.properties", function(){
     );
 
     QUnit.equal(
-        new types.And({
+        new types.AndKeys({
             "name.first": "Justin",
             "name.last": "Meyer"
         }).isMember({name: {first: "Justin", last: "Meyer"}}),
@@ -292,7 +292,7 @@ QUnit.test("And with nested.properties", function(){
     );
 
     QUnit.equal(
-        new types.And({
+        new types.AndKeys({
             "name.first": "Justin",
             "name.last": "Meyer"
         }).isMember({name: {first: "Ramiya", last: "Meyer"}}),
@@ -309,14 +309,14 @@ QUnit.test("And with nested ands", function(){
 
     QUnit.equal(
         set.isSubset(
-            new types.And({
-                name: new types.And({
+            new types.AndKeys({
+                name: new types.AndKeys({
                     first: "Justin",
                     last: "Meyer"
                 })
             }),
-            new types.And({
-                name: new types.And({
+            new types.AndKeys({
+                name: new types.AndKeys({
                     last: "Meyer"
                 })
             })
@@ -327,19 +327,19 @@ QUnit.test("And with nested ands", function(){
 
     QUnit.deepEqual(
         set.intersection(
-            new types.And({
-                name: new types.And({
+            new types.AndKeys({
+                name: new types.AndKeys({
                     first: "Justin"
                 })
             }),
-            new types.And({
-                name: new types.And({
+            new types.AndKeys({
+                name: new types.AndKeys({
                     last: "Meyer"
                 })
             })
         ),
-        new types.And({
-            name: new types.And({
+        new types.AndKeys({
+            name: new types.AndKeys({
                 first: "Justin",
                 last: "Meyer"
             })
@@ -348,8 +348,8 @@ QUnit.test("And with nested ands", function(){
     );
 
     QUnit.equal(
-        new types.And({
-            name: new types.And({
+        new types.AndKeys({
+            name: new types.AndKeys({
                 first: "Justin",
                 last: "Meyer"
             })
@@ -359,8 +359,8 @@ QUnit.test("And with nested ands", function(){
     );
 
     QUnit.equal(
-        new types.And({
-            name: new types.And({
+        new types.AndKeys({
+            name: new types.AndKeys({
                 first: "Justin",
                 last: "Meyer"
             })

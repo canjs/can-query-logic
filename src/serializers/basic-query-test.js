@@ -43,9 +43,21 @@ QUnit.test("nested properties", function(){
     var basicQuery = converter.hydrate(query);
 
 
-    QUnit.deepEqual(basicQuery.filter, new logicTypes.And({
-        name: new logicTypes.And({first: new comparisonTypes.In(["justin"])})
+    QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
+        name: new logicTypes.AndKeys({first: new comparisonTypes.In(["justin"])})
     }), "adds nested ands");
+});
+
+
+QUnit.skip("$or with the same types", function(){
+    var query = {
+        filter: {
+            $or: [
+                { foo: "bar", age: {$gt: 3}},
+                { foo: "bar", age: null}
+            ]
+        }
+    }
 });
 
 QUnit.skip("nested properties within ors", function(){
@@ -60,7 +72,7 @@ QUnit.skip("nested properties within ors", function(){
     var basicQuery = converter.hydrate(query);
 
     debugger;
-    QUnit.deepEqual(basicQuery.filter, new logicTypes.And({
-        name: new logicTypes.And({first: new comparisonTypes.In(["justin"])})
+    QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
+        name: new logicTypes.AndKeys({first: new comparisonTypes.In(["justin"])})
     }), "adds nested ands");
 });

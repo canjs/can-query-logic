@@ -6,7 +6,7 @@ var andOrNot = require("./and-or-not");
 var helpers = require("../helpers");
 var defineLazyValue = require("can-define-lazy-value");
 
-var And = andOrNot.And,
+var AndKeys = andOrNot.AndKeys,
     Or = andOrNot.Or,
     Not = andOrNot.Not;
 
@@ -30,7 +30,7 @@ function BasicQuery(query) {
 }
 
 // BasicQuery's static properties
-BasicQuery.And = And;
+BasicQuery.AndKeys = AndKeys;
 BasicQuery.Or = Or;
 BasicQuery.Not = Not;
 BasicQuery.RecordRange = RecordRange;
