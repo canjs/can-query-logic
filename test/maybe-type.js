@@ -6,13 +6,27 @@ var makeMaybe = require("../src/types/maybe");
 QUnit.module("can-query-logic with maybe type");
 
 QUnit.test("basics", function(){
+    // Goal here is so the type doesn't have to know about `can-query-logic`,
+    // but when passed to can-query-logic, it knows what to do.
+    //
+
+    var type = canReflect.assignSymbols({
+        "can.new": function(val){
+            if (val == null) {
+    			return val;
+    		}
+    		return +(val);
+        }
+    })
+
     var res;
+
 
     var MaybeNumberSet = function(value){
         this.value = value;
     };
     MaybeNumberSet.prototype.valueOf = function(){
-        return this.value;
+        return +this.value;
     };
     canReflect.assignSymbols(MaybeNumberSet, {
         "can.maybe": [null]

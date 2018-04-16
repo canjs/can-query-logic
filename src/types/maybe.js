@@ -90,7 +90,9 @@ module.exports = function makeMaybe(inValues) {
 			this.enum = result.enum;
 		}
 	}
-
+	Maybe.prototype.orValues = function(){
+		return [this.range, this.enum]
+	};
 
 	set.defineComparison(Maybe, Maybe, {
 		union: function(maybeA, maybeB) {
@@ -158,6 +160,10 @@ module.exports = function makeMaybe(inValues) {
 			});
 		}
 	});
+
+	Maybe.hydrate = function(value, childHydrate){
+		return new Maybe({range: childHydrate(value, function(v){ return v; }  )});
+	};
 
 	return Maybe;
 };

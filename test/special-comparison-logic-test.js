@@ -140,7 +140,10 @@ QUnit.test("Searchable string", function(){
 
     QUnit.deepEqual(res, {
         filter: {
-            name: ["eat","foo"]
+            $or: [
+                {name: "eat"},
+                {name: "foo"}
+            ]
         }
     });
 
@@ -159,6 +162,8 @@ QUnit.test("Searchable string", function(){
 });
 
 QUnit.test("value type", function(){
+
+
 
     function DateStringSet(dateStr){
         this.dateStr = dateStr;

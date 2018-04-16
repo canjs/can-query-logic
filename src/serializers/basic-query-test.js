@@ -2,7 +2,8 @@ var QUnit = require("steal-qunit");
 var makeBasicQueryConvert = require("./basic-query");
 var canReflect = require("can-reflect");
 var logicTypes = require("../types/and-or-not");
-var comparisonTypes = require("../types/comparisons");
+var is = require("../types/comparisons");
+var makeMaybe = require("../types/maybe");
 
 QUnit.module("can-query-logic/serializers/basic-query");
 
@@ -44,12 +45,23 @@ QUnit.test("nested properties", function(){
 
 
     QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
-        name: new logicTypes.AndKeys({first: new comparisonTypes.In(["justin"])})
+        name: new logicTypes.AndKeys({first: new is.In(["justin"])})
     }), "adds nested ands");
 });
 
 
-QUnit.skip("$or with the same types", function(){
+QUnit.test("$or with the same types unify into maybe", function(){
+
+    var MaybeSet = makeMaybe([null])
+
+    var converter = makeBasicQueryConvert({
+        identity: ["id"],
+        keys: {
+            age: canReflect.assignSymbols({},{"can.SetType": MaybeSet}),
+            foo: String
+        }
+    });
+
     var query = {
         filter: {
             $or: [
@@ -57,7 +69,27 @@ QUnit.skip("$or with the same types", function(){
                 { foo: "bar", age: null}
             ]
         }
-    }
+    };
+
+    var basicQuery = converter.hydrate(query);
+
+    QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
+        foo: new is.In(["bar"]),
+        age: new MaybeSet({
+            range: new is.GreaterThan(3),
+            enum: new is.In([null])
+        })
+    }));
+
+    var res = converter.serializer.serialize(basicQuery);
+    QUnit.deepEqual(res, {
+        filter: {
+            $or: [
+                { foo: "bar", age: {$gt: 3}},
+                { foo: "bar", age: null}
+            ]
+        }
+    }, "serialized");
 });
 
 QUnit.skip("nested properties within ors", function(){
@@ -71,8 +103,7 @@ QUnit.skip("nested properties within ors", function(){
 
     var basicQuery = converter.hydrate(query);
 
-    debugger;
     QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
-        name: new logicTypes.AndKeys({first: new comparisonTypes.In(["justin"])})
+        name: new logicTypes.AndKeys({first: new is.In(["justin"])})
     }), "adds nested ands");
 });

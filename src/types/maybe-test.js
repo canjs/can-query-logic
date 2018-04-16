@@ -3,6 +3,7 @@ var QUnit = require("steal-qunit");
 var makeMaybe = require("./maybe");
 var is = require("./comparisons");
 var set = require("../set");
+var canReflect = require("can-reflect");
 
 QUnit.module("can-query-logic/maybe")
 
@@ -237,7 +238,7 @@ QUnit.test("difference with ComparisonSet", function(){
         range: new is.NotIn([null])
     }), "UNIVERSAL \\ null");
 
-    
+
     res = set.difference( set.UNIVERSAL,
         new MaybeDateStringSet({
             enum: new is.In([null, undefined]),
@@ -295,7 +296,25 @@ QUnit.test("union", function(){
 });
 
 
+QUnit.test("can make maybe type from normal type", function(){
+    var MaybeNumber =  canReflect.assignSymbols({},{
+        "can.new": function(val){
+            if (val == null) {
+                return val;
+            }
+            return +(val);
+        },
+        "can.getSchema": function(){
+            return {
+                type: "Or",
+                types: [Number, undefined, null]
+            };
+        }
+    });
 
+    QUnit.ok( makeMaybe.canMakeMaybeSetType(MaybeNumber), "got everything we need");
+
+});
 
 
 

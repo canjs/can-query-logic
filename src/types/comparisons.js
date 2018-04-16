@@ -1,3 +1,4 @@
+
 var set = require("../set");
 var arrayUnionIntersectionDifference = require("../array-union-intersection-difference");
 
@@ -35,9 +36,13 @@ var comparisons = {
 	LessThanEqual: function LessThanEqual(value) {
 		this.value = value;
 	},
+	// This is used to And something like `GT(3)` n `LT(4)`.
+	// These are all value comparisons.
 	And: function ValueAnd(ands) {
 	    this.values = ands;
 	},
+	// This is used to OR something like `GT(4)` n `LT(3)`. 
+	// These are all value comparisons.
 	Or: function ValueOr(ors) {
 	    this.values = ors;
 	}
