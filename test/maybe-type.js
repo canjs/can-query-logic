@@ -27,23 +27,6 @@ QUnit.test("basics", function(){
 
     var res;
 
-
-    var MaybeNumberSet = function(value){
-        this.value = value;
-    };
-    MaybeNumberSet.prototype.valueOf = function(){
-        return +this.value;
-    };
-    canReflect.assignSymbols(MaybeNumberSet, {
-        "can.maybe": [null]
-    });
-
-    var MaybeNumber = function(){};
-
-    canReflect.assignSymbols(MaybeNumber, {
-        "can.SetType": MaybeNumberSet
-    });
-
     var todoQueryLogic = new QueryLogic({
         keys: {
             age: MaybeNumber
@@ -55,6 +38,11 @@ QUnit.test("basics", function(){
         {filter: {age: {$gt: 5}}});
 
     QUnit.deepEqual(res,
-        {filter: {age: {$or: [{$lte: 5}, null] } }});
+        {
+            filter: {$or: [
+                {age: {$lte: 5} },
+                {age: [null, undefined]}
+            ]}
+        });
 
 });

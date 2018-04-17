@@ -10,6 +10,9 @@ Serializer.prototype.add = function(serializers){
 
 
 Serializer.prototype.serialize = function(item) {
+    if(!item) {
+        return item;
+    }
     var Type = item.constructor;
     var serializer = this.serializers.get(Type);
     if(!serializer) {

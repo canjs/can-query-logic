@@ -7,6 +7,7 @@ require("./src/types/basic-query-sorting-test");
 require("./src/types/basic-query-filter-from-test");
 require("./src/types/basic-query-merge-test");
 require("./src/serializers/basic-query-test");
+require("./src/serializers/comparisons-test");
 require("./src/types/maybe-test");
 require("./compat/compat-test");
 require("./test/special-comparison-logic-test");

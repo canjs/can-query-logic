@@ -166,6 +166,7 @@ QUnit.test("value type", function(){
 
 
     function DateStringSet(dateStr){
+        
         this.dateStr = dateStr;
     }
 

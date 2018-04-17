@@ -92,6 +92,61 @@ QUnit.test("$or with the same types unify into maybe", function(){
     }, "serialized");
 });
 
+QUnit.test("auto-convert or schema into maybe type", function(){
+    var MaybeNumber = canReflect.assignSymbols({},{
+        "can.new": function(val){
+            if (val == null) {
+    			return val;
+    		}
+    		return +(val);
+        },
+        "can.getSchema": function(){
+            return {
+                type: "Or",
+                values: [Number, undefined, null]
+            };
+        }
+    });
+
+    var converter = makeBasicQueryConvert({
+        identity: ["id"],
+        keys: {
+            age: MaybeNumber,
+            foo: String
+        }
+    });
+
+    var query = {
+        filter: {
+            $or: [
+                { foo: "bar", age: {$gt: "3"}},
+                { foo: "bar", age: null}
+            ]
+        }
+    };
+
+    var basicQuery = converter.hydrate(query);
+    
+    /*QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
+        foo: new is.In(["bar"]),
+        age: new MaybeSet({
+            range: new is.GreaterThan(3),
+            enum: new is.In([null])
+        })
+    }));*/
+
+    var res = converter.serializer.serialize(basicQuery);
+
+    QUnit.deepEqual(res, {
+        filter: {
+            $or: [
+                { foo: "bar", age: {$gt: 3}},
+                { foo: "bar", age: null}
+            ]
+        }
+    }, "serialized");
+});
+
 QUnit.skip("nested properties within ors", function(){
     var query = {
         filter: {

@@ -5,6 +5,7 @@ var set = require("../set");
 var comparisonsConverter = require("../serializers/comparisons");
 var Serializer = require("../serializer");
 var is = require("../types/comparisons");
+var makeMaybe = require("../types/maybe");
 
 var setTypeSymbol = canSymbol.for("can.SetType");
 var schemaSymbol = canSymbol.for("can.schema");
@@ -29,6 +30,8 @@ function hydrateFilter(values, schemaProperties, hydrateUnknown) {
         return hydrateAndValues(values, schemaProperties, hydrateUnknown);
     }
 }
+
+var maybeSetMap = new WeakMap();
 
 function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
     schemaProperties = schemaProperties || {};
@@ -68,8 +71,15 @@ function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
                 }
 
             } else {
-                // HERE
-                clone[prop] = comparisonsConverter.hydrate(value, hydrateChild);
+                if(makeMaybe.canMakeMaybeSetType(type)) {
+                    if(!maybeSetMap.has(type)) {
+                        maybeSetMap.set(type, makeMaybe.makeMaybeSetTypes(type) );
+                    }
+                    SetType = maybeSetMap.get(type).Maybe;
+                    clone[prop] = SetType.hydrate(value, comparisonsConverter.hydrate);
+                } else {
+                    clone[prop] = comparisonsConverter.hydrate(value, hydrateChild);
+                }
             }
         } else {
             // HERE {$gt: 1} -> new is.GreaterThan(1)
@@ -170,6 +180,7 @@ module.exports = function(schema) {
             var result = {};
             canReflect.eachKey(and.values, function(value, key){
                 // is value universal ... if not, we don't need to add anything
+
                 if(typeof value.orValues === "function") {
                     canReflect.addValues( ors, value.orValues().map(function(orValue){
                         var result = {};

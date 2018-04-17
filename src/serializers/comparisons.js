@@ -17,6 +17,22 @@ function addHydrateFrom(key, hydrate) {
 	});
 }
 
+function addHydrateFromValues(key, hydrate) {
+    hydrateMap[key] = function(value, unknownHydrator) {
+        var clones = value[key];
+        if(unknownHydrator) {
+            clones = clones.map(function(value){
+                return unknownHydrator(value);
+            });
+        }
+        return hydrate( clones );
+    };
+    Object.defineProperty(hydrateMap[key], "name", {
+		value: "hydrate "+key,
+		writable: true
+	});
+}
+
 // https://docs.mongodb.com/manual/reference/operator/query-comparison/
 addHydrateFrom("$eq", function(value){
     return new is.In([value]);
@@ -27,26 +43,36 @@ addHydrateFrom("$ne", function(value){
 
 addHydrateFrom("$gt", makeNew(is.GreaterThan));
 addHydrateFrom("$gte", makeNew(is.GreaterThanEqual));
-addHydrateFrom("$in", makeNew(is.In));
+addHydrateFromValues("$in", makeNew(is.In));
 addHydrateFrom("$lt", makeNew(is.LessThan));
 addHydrateFrom("$lt", makeNew(is.LessThanEqual));
-addHydrateFrom("$nin", makeNew(is.GreaterThan));
+addHydrateFromValues("$nin", makeNew(is.GreaterThan));
 
 
 
 
 
 var serializer = new Serializer([
-    [is.In,function(isIn){
-        return isIn.values.length === 1 ? isIn.values[0] : {$in: isIn.values};
+    [is.In,function(isIn, serialize){
+        return isIn.values.length === 1 ?
+            serialize(isIn.values[0]) :
+            {$in: isIn.values.map(serialize)};
     }],
-    [is.NotIn,function(notIn){
-        return notIn.values.length === 1 ? {$ne: notIn.values[0]} : {$nin: notIn.values};
+    [is.NotIn,function(notIn, serialize){
+        return notIn.values.length === 1 ?
+            {$ne: serialize(notIn.values[0])} : {$nin: notIn.values.map(serialize)};
     }],
-    [is.GreaterThan, function(gt){ return {$gt: gt.value }; }],
-    [is.GreaterThanEqual, function(gte){ return {$gte: gte.value }; }],
-    [is.LessThan, function(lt){ return {$lt: lt.value }; }],
-    [is.LessThanEqual, function(lt){ return {$lte: lt.value }; }]
+    [is.GreaterThan, function(gt, serialize){ return {$gt: serialize(gt.value) }; }],
+    [is.GreaterThanEqual, function(gte, serialize){ return {$gte: serialize(gte.value) }; }],
+    [is.LessThan, function(lt, serialize){ return {$lt: serialize(lt.value) }; }],
+    [is.LessThanEqual, function(lt, serialize){ return {$lte: serialize(lt.value) }; }],
+    /*[is.Or, function(or, serialize){
+        return {
+            $or: or.values.map(function(value){
+                return serialize(value, serialize);
+            })
+        };
+    }]*/
 ]);
 
 module.exports = {

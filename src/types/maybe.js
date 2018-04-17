@@ -27,7 +27,7 @@ function splitByRangeAndEnum(maybeUniverse, rangeToBeSplit) {
 		});
 
 	} else if (rangeToBeSplit instanceof is.In) {
-		
+
 		var shouldBeInValues = rangeToBeSplit.values.filter(function(value) {
 			return maybeUniverse.isMember(value);
 		});
@@ -206,12 +206,24 @@ makeMaybe.makeMaybeSetTypes = function(Type){
 		}
 	});
 
-	var Value = function Value(value){
+	var Value = function(value){
 		this.value = canReflect.new(Type, value)
 	};
 	Value.prototype.valueOf = function(){
 		return this.value;
 	};
+	canReflect.assignSymbols(Value.prototype,{
+		"can.serialize": function(){
+			return this.value;
+		}
+	});
+
+	//!steal-remove-start
+	Object.defineProperty(Value, "name", {
+		value:  "Or["+rangeTypes[0].name+","+primitiveTypes.map(String).join(" ")+"]"
+	});
+	//!steal-remove-end
+
 
 	return {
 		Maybe: makeMaybe(primitiveTypes, function hydrateMaybesValueType(value){

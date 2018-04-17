@@ -26,6 +26,7 @@ OrValues.prototype.isMember = function(props){
                 value.isMember( props ) : value === props;
     });
 };
+// TODO: I think this can be removed
 OrValues.prototype.orValues = function(){
     return this.values;
 };

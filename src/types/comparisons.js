@@ -41,11 +41,15 @@ var comparisons = {
 	And: function ValueAnd(ands) {
 	    this.values = ands;
 	},
-	// This is used to OR something like `GT(4)` n `LT(3)`. 
+	// This is used to OR something like `GT(4)` n `LT(3)`.
 	// These are all value comparisons.
 	Or: function ValueOr(ors) {
 	    this.values = ors;
 	}
+};
+
+comparisons.Or.prototype.orValues = function(){
+    return this.values;
 };
 
 
@@ -239,7 +243,7 @@ var comparators = {
 
 	In_GreaterThan: {
 		union: combineFilterFirstValues({
-			values: is.LessThanEqual,
+			values: makeNot(is.GreaterThan),
 			arePut: is.In,
 			combinedUsing: makeOr
 		}),
@@ -431,6 +435,14 @@ var comparators = {
 	},
 	UNIVERSAL_LessThanEqual: {
 		difference: makeSecondValue(is.GreaterThan)
+	},
+
+	UNIVERSAL_Or: {
+		difference: function(universe, or){
+			var inverseFirst = set.difference(universe, or[0]),
+				inverseSecond = set.difference(universe, or[1]);
+			return makeAnd([inverseFirst, inverseSecond]);
+		}
 	}
 };
 
