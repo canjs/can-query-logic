@@ -1,7 +1,6 @@
 var QueryLogic = require("../can-query-logic");
 var QUnit = require("steal-qunit");
 var canReflect = require("can-reflect");
-var makeMaybe = require("../src/types/maybe");
 
 QUnit.module("can-query-logic with maybe type");
 
@@ -20,7 +19,7 @@ QUnit.test("basics", function(){
         "can.getSchema": function(){
             return {
                 type: "Or",
-                types: [Number, undefined, null]
+                values: [Number, undefined, null]
             };
         }
     });
@@ -37,12 +36,11 @@ QUnit.test("basics", function(){
         {},
         {filter: {age: {$gt: 5}}});
 
-    QUnit.deepEqual(res,
-        {
-            filter: {$or: [
-                {age: {$lte: 5} },
-                {age: [null, undefined]}
-            ]}
-        });
+    QUnit.deepEqual(res.filter,
+        {$or: [
+            {age: {$lte: 5} },
+            {age: {$in: [undefined, null]}}
+        ]},
+        "difference works");
 
 });

@@ -12,7 +12,7 @@ require("./src/types/maybe-test");
 require("./compat/compat-test");
 require("./test/special-comparison-logic-test");
 require("./test/make-enum-logic-test");
-
+require("./test/maybe-type-test");
 
 var QUnit = require("steal-qunit");
 var QueryLogic = require("can-query-logic");
