@@ -10,14 +10,20 @@ QUnit.test("basics", function(){
     // but when passed to can-query-logic, it knows what to do.
     //
 
-    var type = canReflect.assignSymbols({
+    var MaybeNumber = canReflect.assignSymbols({},{
         "can.new": function(val){
             if (val == null) {
     			return val;
     		}
     		return +(val);
+        },
+        "can.getSchema": function(){
+            return {
+                type: "Or",
+                types: [Number, undefined, null]
+            };
         }
-    })
+    });
 
     var res;
 

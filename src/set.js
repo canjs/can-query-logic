@@ -175,9 +175,14 @@ set = {
         return value.constructor;
     },
     ownAndMemberValue: function(startOwnValue, startMemberValue) {
-    	if(startOwnValue != null && startMemberValue != null) {
-    		var ownValue = startOwnValue.valueOf(),
-    			memberValue = startMemberValue.valueOf();
+        // If either side has a value, then try to type-coerse.
+    	if(startOwnValue != null || startMemberValue != null) {
+    		var ownValue = startOwnValue != null ? startOwnValue.valueOf() : startOwnValue,
+    			memberValue = startMemberValue != null ? startMemberValue.valueOf() : startMemberValue;
+            // if we have nulls or undefineds
+            if(startOwnValue == null || startMemberValue == null) {
+                return {own: ownValue, member: memberValue};
+            }
     		if(ownValue.constructor !== memberValue.constructor) {
     			memberValue = new startOwnValue.constructor(memberValue).valueOf();
     		}
@@ -350,6 +355,15 @@ set = {
         } else {
             throw new Error("Unable to perform difference comparison between "+Type1.name+" and "+Type2.name);
         }
+    },
+
+    indexWithEqual: function(arr, value) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            if(set.isEqual(arr[i], value)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
 };

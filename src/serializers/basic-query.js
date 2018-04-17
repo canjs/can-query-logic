@@ -58,6 +58,7 @@ function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
                     clone[prop] = SetType.hydrate(value, comparisonsConverter.hydrate);
                 }
                 else if(set.hasComparisons(SetType)) {
+                    // Todo ... canReflect.new
                     clone[prop] = new SetType(value);
                 } else {
                     // inner types

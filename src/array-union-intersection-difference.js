@@ -1,12 +1,5 @@
-var set = require("./set");
-function indexOf(arr, value) {
-    for(var i = 0, len = arr.length; i < len; i++) {
-        if(set.isEqual(arr[i], value)) {
-            return i;
-        }
-    }
-    return -1;
-}
+var SET = require("./set");
+
 
 function getValue(value){
     return value == null ? value : value.valueOf();
@@ -28,7 +21,7 @@ module.exports = function arrayUnionIntersectionDifference(arr1, arr2){
     arr2.forEach(function(value){
         if(set.has(getValue(value))) {
             intersection.push(value);
-            var index = indexOf(difference, value);
+            var index = SET.indexWithEqual(difference, value);
             if(index !== -1) {
                 difference.splice(index, 1);
             }

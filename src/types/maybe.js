@@ -1,6 +1,7 @@
 var set = require("../set");
 var is = require("./comparisons");
 var canReflect = require("can-reflect");
+var schemaHelpers = require("../schema-helpers");
 
 // This helper function seperates out sets that relate to the "maybe" values
 // like `null` or `undefined`. For example, if `rangeToBeSplit`
@@ -26,9 +27,9 @@ function splitByRangeAndEnum(maybeUniverse, rangeToBeSplit) {
 		});
 
 	} else if (rangeToBeSplit instanceof is.In) {
-
-		var shouldBeInValues = maybeUniverse.values.filter(function(inValue) {
-			return rangeToBeSplit.values.indexOf(inValue) !== -1;
+		
+		var shouldBeInValues = rangeToBeSplit.values.filter(function(value) {
+			return maybeUniverse.isMember(value);
 		});
 		if (shouldBeInValues.length) {
 			var valuesCopy = rangeToBeSplit.values.slice(0);
@@ -45,6 +46,7 @@ function splitByRangeAndEnum(maybeUniverse, rangeToBeSplit) {
 			};
 		}
 	} else if (rangeToBeSplit instanceof is.NotIn) {
+
 		// Gets the 'maybe' values in the range
 		enumSet = set.intersection(maybeUniverse, rangeToBeSplit);
 
@@ -67,7 +69,7 @@ function splitByRangeAndEnum(maybeUniverse, rangeToBeSplit) {
 // Builds a type for ranged values plus some other enum values.
 // This is great for 'maybe' values. For example, it might be a string OR `null` OR `undefined`
 // `makeMaybe([null, undefined])`
-module.exports = function makeMaybe(inValues) {
+function makeMaybe(inValues, makeChildType) {
 
 
 	var maybeUniverse = new is.In(inValues);
@@ -123,6 +125,7 @@ module.exports = function makeMaybe(inValues) {
 			});
 		}
 	});
+	Maybe.inValues = inValues;
 
 	set.defineComparison(set.UNIVERSAL, Maybe, {
 		difference: function(universe, maybe) {
@@ -160,10 +163,63 @@ module.exports = function makeMaybe(inValues) {
 			});
 		}
 	});
+	makeChildType  = makeChildType || function(v){
+		return v;
+	}
 
 	Maybe.hydrate = function(value, childHydrate){
-		return new Maybe({range: childHydrate(value, function(v){ return v; }  )});
+		return new Maybe({range: childHydrate(value, makeChildType  )});
 	};
 
 	return Maybe;
+}
+
+makeMaybe.canMakeMaybeSetType = function(Type) {
+	var schema = canReflect.getSchema(Type);
+	if(schema && schema.type === "Or") {
+		var rangeTypes = [];
+		var primitiveTypes = [];
+		schema.values.forEach(function(value){
+			if( canReflect.isPrimitive( value ) ) {
+				primitiveTypes.push(value);
+			}
+			if( schemaHelpers.isRangedType(value) ) {
+				rangeTypes.push(value);
+			}
+		});
+		return rangeTypes.length === 1 && (rangeTypes.length + primitiveTypes.length === schema.values.length);
+	}
+	return false;
 };
+
+makeMaybe.makeMaybeSetTypes = function(Type){
+	var schema = canReflect.getSchema(Type);
+
+	var rangeTypes = [];
+	var primitiveTypes = [];
+	schema.values.forEach(function(value){
+		if( canReflect.isPrimitive( value ) ) {
+			primitiveTypes.push(value);
+		}
+		if( schemaHelpers.isRangedType(value) ) {
+			rangeTypes.push(value);
+		}
+	});
+
+	var Value = function Value(value){
+		this.value = canReflect.new(Type, value)
+	};
+	Value.prototype.valueOf = function(){
+		return this.value;
+	};
+
+	return {
+		Maybe: makeMaybe(primitiveTypes, function hydrateMaybesValueType(value){
+			return new Value(value);
+		}),
+		Value: Value
+	}
+};
+
+
+module.exports = makeMaybe;

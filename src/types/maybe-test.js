@@ -13,7 +13,7 @@ class DateStringSet {
     }
     // used to convert to a number
     valueOf(){
-        return new Date(this.value).getTime();
+        return this.value == null ? this.value : new Date(this.value).getTime();
     }
 }
 
@@ -34,6 +34,14 @@ QUnit.test("construtor normalizes", function(){
 
     QUnit.deepEqual(isNull_3.range,new is.In([3]), "3 left in range");
     QUnit.deepEqual(isNull_3.enum,new is.In([null]), "range moved to in");
+
+    // with value of values
+    var isNull_3AsDateString = new MaybeDateStringSet({
+        range: new is.In([new DateStringSet(null), new DateStringSet(3)])
+    });
+    QUnit.deepEqual(isNull_3AsDateString.range,new is.In([new DateStringSet(3)]), "3 left in range");
+    QUnit.deepEqual(isNull_3AsDateString.enum,new is.In([new DateStringSet(null)]), "range moved to in");
+
 
     var isNull = new MaybeDateStringSet({
         range: new is.In([null])
@@ -296,7 +304,9 @@ QUnit.test("union", function(){
 });
 
 
-QUnit.test("can make maybe type from normal type", function(){
+
+
+QUnit.test("can make maybe type from normal type and makeMaybeSetType", function(){
     var MaybeNumber =  canReflect.assignSymbols({},{
         "can.new": function(val){
             if (val == null) {
@@ -307,14 +317,34 @@ QUnit.test("can make maybe type from normal type", function(){
         "can.getSchema": function(){
             return {
                 type: "Or",
-                types: [Number, undefined, null]
+                values: [Number, undefined, null]
             };
         }
     });
 
     QUnit.ok( makeMaybe.canMakeMaybeSetType(MaybeNumber), "got everything we need");
 
+
+    var types = makeMaybe.makeMaybeSetTypes(MaybeNumber);
+
+    var notUndefined = new types.Maybe({
+            range: new is.NotIn([new types.Value(undefined)])
+        }),
+        nullOrLTE3 = new types.Maybe({
+            range: new is.LessThanEqual(new types.Value(3)),
+            enum: new is.In([new types.Value(null)])
+        });
+
+    var res = set.difference(
+        notUndefined,
+        nullOrLTE3
+    );
+    QUnit.deepEqual(res, new types.Maybe({
+        range: new is.GreaterThan(new types.Value(3))
+    }), "{ne: undef} \\ {lt: 3} | null -> {gte: 3}");
+
 });
+
 
 
 
