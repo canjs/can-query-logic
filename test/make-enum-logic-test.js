@@ -47,3 +47,45 @@ QUnit.test("union - enum", function(){
         }
     });
 });
+
+
+QUnit.test("automatic enum", function(){
+
+    var MaybeBoolean = canReflect.assignSymbols({},{
+    	"can.new": function(val){
+    		if(val == null) {
+    			return val;
+    		}
+    		if (val === 'false' || val === '0' || !val) {
+    			return false;
+    		}
+    		return true;
+    	},
+    	"can.getSchema": function(){
+    		return {
+    			type: "Or",
+    			values: [true, false, undefined, null]
+    		};
+    	}
+    });
+
+    var queryLogic = new QueryLogic({
+        identity: ["id"],
+        keys: {
+            complete: MaybeBoolean
+        }
+    });
+    var res;
+
+    res = queryLogic.difference({},{
+        filter: {
+            complete: true
+        }
+    });
+    
+    QUnit.deepEqual(res,{
+        filter: {
+            complete: [false, undefined, null]
+        }
+    }, "enum works");
+});

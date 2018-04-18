@@ -2,6 +2,9 @@ var set = require("../set");
 var is = require("./comparisons");
 var canReflect = require("can-reflect");
 var schemaHelpers = require("../schema-helpers");
+var canSymbol = require("can-symbol");
+
+var comparisonSetTypeSymbol = canSymbol.for("can.ComparisonSetType");
 
 // This helper function seperates out sets that relate to the "maybe" values
 // like `null` or `undefined`. For example, if `rangeToBeSplit`
@@ -174,62 +177,69 @@ function makeMaybe(inValues, makeChildType) {
 	return Maybe;
 }
 
+
+
 makeMaybe.canMakeMaybeSetType = function(Type) {
 	var schema = canReflect.getSchema(Type);
 	if(schema && schema.type === "Or") {
-		var rangeTypes = [];
-		var primitiveTypes = [];
-		schema.values.forEach(function(value){
-			if( canReflect.isPrimitive( value ) ) {
-				primitiveTypes.push(value);
-			}
-			if( schemaHelpers.isRangedType(value) ) {
-				rangeTypes.push(value);
-			}
-		});
-		return rangeTypes.length === 1 && (rangeTypes.length + primitiveTypes.length === schema.values.length);
+		var categories = schemaHelpers.categorizeOrValues(schema.values);
+
+		return categories.valueOfTypes.length === 1 &&
+			(categories.valueOfTypes.length + categories.primitives.length === schema.values.length);
 	}
 	return false;
 };
 
+// Given an __Or__ type like:
+// ```
+// var MaybeString = {
+//   "can.new"(val){ ... },
+// 	 "can.getSchema"(){ return  { type: "Or", values: [String, undefined, null] }
+// });
+// ```
+//
+// This creates two types:
+// - `Value` - A value type used for what's within `GreaterThan`, etc.
+// - `Maybe` - A SetType for this property. It will have `GreaterThan` within its
+//            `{enum, range}` sub values.
+//
+// This creates the outer `SetType` and the innermost `Value` type while the Comparisons
+// are used inbetween.
+//
+// The `MaybeString` could probably be directly used to hydrate values to what they should be.
 makeMaybe.makeMaybeSetTypes = function(Type){
 	var schema = canReflect.getSchema(Type);
+	var categories = schemaHelpers.categorizeOrValues(schema.values);
+	var ComparisonSetType;
 
-	var rangeTypes = [];
-	var primitiveTypes = [];
-	schema.values.forEach(function(value){
-		if( canReflect.isPrimitive( value ) ) {
-			primitiveTypes.push(value);
-		}
-		if( schemaHelpers.isRangedType(value) ) {
-			rangeTypes.push(value);
-		}
-	});
+	// No need to build the comparison type if we are given it.
+	if(Type[comparisonSetTypeSymbol]) {
+		ComparisonSetType = Type[comparisonSetTypeSymbol];
+	} else {
 
-	var Value = function(value){
-		this.value = canReflect.new(Type, value)
-	};
-	Value.prototype.valueOf = function(){
-		return this.value;
-	};
-	canReflect.assignSymbols(Value.prototype,{
-		"can.serialize": function(){
+		ComparisonSetType = function(value){
+			this.value = canReflect.new(Type, value)
+		};
+		ComparisonSetType.prototype.valueOf = function(){
 			return this.value;
-		}
-	});
-
-	//!steal-remove-start
-	Object.defineProperty(Value, "name", {
-		value:  "Or["+rangeTypes[0].name+","+primitiveTypes.map(String).join(" ")+"]"
-	});
-	//!steal-remove-end
-
+		};
+		canReflect.assignSymbols(ComparisonSetType.prototype,{
+			"can.serialize": function(){
+				return this.value;
+			}
+		});
+		//!steal-remove-start
+		Object.defineProperty(ComparisonSetType, "name", {
+			value:  "Or["+categories.valueOfTypes[0].name+","+categories.primitives.map(String).join(" ")+"]"
+		});
+		//!steal-remove-end
+	}
 
 	return {
-		Maybe: makeMaybe(primitiveTypes, function hydrateMaybesValueType(value){
-			return new Value(value);
+		Maybe: makeMaybe(categories.primitives, function hydrateMaybesValueType(value){
+			return new ComparisonSetType(value);
 		}),
-		Value: Value
+		ComparisonSetType: ComparisonSetType
 	}
 };
 

@@ -6,8 +6,10 @@ var comparisonsConverter = require("../serializers/comparisons");
 var Serializer = require("../serializer");
 var is = require("../types/comparisons");
 var makeMaybe = require("../types/maybe");
+var makeEnum = require("../types/make-enum");
 
 var setTypeSymbol = canSymbol.for("can.SetType");
+var comparisonSetTypeSymbol = canSymbol.for("can.ComparisonSetType");
 var schemaSymbol = canSymbol.for("can.schema");
 
 var defaultQuery = new BasicQuery({});
@@ -31,7 +33,68 @@ function hydrateFilter(values, schemaProperties, hydrateUnknown) {
     }
 }
 
-var maybeSetMap = new WeakMap();
+var setTypeMap = new WeakMap();
+
+// This is used to hydrate a value directly within a `filter`'s And.
+function hydrateAndValue(value, prop, SchemaType, hydrateChild){
+    // The `SchemaType` is the type of value on `instances` of
+    // the schema. `Instances` values are different from `Set` values.
+    if(SchemaType) {
+        // If there's a `SetType`, we will use that
+        var SetType = SchemaType[setTypeSymbol];
+        if(SetType) {
+            /// If it exposes a hydrate, this means it can use the current hydrator to
+            // hydrate its children.
+            // I'm not sure why it's not taking the `unknown` hydrator instead.
+            if(SetType.hydrate) {
+                return SetType.hydrate(value, comparisonsConverter.hydrate);
+            }
+            // If the SetType implemented `union`, `intersection`, `difference`
+            // We can create instances of it directly.
+            else if(set.hasComparisons(SetType)) {
+                // Todo ... canReflect.new
+                return new SetType(value);
+            }
+            // If the SetType did not implement the comparison methods,
+            // it's probably just a "Value" comparison type. We will hydrate
+            // as a comparison converter, but create an instance of this `"Value"`
+            // comparison type within the comparison converter.
+            else {
+                // inner types
+                return comparisonsConverter.hydrate(value, function(value){
+                    return new SetType(value);
+                });
+            }
+
+        } else {
+            // There is a `SchemaType`, but it doesn't have a `SetType`.
+            // Can we create the SetType from the `SchemaType`?
+            if(makeEnum.canMakeEnumSetType(SchemaType)) {
+                if(!setTypeMap.has(SchemaType)) {
+                    setTypeMap.set(SchemaType, makeEnum.makeEnumSetType(SchemaType) );
+                }
+                SetType = setTypeMap.get(SchemaType);
+                return new SetType(value);
+            }
+            // It could also have a `ComparisonSetType` which are the values
+            // within the Maybe type.
+            else if(makeMaybe.canMakeMaybeSetType(SchemaType)) {
+                if(!setTypeMap.has(SchemaType)) {
+                    setTypeMap.set(SchemaType, makeMaybe.makeMaybeSetTypes(SchemaType) );
+                }
+                SetType = setTypeMap.get(SchemaType).Maybe;
+                return SetType.hydrate(value, comparisonsConverter.hydrate);
+            }
+            // We can't create the `SetType`, so lets hydrate with the default behavior.
+            else {
+                return comparisonsConverter.hydrate(value, hydrateChild);
+            }
+        }
+    } else {
+        // HERE {$gt: 1} -> new is.GreaterThan(1)
+        return comparisonsConverter.hydrate(value, hydrateChild);
+    }
+}
 
 function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
     schemaProperties = schemaProperties || {};
@@ -53,38 +116,7 @@ function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
     }
     var clone = {};
     canReflect.eachKey(values, function(value, prop){
-        var type = schemaProperties[prop];
-        if(type) {
-            var SetType = type[setTypeSymbol];
-            if(SetType) {
-                if(SetType.hydrate) {
-                    clone[prop] = SetType.hydrate(value, comparisonsConverter.hydrate);
-                }
-                else if(set.hasComparisons(SetType)) {
-                    // Todo ... canReflect.new
-                    clone[prop] = new SetType(value);
-                } else {
-                    // inner types
-                    clone[prop] = comparisonsConverter.hydrate(value, function(value){
-                        return new SetType(value);
-                    });
-                }
-
-            } else {
-                if(makeMaybe.canMakeMaybeSetType(type)) {
-                    if(!maybeSetMap.has(type)) {
-                        maybeSetMap.set(type, makeMaybe.makeMaybeSetTypes(type) );
-                    }
-                    SetType = maybeSetMap.get(type).Maybe;
-                    clone[prop] = SetType.hydrate(value, comparisonsConverter.hydrate);
-                } else {
-                    clone[prop] = comparisonsConverter.hydrate(value, hydrateChild);
-                }
-            }
-        } else {
-            // HERE {$gt: 1} -> new is.GreaterThan(1)
-            clone[prop] = comparisonsConverter.hydrate(value, hydrateChild);
-        }
+        clone[prop] = hydrateAndValue(value, prop, schemaProperties[prop], hydrateChild);
     });
 
     return new BasicQuery.AndKeys(clone);

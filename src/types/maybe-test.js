@@ -328,11 +328,11 @@ QUnit.test("can make maybe type from normal type and makeMaybeSetType", function
     var types = makeMaybe.makeMaybeSetTypes(MaybeNumber);
 
     var notUndefined = new types.Maybe({
-            range: new is.NotIn([new types.Value(undefined)])
+            range: new is.NotIn([new types.ComparisonSetType(undefined)])
         }),
         nullOrLTE3 = new types.Maybe({
-            range: new is.LessThanEqual(new types.Value(3)),
-            enum: new is.In([new types.Value(null)])
+            range: new is.LessThanEqual(new types.ComparisonSetType(3)),
+            enum: new is.In([new types.ComparisonSetType(null)])
         });
 
     var res = set.difference(
@@ -340,9 +340,75 @@ QUnit.test("can make maybe type from normal type and makeMaybeSetType", function
         nullOrLTE3
     );
     QUnit.deepEqual(res, new types.Maybe({
-        range: new is.GreaterThan(new types.Value(3))
+        range: new is.GreaterThan(new types.ComparisonSetType(3))
     }), "{ne: undef} \\ {lt: 3} | null -> {gte: 3}");
 
+});
+
+QUnit.test("can make a maybe type from a ComparisonSetType", function(){
+    function toDate(str) {
+        var type = typeof str;
+        if (type === 'string') {
+            str = Date.parse(str);
+            return isNaN(str) ? null : new Date(str);
+        } else if (type === 'number') {
+            return new Date(str);
+        } else {
+            return str;
+        }
+    }
+
+    function DateStringSet(dateStr){
+        this.setValue = dateStr;
+        var date = toDate(dateStr);
+        this.value = date == null ? date : date.getTime();
+    }
+
+    DateStringSet.prototype.valueOf = function(){
+        return this.value;
+    };
+    canReflect.assignSymbols(DateStringSet.prototype,{
+        "can.serialize": function(){
+            return this.setValue;
+        }
+    });
+
+    var MaybeDate = canReflect.assignSymbols({},{
+        "can.new": toDate,
+        "can.getSchema": function(){
+            return {
+                type: "Or",
+                values: [Date, undefined, null]
+            };
+        },
+        "can.ComparisonSetType": DateStringSet
+    });
+
+    QUnit.ok( makeMaybe.canMakeMaybeSetType(MaybeDate), "got everything we need");
+
+
+    var types = makeMaybe.makeMaybeSetTypes(MaybeDate);
+
+    // TODO: change to ComparisonSetType
+    QUnit.equal( types.ComparisonSetType, DateStringSet, "got the comparison type" );
+
+    var date1982_10_20 = new Date(1982,9,20).toString();
+
+    var notUndefined = new types.Maybe({
+            range: new is.NotIn([new types.ComparisonSetType(undefined)])
+        }),
+        nullOrLTE3 = new types.Maybe({
+            range: new is.LessThanEqual(new types.ComparisonSetType(date1982_10_20)),
+            enum: new is.In([new types.ComparisonSetType(null)])
+        });
+
+    var res = set.difference(
+        notUndefined,
+        nullOrLTE3
+    );
+    QUnit.deepEqual(res, new types.Maybe({
+        range: new is.GreaterThan(new types.ComparisonSetType(date1982_10_20))
+    }), "{ne: undef} \\ {lt: '"+date1982_10_20+"'} | null -> {gte: '"+date1982_10_20+"'}");
 });
 
 

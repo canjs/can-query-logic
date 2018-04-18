@@ -44,3 +44,68 @@ QUnit.test("basics", function(){
         "difference works");
 
 });
+
+
+QUnit.test("MaybeDate", function(){
+    // Goal here is so the type doesn't have to know about `can-query-logic`,
+    // but when passed to can-query-logic, it knows what to do.
+    function toDate(str) {
+        var type = typeof str;
+        if (type === 'string') {
+            str = Date.parse(str);
+            return isNaN(str) ? null : new Date(str);
+        } else if (type === 'number') {
+            return new Date(str);
+        } else {
+            return str;
+        }
+    }
+
+    function DateStringSet(dateStr){
+        this.setValue = dateStr;
+        var date = toDate(dateStr);
+        this.value = date == null ? date : date.getTime();
+    }
+
+    DateStringSet.prototype.valueOf = function(){
+        return this.value;
+    };
+    canReflect.assignSymbols(DateStringSet.prototype,{
+        "can.serialize": function(){
+            return this.setValue;
+        }
+    });
+
+    var MaybeDate = canReflect.assignSymbols({},{
+        "can.new": toDate,
+        "can.getSchema": function(){
+            return {
+                type: "Or",
+                values: [Date, undefined, null]
+            };
+        },
+        "can.ComparisonSetType": DateStringSet
+    });
+
+    var res;
+
+    var todoQueryLogic = new QueryLogic({
+        keys: {
+            due: MaybeDate
+        }
+    });
+
+    var date1982_10_20 = new Date(1982,9,20).toString();
+
+    res = todoQueryLogic.difference(
+        {},
+        {filter: {due: {$gt: date1982_10_20}}});
+
+    QUnit.deepEqual(res.filter,
+        {$or: [
+            {due: {$lte: date1982_10_20} },
+            {due: {$in: [undefined, null]}}
+        ]},
+        "difference works");
+
+});
