@@ -612,8 +612,139 @@ var tests = {
             );
         }
     },
+    In_And: {
+        union: function(assert){
+            var a = new is.In([5,6]);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
 
-    // NotIn
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([
+                    a, b
+                ])
+            );
+
+            a = new is.In([15,16]);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                b
+            );
+        },
+        intersection: function(assert){
+            var a = new is.In([5,6]);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                set.EMPTY
+            );
+
+            a = new is.In([15,16]);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                a
+            );
+        },
+        difference: function(assert){
+            var a = new is.In([5,6]);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                a
+            );
+
+            a = new is.In([15,16]);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                set.EMPTY
+            );
+        }
+    },
+    And_In: {
+        difference: function(assert){
+            var a = new is.In([5,6]);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                b
+            );
+
+            a = new is.In([15,16]);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+            var res = set.difference(b, a);
+
+            assert.deepEqual(
+                res,
+                new is.And([new is.NotIn([15,16]),b])
+            );
+        }
+    },
+    In_Or: {
+        union: function(assert){
+            var a = new is.In([5,6]);
+            var b = new is.Or([new is.GreaterThan(7), new is.LessThan(1)]);
+
+            // TODO: Ors can be combined
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([
+                    a, b
+                ])
+            );
+
+            a = new is.In([15,16]);
+            b = new is.Or([new is.GreaterThan(7), new is.LessThan(2)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                b
+            );
+        },
+        intersection: function(assert){
+            var a = new is.In([5,6]);
+            var b = new is.Or([new is.GreaterThan(7), new is.LessThan(1)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                set.EMPTY
+            );
+
+            a = new is.In([15,16]);
+            b = new is.Or([new is.GreaterThan(7), new is.LessThan(2)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                a
+            );
+        },
+        difference: function(assert){
+            var a = new is.In([5,6]);
+            var b = new is.Or([new is.GreaterThan(7), new is.LessThan(2)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                a
+            );
+
+            a = new is.In([15,16]);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(2)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                set.EMPTY
+            );
+        }
+    },
+
+    // NotIn ================================================
     NotIn_NotIn: {
         // if there's some intersection ... then that's ok
         union: function(assert){

@@ -117,6 +117,18 @@ function isMemberThatUsesTestOnValues(value) {
 	Type.prototype.isMember = isMemberThatUsesTestOnValues;
 });
 
+comparisons.And.prototype.isMember = function(value){
+	return this.values.every(function(and){
+		return and.isMember(value);
+	});
+};
+comparisons.Or.prototype.isMember = function(value){
+	return this.values.some(function(and){
+		return and.isMember(value);
+	});
+};
+
+
 function makeNot(Type) {
 	return {
 		test: function(vA, vB){
@@ -189,6 +201,16 @@ function make_InIfEqual_else_andIf(Comparison, Type) {
 	};
 }
 
+function make_filterFirstValueAgainstSecond(Comparison, Type, defaultReturn) {
+	return function(inSet, gt) {
+		var values = inSet.values.filter(function(value) {
+			return Comparison.test(gt, value);
+		});
+		return values.length ?
+			new Type(values) : defaultReturn || set.EMPTY ;
+	};
+}
+
 function make_filterFirstValues(Comparison, Type, defaultReturn) {
 	return function(inSet, gt) {
 		var values = inSet.values.filter(function(value) {
@@ -199,11 +221,29 @@ function make_filterFirstValues(Comparison, Type, defaultReturn) {
 	};
 }
 
+var isMemberTest = {
+	test: function isMemberTest(set, value){
+		return set.isMember(value);
+	}
+};
 
+// `value` - has a test function to check values
+// `with` - the type we use to combined with the "other" value.
+// `combinedUsing` - If there are values, how do we stick it together with `with`
 function combineFilterFirstValues(options) {
 	return function(inSet, gt) {
 		var values = inSet.values.filter(function(value) {
 			return options.values.test(value, gt.value);
+		});
+		var range = options.with ? new options.with(gt.value) : gt;
+		return values.length ?
+			options.combinedUsing([new options.arePut(values),range]) : range;
+	};
+}
+function combineFilterFirstValuesAgainstSecond(options) {
+	return function(inSet, gt) {
+		var values = inSet.values.filter(function(value) {
+			return options.values.test(gt, value);
 		});
 		var range = options.with ? new options.with(gt.value) : gt;
 		return values.length ?
@@ -220,6 +260,25 @@ function makeOr(ors) {
 }
 
 var is = comparisons;
+
+var In_RANGE = {
+	union: combineFilterFirstValuesAgainstSecond({
+		values: makeNot( isMemberTest ),
+		arePut: is.In,
+		combinedUsing: makeOr
+	}),
+	intersection: make_filterFirstValueAgainstSecond(isMemberTest, is.In, set.EMPTY),
+	difference: make_filterFirstValueAgainstSecond(makeNot(isMemberTest), is.In, set.EMPTY)
+};
+var RANGE_IN = {
+	difference: swapArgs(combineFilterFirstValuesAgainstSecond({
+		values: isMemberTest,
+		arePut: is.NotIn,
+		combinedUsing: makeAnd
+	}))
+};
+
+
 var comparators = {
 	// In
 	In_In: {
@@ -241,86 +300,23 @@ var comparators = {
 		difference: makeEnum("union", is.NotIn)
 	},
 
-	In_GreaterThan: {
-		union: combineFilterFirstValues({
-			values: makeNot(is.GreaterThan),
-			arePut: is.In,
-			combinedUsing: makeOr
-		}),
-		intersection: make_filterFirstValues(is.GreaterThan, is.In, set.EMPTY),
-		difference: make_filterFirstValues(makeNot(is.GreaterThan), is.In, set.EMPTY)
-	},
-	GreaterThan_In: {
-		difference: swapArgs(combineFilterFirstValues({
-			values: is.GreaterThan,
-			arePut: is.NotIn,
-			combinedUsing: makeAnd
-		}))
-	},
+	In_GreaterThan: In_RANGE,
+	GreaterThan_In: RANGE_IN,
 
-	In_GreaterThanEqual: {
-		union: combineFilterFirstValues({
-			values: is.LessThan,
-			arePut: is.In,
-			combinedUsing: makeOr
-		}),
-		intersection: make_filterFirstValues(is.GreaterThanEqual, is.In, set.EMPTY),
-		difference: make_filterFirstValues(makeNot(is.GreaterThanEqual), is.In, set.EMPTY)
-	},
-	GreaterThanEqual_In: {
-		difference: swapArgs(combineFilterFirstValues({
-			values: is.GreaterThanEqual,
-			arePut: is.NotIn,
-			combinedUsing: makeAnd
-		}))
-	},
+	In_GreaterThanEqual: In_RANGE,
+	GreaterThanEqual_In: RANGE_IN,
 
-	In_LessThan: {
-		union: combineFilterFirstValues({
-			values: is.GreaterThanEqual,
-			arePut: is.In,
-			combinedUsing: makeOr
-		}),
-		intersection: make_filterFirstValues(is.LessThan, is.In, set.EMPTY),
-		difference: make_filterFirstValues(makeNot(is.LessThan), is.In, set.EMPTY)
-	},
-	LessThan_In: {
-		difference: swapArgs(combineFilterFirstValues({
-			values: is.LessThan,
-			arePut: is.NotIn,
-			combinedUsing: makeAnd
-		}))
-	},
+	In_LessThan: In_RANGE,
+	LessThan_In: RANGE_IN,
 
-	In_LessThanEqual: {
-		union: combineFilterFirstValues({
-			values: is.GreaterThan,
-			arePut: is.In,
-			combinedUsing: makeOr
-		}),
-		intersection: make_filterFirstValues(is.LessThanEqual, is.In, set.EMPTY),
-		difference: make_filterFirstValues(makeNot(is.LessThanEqual), is.In, set.EMPTY)
-	},
-	LessThanEqual_In: {
-		difference: swapArgs(combineFilterFirstValues({
-			values: is.LessThanEqual,
-			arePut: is.NotIn,
-			combinedUsing: makeAnd
-		}))
-	},
-	In_And: {
-		difference: function(inA, valueAnd){
-			// the values inA that are not in the sets of valueAnd
-			var values = inA.values.filter(function(value){
-				return valueAnd.values.some(function(set){
-					return set.isMember(value)
-				})
-			});
-			return values.length ? new is.In(values) : set.EMPTY;
-		}
-	},
+	In_LessThanEqual: In_RANGE,
+	LessThanEqual_In: RANGE_IN,
+	In_And: In_RANGE,
+	And_In: RANGE_IN,
 
-	// NotIn
+	In_Or: In_RANGE,
+
+	// NotIn ===============================
 	NotIn_NotIn: {
 		union: makeEnum("intersection", is.NotIn, set.UNIVERSAL),
 		intersection: makeEnum("union", is.NotIn),
