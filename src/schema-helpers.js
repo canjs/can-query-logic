@@ -27,7 +27,7 @@ module.exports = schemaHelpers = {
     			categories.valueOfTypes.push(value);
     		}
     		else {
-    			categories.others.push(value)
+    			categories.others.push(value);
     		}
     	});
     	return categories;
