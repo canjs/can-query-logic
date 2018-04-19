@@ -3,7 +3,7 @@ var makeBasicQueryConvert = require("./basic-query");
 var canReflect = require("can-reflect");
 var logicTypes = require("../types/and-or-not");
 var is = require("../types/comparisons");
-var makeMaybe = require("../types/maybe");
+var makeMaybe = require("../types/make-maybe");
 
 QUnit.module("can-query-logic/serializers/basic-query");
 
@@ -126,7 +126,7 @@ QUnit.test("auto-convert or schema into maybe type", function(){
     };
 
     var basicQuery = converter.hydrate(query);
-    
+
     /*QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
         foo: new is.In(["bar"]),
         age: new MaybeSet({

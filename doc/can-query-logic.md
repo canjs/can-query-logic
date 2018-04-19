@@ -781,3 +781,19 @@ Finally, this set will be serialized to:
 ```
 
 The serialized output above is what is returned as a result of the union.
+
+
+### Code Organization
+
+On a high level, `can-query-logic` is organized in four places:
+
+- `src/set.js` - The core "set logic" functionality. For example `set.isEqual`
+  is built to derive from using underlying `difference` and `intersection` operators.
+- `src/types/*` - These are the `SetType` constructors used to make comparisons between
+  different sets or properties.
+- `src/serializers/*` - These provide hydration and serialization methods used to
+  change the plain JavaScript query objects to `SetType`s and back to plain JavaScript
+  query objects.
+- `can-query-logic.js` - Assembles all the different types and serializers to
+  hydrate  a query object to a SetType instance, then uses `set.js`'s logic to
+  perform the set logic and serialize the result.

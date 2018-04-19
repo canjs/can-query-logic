@@ -107,7 +107,7 @@ test('set.difference', function(){
 	equal(res,  querySet.EMPTY);
 
 	res = algebra.difference({$where:{ completed: true }}, {$where:{ userId: 5 }});
-	equal(res, querySet.UNDEFINABLE); // TODO: probably should be undefined
+	equal(res, querySet.UNDEFINABLE); 
 
 });
 

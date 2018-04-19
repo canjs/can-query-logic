@@ -1,11 +1,11 @@
 var QUnit = require("steal-qunit");
 
-var makeMaybe = require("./maybe");
+var makeMaybe = require("./make-maybe");
 var is = require("./comparisons");
 var set = require("../set");
 var canReflect = require("can-reflect");
 
-QUnit.module("can-query-logic/maybe")
+QUnit.module("can-query-logic/types/make-maybe")
 
 class DateStringSet {
     constructor(value){
@@ -389,7 +389,6 @@ QUnit.test("can make a maybe type from a ComparisonSetType", function(){
 
     var types = makeMaybe.makeMaybeSetTypes(MaybeDate);
 
-    // TODO: change to ComparisonSetType
     QUnit.equal( types.ComparisonSetType, DateStringSet, "got the comparison type" );
 
     var date1982_10_20 = new Date(1982,9,20).toString();

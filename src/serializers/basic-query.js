@@ -5,7 +5,7 @@ var set = require("../set");
 var comparisonsConverter = require("../serializers/comparisons");
 var Serializer = require("../serializer");
 var is = require("../types/comparisons");
-var makeMaybe = require("../types/maybe");
+var makeMaybe = require("../types/make-maybe");
 var makeEnum = require("../types/make-enum");
 
 var setTypeSymbol = canSymbol.for("can.SetType");

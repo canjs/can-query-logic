@@ -140,10 +140,7 @@ QUnit.test("Searchable string", function(){
 
     QUnit.deepEqual(res, {
         filter: {
-            $or: [
-                {name: "eat"},
-                {name: "foo"}
-            ]
+            name: ["eat","foo"]
         }
     });
 

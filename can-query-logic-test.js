@@ -1,4 +1,3 @@
-require("./src/comparators/enum-test");
 require("./src/types/make-real-number-range-inclusive-test");
 require("./src/types/comparisons-test");
 require("./src/types/and-or-not-test");
@@ -8,7 +7,7 @@ require("./src/types/basic-query-filter-from-test");
 require("./src/types/basic-query-merge-test");
 require("./src/serializers/basic-query-test");
 require("./src/serializers/comparisons-test");
-require("./src/types/maybe-test");
+require("./src/types/make-maybe-test");
 require("./compat/compat-test");
 require("./test/special-comparison-logic-test");
 require("./test/make-enum-logic-test");
