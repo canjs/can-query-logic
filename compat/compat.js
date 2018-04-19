@@ -11,17 +11,16 @@ var helpers = require("../src/helpers");
 var IsBoolean = function(){
 
 };
-makeEnum(IsBoolean,[true, false], function(data) {
-    var values = Array.isArray(data) ? data : [data];
-    return values.map(function(value){
-        if(value === "true") {
-            return true;
-        } else if(value === "false") {
-            return false;
-        } else {
-            return value;
-        }
-    });
+makeEnum(IsBoolean,[true, false], function(value) {
+
+    if(value === "true") {
+        return true;
+    } else if(value === "false") {
+        return false;
+    } else {
+        return value;
+    }
+
 });
 
 function hasKey(obj, keys, parent, parentKey) {

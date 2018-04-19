@@ -1,7 +1,8 @@
 var canReflect = require("can-reflect");
 var set = require("./set");
 var canSymbol = require("can-symbol");
-module.exports = {
+var schemaHelpers;
+module.exports = schemaHelpers = {
 
     // Number is a ranged type
     isRangedType: function(Type){
@@ -11,7 +12,7 @@ module.exports = {
             Type.prototype.valueOf && Type.prototype.valueOf !== Object.prototype.valueOf;
     },
     categorizeOrValues: function categorizeOrValues(values){
-        
+
     	var categories = {
     		primitives: [],
     		valueOfTypes: [],
