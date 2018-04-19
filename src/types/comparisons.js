@@ -227,6 +227,16 @@ var isMemberTest = {
 		return set.isMember(value);
 	}
 };
+var returnTrue = {
+	test: function returnTrue(){return true;}
+};
+var returnFalse = {
+	test: function returnFalse(){return false;}
+};
+
+function isAndOrOr(value) {
+	return (value instanceof is.And) || (value instanceof is.Or);
+}
 
 // `value` - has a test function to check values
 // `with` - the type we use to combined with the "other" value.
@@ -258,6 +268,27 @@ function combineFilterFirstValuesAgainstSecond(options) {
 			options.combinedUsing([new options.arePut(values),range]) : range;
 	};
 }
+
+function makeOrUnless(Comparison, result) {
+	return function(setA, setB) {
+		if( Comparison.test(setA.value, setB.value) ) {
+			return result || set.UNIVERSAL;
+		} else {
+			return makeOr([setA, setB]);
+		}
+	}
+}
+
+function makeComplementSecondArgIf(Comparison) {
+	return function(setA, setB) {
+		if( Comparison.test(setA.value, setB.value) ) {
+			return set.difference(set.UNIVERSAL, setB);
+		} else {
+			return setA;
+		}
+	}
+}
+
 
 function makeAnd(ands) {
 	return comparisons.And ? new comparisons.And(ands) : set.UNDEFINABLE;
@@ -304,6 +335,34 @@ var NotIn_RANGE = function(){
 };
 var RANGE_NotIn = {
 	difference:  swapArgs(make_filterFirstValueAgainstSecond(isMemberTest, is.In, set.EMPTY))
+};
+
+var RANGE_And_Union = function(gt, and) {
+	var union1 = set.union(gt, and.values[0]);
+	var union2 = set.union(gt, and.values[1]);
+	if(!isAndOrOr(union1) && !isAndOrOr(union2)) {
+		return set.intersection(union1, union2);
+	} else {
+		return new is.Or([gt, and]);
+	}
+};
+var RANGE_And_Intersection = function(gt, and) {
+	var and1 = and.values[0], and2 = and.values[1];
+	var intersection1 = set.intersection(gt, and1);
+	var intersection2 = set.intersection(gt, and2);
+	if(intersection1 === set.EMPTY || intersection2 === set.EMPTY) {
+		return set.EMPTY;
+	}
+	if(!isAndOrOr(intersection1) ) {
+		return new is.And([intersection1, and2]);
+	}
+
+	if(!isAndOrOr(intersection2) ) {
+		return new is.And([and1, intersection2]);
+	} else {
+		return new is.And([gt, and]);
+	}
+
 };
 
 
@@ -394,21 +453,51 @@ var comparators = {
 		difference: make_InIfEqual_else_andIf(is.LessThan, is.LessThanEqual)
 	},
 
-	GreaterThan_LessThan: {},
-	LessThan_GreaterThan: {},
+	GreaterThan_LessThan: {
+		union: makeOrUnless(is.LessThan),
+		intersection: makeOrUnless(is.GreaterThan, set.EMPTY),
+		difference: makeComplementSecondArgIf(is.LessThan)
+	},
+	LessThan_GreaterThan: {
+		difference: makeComplementSecondArgIf(is.GreaterThan)
+	},
 
 	GreaterThan_LessThanEqual: {
-		intersection: function(gt, lte) {
-			if(gt.value <= lte.value) {
-				return set.UNIVERSAL;
-			} else {
-				return makeAnd([gt, lte]);
+		union: makeOrUnless(is.LessThanEqual),
+		intersection: makeOrUnless(returnFalse),
+		difference: makeComplementSecondArgIf(is.LessThanEqual)
+	},
+	LessThanEqual_GreaterThan: {
+		difference: makeComplementSecondArgIf(is.GreaterThanEqual)
+	},
+
+	GreaterThan_And: {
+		union: RANGE_And_Union,
+		intersection: RANGE_And_Intersection,
+		difference: function(gt, and) {
+			var and1 = and.values[0], and2 = and.values[1];
+			var difference1 = set.difference(gt, and1);
+			var difference2 = set.difference(gt, and2);
+			if(difference1 === set.EMPTY) {
+				return difference2;
 			}
+			if(difference2 === set.EMPTY) {
+				return difference1;
+			}
+			return new is.Or([difference1, difference2]);
 		}
 	},
-	LessThanEqual_GreaterThan: {},
+	And_GreaterThan: {
+		difference: function(and, gt){
+			var and1 = and.values[0], and2 = and.values[1];
+			var difference1 = set.difference(and1, gt);
+			var difference2 = set.difference(and2, gt);
 
-	// GreaterThanEqual
+			return set.intersection(difference1, difference2);
+		}
+	},
+
+	// GreaterThanEqual =========
 	GreaterThanEqual_GreaterThanEqual: {
 		union: returnSmallerValue,
 		intersection: returnBiggerValue,
@@ -445,6 +534,11 @@ var comparators = {
 		difference: make_InIfEqual_else_andIf(is.GreaterThanEqual, is.GreaterThanEqual)
 	},
 
+	LessThan_And: {
+		union: RANGE_And_Union,
+		intersection: RANGE_And_Intersection
+	},
+
 	// LessThanEqual
 	LessThanEqual_LessThanEqual: {
 		union: returnBiggerValue,
@@ -459,6 +553,11 @@ var comparators = {
 	},
 	UNIVERSAL_LessThanEqual: {
 		difference: makeSecondValue(is.GreaterThan)
+	},
+
+	LessThanEqual_And: {
+		union: RANGE_And_Union,
+		intersection: RANGE_And_Intersection
 	},
 
 	UNIVERSAL_Or: {
