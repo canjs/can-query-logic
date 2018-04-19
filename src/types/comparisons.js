@@ -129,6 +129,7 @@ comparisons.Or.prototype.isMember = function(value){
 };
 
 
+
 function makeNot(Type) {
 	return {
 		test: function(vA, vB){
@@ -245,7 +246,14 @@ function combineFilterFirstValuesAgainstSecond(options) {
 		var values = inSet.values.filter(function(value) {
 			return options.values.test(gt, value);
 		});
-		var range = options.with ? new options.with(gt.value) : gt;
+		var range
+		if(options.complement) {
+			range = set.difference(set.UNIVERSAL, gt);
+		} else if(options.with) {
+			range = new options.with(gt.value);
+		} else {
+			range = gt;
+		}
 		return values.length ?
 			options.combinedUsing([new options.arePut(values),range]) : range;
 	};
@@ -276,6 +284,26 @@ var RANGE_IN = {
 		arePut: is.NotIn,
 		combinedUsing: makeAnd
 	}))
+};
+
+var NotIn_RANGE = function(){
+	return {
+		union: make_filterFirstValueAgainstSecond(makeNot(isMemberTest), is.NotIn, set.UNIVERSAL),
+		intersection: combineFilterFirstValuesAgainstSecond({
+			values:  isMemberTest,
+			arePut: is.NotIn,
+			combinedUsing: makeAnd
+		}),
+		difference: combineFilterFirstValuesAgainstSecond({
+			values:  makeNot(isMemberTest),
+			arePut: is.NotIn,
+			combinedUsing: makeAnd,
+			complement: true
+		})
+	}
+};
+var RANGE_NotIn = {
+	difference:  swapArgs(make_filterFirstValueAgainstSecond(isMemberTest, is.In, set.EMPTY))
 };
 
 
@@ -315,6 +343,7 @@ var comparators = {
 	And_In: RANGE_IN,
 
 	In_Or: In_RANGE,
+	Or_In: RANGE_IN,
 
 	// NotIn ===============================
 	NotIn_NotIn: {
@@ -326,26 +355,25 @@ var comparators = {
 		difference: makeSecondValue(is.In, "values")
 	},
 
-	NotIn_GreaterThan: {},
-	GreaterThan_NotIn: {},
+	NotIn_GreaterThan: NotIn_RANGE(),
+	GreaterThan_NotIn: RANGE_NotIn,
 
-	NotIn_GreaterThanEqual: {},
-	GreaterThanEqual_NotIn: {},
+	NotIn_GreaterThanEqual: NotIn_RANGE(),
+	GreaterThanEqual_NotIn: RANGE_NotIn,
 
-	NotIn_LessThan: {},
-	LessThan_NotIn: {},
+	NotIn_LessThan: NotIn_RANGE(),
+	LessThan_NotIn: RANGE_NotIn,
 
-	NotIn_LessThanEqual: {
-		difference: combineFilterFirstValues({
-			values: makeNot(is.LessThanEqual),
-			arePut: is.NotIn,
-			combinedUsing: makeAnd,
-			with: is.GreaterThan
-		})
-	},
-	LessThanEqual_NotIn: {},
+	NotIn_LessThanEqual:  NotIn_RANGE(),
+	LessThanEqual_NotIn: RANGE_NotIn,
 
-	// GreaterThan
+	NotIn_And: NotIn_RANGE(),
+	And_NotIn: RANGE_NotIn,
+
+	NotIn_Or: NotIn_RANGE(),
+	Or_NotIn: RANGE_NotIn,
+
+	// GreaterThan ===============================
 	GreaterThan_GreaterThan: {
 		union: returnSmallerValue,
 		intersection: returnBiggerValue,
@@ -435,9 +463,16 @@ var comparators = {
 
 	UNIVERSAL_Or: {
 		difference: function(universe, or){
-			var inverseFirst = set.difference(universe, or[0]),
-				inverseSecond = set.difference(universe, or[1]);
+			var inverseFirst = set.difference(universe, or.values[0]),
+				inverseSecond = set.difference(universe, or.values[1]);
 			return makeAnd([inverseFirst, inverseSecond]);
+		}
+	},
+	UNIVERSAL_And: {
+		difference: function(universe, and){
+			var inverseFirst = set.difference(universe, and.values[0]),
+				inverseSecond = set.difference(universe, and.values[1]);
+			return makeOr([inverseFirst, inverseSecond]);
 		}
 	}
 };
