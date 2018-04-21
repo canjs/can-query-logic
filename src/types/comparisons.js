@@ -150,7 +150,9 @@ function makeEnum(type, Type, emptyResult) {
 	};
 }
 
-
+function isUniversal(aSet){
+	return set.isEqual(set.UNIVERSAL, aSet);
+}
 
 function swapArgs(fn){
 	return function(a, b) {
@@ -278,6 +280,15 @@ function makeOrUnless(Comparison, result) {
 		}
 	}
 }
+function makeAndUnless(Comparison, result) {
+	return function(setA, setB) {
+		if( Comparison.test(setA.value, setB.value) ) {
+			return result || set.EMPTY;
+		} else {
+			return makeAnd([setA, setB]);
+		}
+	}
+}
 
 function makeComplementSecondArgIf(Comparison) {
 	return function(setA, setB) {
@@ -338,8 +349,10 @@ var RANGE_NotIn = {
 };
 
 var RANGE_And_Union = function(gt, and) {
+
 	var union1 = set.union(gt, and.values[0]);
 	var union2 = set.union(gt, and.values[1]);
+
 	if(!isAndOrOr(union1) && !isAndOrOr(union2)) {
 		return set.intersection(union1, union2);
 	} else {
@@ -363,6 +376,73 @@ var RANGE_And_Intersection = function(gt, and) {
 		return new is.And([gt, and]);
 	}
 
+};
+
+var RANGE_And_Difference = function(gt, and) {
+	var and1 = and.values[0], and2 = and.values[1];
+	var difference1 = set.difference(gt, and1);
+	var difference2 = set.difference(gt, and2);
+	if(difference1 === set.EMPTY) {
+		return difference2;
+	}
+	if(difference2 === set.EMPTY) {
+		return difference1;
+	}
+	return new is.Or([difference1, difference2]);
+};
+
+var And_RANGE_Difference = function(and, gt){
+	var and1 = and.values[0], and2 = and.values[1];
+	var difference1 = set.difference(and1, gt);
+	var difference2 = set.difference(and2, gt);
+
+	return set.intersection(difference1, difference2);
+};
+
+var RANGE_Or = {
+	union: function(gt, or) {
+		var or1 = or.values[0], or2 = or.values[1];
+		var union1 = set.union(gt, or1);
+		if(!isAndOrOr(union1)){
+			return set.union(union1, or2);
+		}
+		var union2 = set.union(gt, or2);
+		if(!isAndOrOr(union2)) {
+			return set.union(or1, union2);
+		} else {
+			return new is.Or([gt, or]);
+		}
+	},
+	intersection: function(gt, or) {
+		var or1 = or.values[0], or2 = or.values[1];
+		var intersection1 = set.intersection(gt, or1);
+		var intersection2 = set.intersection(gt, or2);
+		if(intersection1 === set.EMPTY) {
+			return intersection2;
+		}
+		if(intersection2 === set.EMPTY) {
+			return intersection1;
+		}
+		return set.union(intersection1,intersection2);
+	},
+	// v \ (a || b) -> (v \ a) n (v \ b)
+	difference: function(gt, or) {
+
+		var or1 = or.values[0], or2 = or.values[1];
+		var difference1 = set.difference(gt, or1);
+		var difference2 = set.difference(gt, or2);
+		return set.intersection(difference1, difference2);
+	}
+};
+
+var Or_RANGE = {
+	// ( a || b ) \ v -> (a \ v) U (b \ v)
+	difference: function(or, gt){
+		var or1 = or.values[0], or2 = or.values[1];
+		var difference1 = set.difference(or1, gt);
+		var difference2 = set.difference(or2, gt);
+		return set.union(difference1, difference2);
+	}
 };
 
 
@@ -455,7 +535,7 @@ var comparators = {
 
 	GreaterThan_LessThan: {
 		union: makeOrUnless(is.LessThan),
-		intersection: makeOrUnless(is.GreaterThan, set.EMPTY),
+		intersection: makeAndUnless(is.GreaterThan),
 		difference: makeComplementSecondArgIf(is.LessThan)
 	},
 	LessThan_GreaterThan: {
@@ -464,7 +544,7 @@ var comparators = {
 
 	GreaterThan_LessThanEqual: {
 		union: makeOrUnless(is.LessThanEqual),
-		intersection: makeOrUnless(returnFalse),
+		intersection: makeAndUnless(is.GreaterThanEqual),
 		difference: makeComplementSecondArgIf(is.LessThanEqual)
 	},
 	LessThanEqual_GreaterThan: {
@@ -474,28 +554,13 @@ var comparators = {
 	GreaterThan_And: {
 		union: RANGE_And_Union,
 		intersection: RANGE_And_Intersection,
-		difference: function(gt, and) {
-			var and1 = and.values[0], and2 = and.values[1];
-			var difference1 = set.difference(gt, and1);
-			var difference2 = set.difference(gt, and2);
-			if(difference1 === set.EMPTY) {
-				return difference2;
-			}
-			if(difference2 === set.EMPTY) {
-				return difference1;
-			}
-			return new is.Or([difference1, difference2]);
-		}
+		difference: RANGE_And_Difference
 	},
 	And_GreaterThan: {
-		difference: function(and, gt){
-			var and1 = and.values[0], and2 = and.values[1];
-			var difference1 = set.difference(and1, gt);
-			var difference2 = set.difference(and2, gt);
-
-			return set.intersection(difference1, difference2);
-		}
+		difference: And_RANGE_Difference
 	},
+	GreaterThan_Or: RANGE_Or,
+	Or_GreaterThan: Or_RANGE,
 
 	// GreaterThanEqual =========
 	GreaterThanEqual_GreaterThanEqual: {
@@ -508,11 +573,45 @@ var comparators = {
 		difference: makeSecondValue(is.LessThan)
 	},
 
-	GreaterThanEqual_LessThan: {},
-	LessThan_GreaterThanEqual: {},
+	GreaterThanEqual_LessThan: {
+		union: makeOrUnless(is.LessThanEqual),
+		intersection: makeAndUnless(is.GreaterThanEqual),
+		difference: makeComplementSecondArgIf(is.LessThanEqual)
+	},
+	LessThan_GreaterThanEqual: {
+		difference: makeComplementSecondArgIf(is.GreaterThanEqual)
+	},
 
-	GreaterThanEqual_LessThanEqual: {},
-	LessThanEqual_GreaterThanEqual: {},
+	GreaterThanEqual_LessThanEqual: {
+		union: makeOrUnless(is.LessThanEqual),
+		// intersect on a number
+		intersection: (function(){
+			var makeAnd = makeAndUnless(is.GreaterThan);
+			return function gte_lte_intersection(gte, lte){
+				var inSet = new is.In([gte.value]);
+				if(inSet.isMember(lte.value)) {
+					return inSet
+				} else {
+					return makeAnd(gte, lte);
+				}
+			};
+		})(),
+		difference: makeComplementSecondArgIf(is.LessThanEqual)
+	},
+	LessThanEqual_GreaterThanEqual: {
+		difference: makeComplementSecondArgIf(is.GreaterThanEqual)
+	},
+
+	GreaterThanEqual_And: {
+		union: RANGE_And_Union,
+		intersection: RANGE_And_Intersection,
+		difference: RANGE_And_Difference
+	},
+	And_GreaterThanEqual: {
+		difference: And_RANGE_Difference
+	},
+	GreaterThanEqual_Or: RANGE_Or,
+	Or_GreaterThanEqual: Or_RANGE,
 
 	// LessThan
 	LessThan_LessThan: {
@@ -536,8 +635,14 @@ var comparators = {
 
 	LessThan_And: {
 		union: RANGE_And_Union,
-		intersection: RANGE_And_Intersection
+		intersection: RANGE_And_Intersection,
+		difference: RANGE_And_Difference
 	},
+	And_LessThan: {
+		difference: And_RANGE_Difference
+	},
+	LessThan_Or: RANGE_Or,
+	Or_LessThan: Or_RANGE,
 
 	// LessThanEqual
 	LessThanEqual_LessThanEqual: {
@@ -557,8 +662,14 @@ var comparators = {
 
 	LessThanEqual_And: {
 		union: RANGE_And_Union,
-		intersection: RANGE_And_Intersection
+		intersection: RANGE_And_Intersection,
+		difference: RANGE_And_Difference
 	},
+	And_LessThanEqual: {
+		difference: And_RANGE_Difference
+	},
+	LessThanEqual_Or: RANGE_Or,
+	Or_LessThanEqual: Or_RANGE,
 
 	UNIVERSAL_Or: {
 		difference: function(universe, or){
@@ -566,6 +677,95 @@ var comparators = {
 				inverseSecond = set.difference(universe, or.values[1]);
 			return makeAnd([inverseFirst, inverseSecond]);
 		}
+	},
+	And_And: {
+		// (a n b) U (c n d) => (a U c) n (b U d)?
+		// union both ways ... if one is unviersal, the other is the result.
+		union: function(and1, and2){
+			var combo1 = [
+					set.union(and1.values[0], and2.values[0]),
+					set.union(and1.values[1], and2.values[1])
+				],
+				combo2 = [
+					set.union(and1.values[0], and2.values[1]),
+					set.union(and1.values[1], and2.values[0])
+				];
+			if(combo1.every(isUniversal)) {
+				return set.intersection.apply(set, combo2);
+			}
+			if(combo2.every(isUniversal)) {
+				return set.intersection.apply(set, combo1);
+			}
+			return new is.And([and1, and2]);
+		},
+
+		intersection: function(and1, and2) {
+			var intersection1 = set.intersection(and1.values[0], and2.values[0]);
+			var intersection2 = set.intersection(and1.values[1], and2.values[1]);
+
+			if( !isAndOrOr(intersection1) || !isAndOrOr(intersection2) ) {
+				return set.intersection(intersection1,intersection2);
+			}
+			intersection1 = set.intersection(and1.values[0], and2.values[1]);
+			intersection2 = set.intersection(and1.values[1], and2.values[0]);
+
+			if( !isAndOrOr(intersection1) || !isAndOrOr(intersection2) ) {
+				return set.intersection(intersection1,intersection2);
+			}
+			else {
+				return new is.And([and1, and2]);
+			}
+		},
+		difference: (function(){
+			function getDiffIfPartnerIsEmptyAndOtherComboNotDisjoint(inOrderDiffs, reverseOrderDiffs, diffedAnd) {
+				var diff;
+				if(inOrderDiffs[0] === set.EMPTY) {
+					diff = inOrderDiffs[1];
+				}
+				if(inOrderDiffs[1] === set.EMPTY) {
+					diff = inOrderDiffs[0];
+				}
+				if(diff) {
+					// check if a diff equals itself (and therefor is disjoint)
+
+					if(set.isEqual(diffedAnd.values[0], reverseOrderDiffs[0] ) ) {
+						// is disjoint
+						return diffedAnd;
+					}
+					if( set.isEqual(diffedAnd.values[1], reverseOrderDiffs[1] ) ) {
+						return diffedAnd;
+					}
+					return diff;
+				}
+			}
+			return function(and1, and2) {
+				var inOrderDiffs = [
+						set.difference(and1.values[0], and2.values[0]),
+						set.difference(and1.values[1], and2.values[1])
+					],
+					reverseOrderDiffs = [
+						set.difference(and1.values[0], and2.values[1]),
+						set.difference(and1.values[1], and2.values[0])
+					];
+				
+				var diff = getDiffIfPartnerIsEmptyAndOtherComboNotDisjoint(inOrderDiffs, reverseOrderDiffs, and1);
+				if(diff) {
+					return diff;
+				}
+				diff = getDiffIfPartnerIsEmptyAndOtherComboNotDisjoint(reverseOrderDiffs, inOrderDiffs, and1);
+				if(diff) {
+					return diff;
+				} else {
+					// if one is a double And ... that's the outer \\ inner
+					if(isAndOrOr(inOrderDiffs[0]) && isAndOrOr(inOrderDiffs[1])) {
+						return new is.Or([inOrderDiffs[0], inOrderDiffs[1]]);
+					} else if( isAndOrOr(reverseOrderDiffs[0]) && isAndOrOr(reverseOrderDiffs[1]) ) {
+						return new is.Or([reverseOrderDiffs[0], reverseOrderDiffs[1]]);
+					}
+					return set.UNKNOWABLE;
+				}
+			};
+		})()
 	},
 	UNIVERSAL_And: {
 		difference: function(universe, and){
