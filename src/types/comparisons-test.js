@@ -1262,7 +1262,7 @@ var tests = {
 
             assert.deepEqual(
                 res,
-                new is.And([a, new is.Or([new is.LessThanEqual(7), new is.GreaterThanEqual(20) ])])
+                new is.And([a, new is.Or([new is.GreaterThanEqual(20), new is.LessThanEqual(7) ])])
             );
 
             a = new is.NotIn([15,16]);
@@ -1270,7 +1270,7 @@ var tests = {
 
             assert.deepEqual(
                 set.difference(a, b),
-                new is.Or([new is.LessThanEqual(7), new is.GreaterThanEqual(20) ])
+                new is.Or([new is.GreaterThanEqual(20), new is.LessThanEqual(7) ])
             );
         }
     },
@@ -1338,7 +1338,7 @@ var tests = {
             var res = set.difference(a, b);
             assert.deepEqual(
                 res,
-                new is.And([a, new is.And([new is.LessThanEqual(7), new is.GreaterThanEqual(2)]) ])
+                new is.And([a, new is.And([new is.GreaterThanEqual(2), new is.LessThanEqual(7)]) ])
             );
 
             a = new is.NotIn([15,16]);
@@ -1346,7 +1346,7 @@ var tests = {
 
             assert.deepEqual(
                 set.difference(a, b),
-                new is.And([new is.LessThanEqual(7), new is.GreaterThanEqual(2)])
+                new is.And([new is.GreaterThanEqual(2), new is.LessThanEqual(7)])
             );
         }
     },
@@ -2716,6 +2716,17 @@ var tests = {
         assert.ok( new is.LessThanEqual(5).isMember(5) );
         assert.notOk( new is.LessThanEqual(5).isMember(6) );
     },
+    LessThanEqual_And: {
+        intersection: function(assert){
+            var a = new is.LessThanEqual(0);
+            var b = new is.And([new is.GreaterThanEqual(0), new is.LessThan(1)]);
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.In([0]),
+                "overlap to in"
+            );
+        }
+    },
 	UNIVERSAL_LessThanEqual: {
 		difference: function(assert){
 			var a = new is.LessThanEqual(5);
@@ -2762,7 +2773,7 @@ var tests = {
 
             assert.deepEqual(
                 set.union(a, b),
-                new is.And([a, b]),
+                new is.Or([a, b]),
                 "disjoint"
             );
         },
@@ -2811,7 +2822,7 @@ var tests = {
 
             assert.deepEqual(
                 set.difference(a, b),
-                new is.And([new is.LessThan(10), new is.GreaterThanEqual(6)]),
+                new is.And([new is.GreaterThanEqual(6),new is.LessThan(10)]),
                 "diff right overlaps with left"
             );
             assert.deepEqual(
@@ -2826,7 +2837,7 @@ var tests = {
 
             assert.deepEqual(
                 set.difference(a, b),
-                new is.And([new is.LessThan(10), new is.GreaterThanEqual(6)]),
+                new is.And([new is.GreaterThanEqual(6), new is.LessThan(10)]),
                 "diff right overlaps with left (out of order)"
             );
             assert.deepEqual(
@@ -2852,8 +2863,8 @@ var tests = {
                         new is.LessThanEqual(5)
                     ]),
                     new is.And([
-                        new is.LessThan(10),
-                        new is.GreaterThanEqual(6)
+                        new is.GreaterThanEqual(6), new is.LessThan(10)
+
                     ])
                 ]),
                 "able to outer \\ inner"
@@ -2879,18 +2890,461 @@ var tests = {
     And_isMember: function(assert){
         assert.ok( new is.And( [new is.LessThan(5), new is.GreaterThan(0)] ).isMember(4) );
     },
+    UNIVERSAL_And: {
+        difference: function(assert){
+            var a = new is.And([new is.GreaterThan(6), new is.LessThan(10)]);
+            assert.deepEqual(
+                set.difference(set.UNIVERSAL, a),
+                new is.Or([
+                    new is.GreaterThanEqual(10),
+                    new is.LessThanEqual(6)
+
+                ]),
+                "range and"
+            );
+        }
+    },
     And_Or: {
-        //union: function(){},
-        //intersection:  function(){},
-        //difference:  function(){}
+        union: function(assert){
+            var a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]),
+                b = new is.And([new is.GreaterThan(0), new is.LessThan(6)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                set.UNIVERSAL,
+                "outer and inner"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.LessThan(6), new is.GreaterThan(0)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                set.UNIVERSAL,
+                "outer and inner arg swap"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.LessThan(7), new is.GreaterThan(-1)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                set.UNIVERSAL,
+                "imperfect outer and inner arg swap"
+            );
+
+            a = new is.Or([new is.In([7]), new is.LessThanEqual(0)]);
+            b = new is.And([new is.NotIn([7]), new is.GreaterThan(0)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                set.UNIVERSAL,
+                "ins and notin"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThan(0), new is.LessThan(3)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([new is.GreaterThanEqual(6), new is.LessThan(3)]),
+                "not a total overlap"
+            );
+
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThan(1), new is.LessThan(5)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([b, a]),
+                "disjoint"
+            );
+        },
+        intersection:  function(assert){
+            var a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            var b = new is.And([new is.GreaterThan(1), new is.LessThan(5)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                set.EMPTY,
+                "outer and inner disjoint"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThanEqual(0), new is.LessThanEqual(6)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.In([0,6]),
+                "outer and inner overlap on values"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThanEqual(6), new is.LessThanEqual(10)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                b,
+                "and is entirely within part of or"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThanEqual(4), new is.LessThanEqual(10)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.And([new is.GreaterThanEqual(6), new is.LessThanEqual(10)]),
+                "and is entirely within part of or"
+            );
+
+
+            a = new is.Or([new is.LessThanEqual(2), new is.GreaterThanEqual(8)]);
+            b = new is.And([new is.GreaterThanEqual(0), new is.LessThanEqual(10)]);
+
+            var res = set.intersection(a, b);
+
+            assert.deepEqual(
+                res,
+                new is.Or([
+                    new is.And([new is.GreaterThanEqual(0), new is.LessThanEqual(2)]),
+                    new is.And([new is.GreaterThanEqual(8), new is.LessThanEqual(10)])
+                ]),
+                "and is entirely within part of or"
+            );
+
+        },
+        difference:  function(assert){
+            var a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]),
+                b = new is.And([new is.GreaterThan(0), new is.LessThan(6)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                b,
+                "outer and inner"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.LessThan(7), new is.GreaterThan(-1)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.And([new is.GreaterThan(0), new is.LessThan(6)]),
+                "imperfect outer and inner arg swap"
+            );
+
+            a = new is.Or([new is.In([7]), new is.LessThanEqual(0)]);
+            b = new is.And([new is.NotIn([7]), new is.GreaterThan(0)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                b,
+                "ins and notin"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThan(0), new is.LessThan(3)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                b,
+                "not a total overlap"
+            );
+
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThan(1), new is.LessThan(5)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                b,
+                "disjoint"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThanEqual(4), new is.LessThanEqual(10)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.And([new is.GreaterThanEqual(4), new is.LessThan(6)]),
+                "and is entirely within part of or"
+            );
+        }
     },
     Or_And: {
+        difference: function(assert){
+            var a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]),
+                b = new is.And([new is.GreaterThan(0), new is.LessThan(6)]);
 
+            var res = set.difference(a, b);
+
+            assert.deepEqual(
+                res,
+                new is.Or([new is.GreaterThanEqual(6), new is.LessThanEqual(0)]),
+                "outer and inner"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.LessThan(7), new is.GreaterThan(-1)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.Or([new is.GreaterThanEqual(7), new is.LessThanEqual(-1)]),
+                "imperfect outer and inner arg swap"
+            );
+
+            a = new is.Or([new is.In([7]), new is.LessThanEqual(0)]);
+            b = new is.And([new is.NotIn([7]), new is.GreaterThan(0)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                a,
+                "ins and notin"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThan(0), new is.LessThan(3)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.Or([ new is.GreaterThanEqual(6), new is.LessThanEqual(0)]),
+                "not a total overlap"
+            );
+
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThan(1), new is.LessThan(5)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.Or([new is.GreaterThanEqual(6), new is.LessThanEqual(0)]),
+                "disjoint"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.GreaterThanEqual(4), new is.LessThanEqual(10)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.Or([new is.GreaterThan(10), new is.LessThanEqual(0)]),
+                "and is entirely within part of or"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+            b = new is.And([new is.LessThanEqual(10), new is.GreaterThanEqual(4)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.Or([new is.GreaterThan(10), new is.LessThanEqual(0)]),
+                "and is entirely within part of or reverse and"
+            );
+
+            a = new is.Or([new is.GreaterThanEqual(6), new is.LessThanEqual(0)]);
+            b = new is.And([new is.LessThanEqual(10), new is.GreaterThanEqual(4)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.Or([new is.GreaterThan(10), new is.LessThanEqual(0)]),
+                "and is entirely within part of or reversed or"
+            );
+        }
     },
     // OR =============
-    Or_Or: {},
+    Or_Or: {
+        union: function(assert){
+            var a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(10)]);
+            var b = new is.Or([new is.LessThanEqual(10), new is.GreaterThanEqual(20)]);
+            assert.deepEqual(
+                set.union(a, b),
+                set.UNIVERSAL,
+                "separate holes"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(10)]);
+            b = new is.Or([new is.LessThanEqual(5), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([new is.GreaterThanEqual(10), new is.LessThanEqual(5)]),
+                "overlapping holes"
+            );
+
+            a = new is.Or([new is.In([0]), new is.GreaterThanEqual(10)]);
+            b = new is.Or([new is.LessThanEqual(5), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([new is.GreaterThanEqual(10), new is.LessThanEqual(5)]),
+                "overlapping holes with a single value"
+            );
+
+            a = new is.Or([new is.In([0]), new is.GreaterThanEqual(10)]);
+            b = new is.Or([new is.In([5]), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([new is.In([0,5]), new is.GreaterThanEqual(10)]),
+                "overlapping holes with two values"
+            );
+
+            a = new is.Or([new is.In([0]), new is.LessThanEqual(10)]);
+            b = new is.Or([new is.In([5]), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([new is.GreaterThanEqual(15),new is.LessThanEqual(10) ]),
+                "other directional holes"
+            );
+
+        },
+        intersection: function(assert){
+            var a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(10)]);
+            var b = new is.Or([new is.LessThanEqual(10), new is.GreaterThanEqual(20)]);
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.Or([
+                    new is.GreaterThanEqual(20),
+                    new is.Or([
+                        new is.In([10]),
+                        new is.LessThanEqual(0)
+                    ])
+                ]),
+                "separate holes"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(10)]);
+            b = new is.Or([new is.LessThanEqual(5), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.Or([
+                    new is.GreaterThanEqual(15),
+                    new is.LessThanEqual(0)
+                ]),
+                "overlapping holes"
+            );
+
+            a = new is.Or([new is.In([0]), new is.GreaterThanEqual(10)]);
+            b = new is.Or([new is.LessThanEqual(5), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.Or([new is.In([0]), new is.GreaterThanEqual(15)]),
+                "overlapping holes with a single value"
+            );
+
+            a = new is.Or([new is.In([0]), new is.GreaterThanEqual(10)]);
+            b = new is.Or([new is.In([5]), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.GreaterThanEqual(15),
+                "overlapping holes with two values"
+            );
+
+            a = new is.Or([new is.In([0]), new is.LessThanEqual(10)]);
+            b = new is.Or([new is.In([5]), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.In([5]),
+                "other directional holes"
+            );
+
+            a = new is.Or([new is.In([0]), new is.LessThanEqual(-1)]);
+            b = new is.Or([new is.In([5]), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.intersection(a, b),
+                set.EMPTY,
+                "other directional holes"
+            );
+
+            a = new is.Or([new is.GreaterThanEqual(15),
+                new is.And([
+                    new is.GreaterThan(0),
+                    new is.LessThanEqual(5)
+                ])
+            ]);
+            b = new is.Or([new is.LessThanEqual(5),
+                new is.And([
+                    new is.GreaterThanEqual(15),
+                    new is.LessThan(20)
+                ])
+            ]);
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.Or([
+                    new is.And([new is.GreaterThan(0), new is.LessThanEqual(5)]),
+                    new is.And([new is.GreaterThanEqual(15), new is.LessThan(20)])
+                ]),
+                "or with ands"
+            );
+
+        },
+        difference: function(assert){
+            var a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(10)]);
+            var b = new is.Or([new is.LessThanEqual(10), new is.GreaterThanEqual(20)]);
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.GreaterThan(10), new is.LessThan(20)]),
+                "separate holes"
+            );
+
+            a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(10)]);
+            b = new is.Or([new is.LessThanEqual(5), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.GreaterThanEqual(10), new is.LessThan(15)]),
+                "overlapping holes"
+            );
+
+            a = new is.Or([new is.In([0]), new is.GreaterThanEqual(10)]);
+            b = new is.Or([new is.LessThanEqual(5), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.GreaterThanEqual(10), new is.LessThan(15)]),
+                "overlapping holes with a single value"
+            );
+
+            a = new is.Or([new is.In([0]), new is.GreaterThanEqual(10)]);
+            b = new is.Or([new is.In([5]), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.Or([
+                    new is.In([0]),
+                    new is.And([new is.GreaterThanEqual(10), new is.LessThan(15)])
+                ]),
+                "overlapping holes with two values"
+            );
+
+            a = new is.Or([new is.In([0]), new is.LessThanEqual(-1)]);
+            b = new is.Or([new is.In([5]), new is.GreaterThanEqual(15)]);
+            assert.deepEqual(
+                set.difference(a, b),
+                a,
+                "other directional holes"
+            );
+
+            a = new is.Or([new is.LessThanEqual(5), new is.GreaterThanEqual(15)]);
+            b = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(20)]);
+
+            var res = set.difference(a, b);
+
+            assert.deepEqual(
+                res,
+                new is.Or([
+                    new is.And([new is.GreaterThan(0), new is.LessThanEqual(5)]),
+                    new is.And([new is.GreaterThanEqual(15), new is.LessThan(20)])
+                ]),
+                "overlapping holes"
+            );
+
+        },
+    },
     Or_isMember: function(assert){
         assert.notOk( new is.Or( [new is.LessThan(0), new is.GreaterThan(10)] ).isMember(4) );
+    },
+    UNIVERSAL_Or: {
+        difference: function(assert){
+            var or = new is.Or( [new is.LessThan(0), new is.GreaterThan(10)] );
+            assert.deepEqual(
+                set.difference(set.UNIVERSAL, or),
+                new is.And([new is.GreaterThanEqual(0), new is.LessThanEqual(10)]),
+                "other directional holes"
+            );
+        }
     }
 };
 

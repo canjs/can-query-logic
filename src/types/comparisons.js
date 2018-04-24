@@ -236,9 +236,16 @@ var returnFalse = {
 	test: function returnFalse(){return false;}
 };
 
-function isAndOrOr(value) {
-	return (value instanceof is.And) || (value instanceof is.Or);
+function isOr(value) {
+	return (value instanceof is.Or);
 }
+function isAnd(value) {
+	return (value instanceof is.And);
+}
+function isAndOrOr(value) {
+	return isAnd(value) || isOr(value);
+}
+
 
 // `value` - has a test function to check values
 // `with` - the type we use to combined with the "other" value.
@@ -360,18 +367,19 @@ var RANGE_And_Union = function(gt, and) {
 	}
 };
 var RANGE_And_Intersection = function(gt, and) {
-	var and1 = and.values[0], and2 = and.values[1];
+	var and1 = and.values[0],
+		and2 = and.values[1];
 	var intersection1 = set.intersection(gt, and1);
 	var intersection2 = set.intersection(gt, and2);
 	if(intersection1 === set.EMPTY || intersection2 === set.EMPTY) {
 		return set.EMPTY;
 	}
 	if(!isAndOrOr(intersection1) ) {
-		return new is.And([intersection1, and2]);
+		return new set.intersection( intersection1, and2);
 	}
 
 	if(!isAndOrOr(intersection2) ) {
-		return new is.And([and1, intersection2]);
+		return new set.intersection( intersection2, and1);
 	} else {
 		return new is.And([gt, and]);
 	}
@@ -671,17 +679,30 @@ var comparators = {
 	LessThanEqual_Or: RANGE_Or,
 	Or_LessThanEqual: Or_RANGE,
 
-	UNIVERSAL_Or: {
-		difference: function(universe, or){
-			var inverseFirst = set.difference(universe, or.values[0]),
-				inverseSecond = set.difference(universe, or.values[1]);
-			return makeAnd([inverseFirst, inverseSecond]);
-		}
-	},
+	// AND =====
 	And_And: {
 		// (a n b) U (c n d) => (a U c) n (b U d)?
 		// union both ways ... if one is unviersal, the other is the result.
+		// (a ∩ b) ∪ (c ∩ d) where Z = (a ∩ b)
+		// -> Z ∪ (c ∩ d)
+		// -> (Z ∪ c) ∩ (Z ∪ d)
+		// -> ((a ∩ b) ∪ c) ∪ ((a ∩ b) ∪ d)
 		union: function(and1, and2){
+			var union1 = set.union(and1, and2.values[0]);
+			var union2 = set.union(and1, and2.values[1]);
+
+			if(isAndOrOr(union1) || isAndOrOr(union2)) {
+				// try the other direction
+				union1 = set.union(and2, and1.values[0]);
+				union2 = set.union(and2, and1.values[1]);
+			}
+			if(isAndOrOr(union1) || isAndOrOr(union2)) {
+				return new is.Or([and1, and2]);
+			} else {
+				return set.intersection(union1, union2);
+			}
+
+			/*
 			var combo1 = [
 					set.union(and1.values[0], and2.values[0]),
 					set.union(and1.values[1], and2.values[1])
@@ -696,7 +717,7 @@ var comparators = {
 			if(combo2.every(isUniversal)) {
 				return set.intersection.apply(set, combo1);
 			}
-			return new is.And([and1, and2]);
+			return new is.Or([and1, and2]);*/
 		},
 
 		intersection: function(and1, and2) {
@@ -716,7 +737,18 @@ var comparators = {
 				return new is.And([and1, and2]);
 			}
 		},
+		// (a ∩ b) \ (c ∩ d) where Z = (a ∩ b)
+		// -> Z \ (c ∩ d)
+		// -> (Z \ c) ∪ (Z \ d)
+		// -> ((a ∩ b) \ c) ∪ ((a ∩ b) \ d)
 		difference: (function(){
+
+			return function(and1, and2) {
+				var d1 = set.difference(and1, and2.values[0]);
+				var d2 = set.difference(and1, and2.values[1]);
+				return set.union(d1, d2);
+			}
+			/*
 			function getDiffIfPartnerIsEmptyAndOtherComboNotDisjoint(inOrderDiffs, reverseOrderDiffs, diffedAnd) {
 				var diff;
 				if(inOrderDiffs[0] === set.EMPTY) {
@@ -747,7 +779,7 @@ var comparators = {
 						set.difference(and1.values[0], and2.values[1]),
 						set.difference(and1.values[1], and2.values[0])
 					];
-				
+
 				var diff = getDiffIfPartnerIsEmptyAndOtherComboNotDisjoint(inOrderDiffs, reverseOrderDiffs, and1);
 				if(diff) {
 					return diff;
@@ -764,16 +796,125 @@ var comparators = {
 					}
 					return set.UNKNOWABLE;
 				}
-			};
+			};*/
 		})()
+	},
+	And_Or: {
+		// (a ∩ b) ∪ (c u d) where Z = (c u d)
+		// -> Z u (a ∩ b)
+		// -> (Z u a) ∩ (Z u b)
+		// -> ((c u d) u a) ∩ ((c u d) u b)
+		union: function(and, or) {
+			var aUnion = set.union(and.values[0], or);
+			var bUnion = set.union(and.values[1], or);
+
+			if(!isAndOrOr(aUnion) || !isAndOrOr(bUnion)) {
+				return set.intersection(aUnion,bUnion);
+			}
+
+			return new is.Or([and, or]);
+		},
+		// (a ∩ b) ∩ (c u d) where Z = (a ∩ b)
+		// -> Z ∩ (c u d)
+		// -> (Z ∩ c) u (Z ∩ d)
+		// -> (a ∩ b ∩ c) u (a ∩ b ∩ d)
+		intersection: function(and, or) {
+			var aIntersection = set.intersection(and, or.values[0]);
+			var bIntersection = set.intersection(and, or.values[1]);
+			if(!isOr(aIntersection) && !isOr(bIntersection)) {
+				return set.union(aIntersection,bIntersection);
+			}
+			return new is.And([and, or]);
+		},
+		// (a ∩ b) \ (c u d) where Z = (a ∩ b)
+		// -> Z \ (c u d)
+		// -> (Z \ c) ∩ (Z \ d)
+		// -> ((a ∩ b) \ c) ∩ ((a ∩ b) \ d)
+		difference: function(and, or) {
+			var aDiff = set.difference(and, or.values[0]);
+			var bDiff = set.difference(and, or.values[1]);
+			return set.intersection(aDiff,bDiff);
+		}
+	},
+	Or_And: {
+		// (a ∪ b) \ (c ∩ d) where Z = (a ∪ b)
+		// -> Z \ (c ∩ d)
+		// -> (Z \ c) ∪ (Z \ d)
+		// -> ((a ∪ b) \ c) ∪ ((a ∪ b) \ d)
+		difference: function(or, and) {
+			var aDiff = set.difference(or, and.values[0]);
+			var bDiff = set.difference(or, and.values[1]);
+			return set.union(aDiff,bDiff);
+		}
 	},
 	UNIVERSAL_And: {
 		difference: function(universe, and){
 			var inverseFirst = set.difference(universe, and.values[0]),
 				inverseSecond = set.difference(universe, and.values[1]);
-			return makeOr([inverseFirst, inverseSecond]);
+			return set.union(inverseFirst, inverseSecond);
 		}
-	}
+	},
+
+	Or_Or: {
+		// (a ∪ b) ∪ (c ∪ d)
+		union: function(or1, or2){
+			var union1 = set.union(or1.values[0], or2.values[0]);
+			var union2 = set.union(or1.values[1], or2.values[1]);
+
+			if( !isAndOrOr(union1) || !isAndOrOr(union2) ) {
+				return set.union(union1,union2);
+			}
+			union1 = set.union(or1.values[0], or2.values[1]);
+			union2 = set.union(or1.values[1], or2.values[0]);
+
+			if( !isAndOrOr(union1) || !isAndOrOr(union2) ) {
+				return set.union(union1,union2);
+			}
+			else {
+				return new is.Or([or1, or2]);
+			}
+		},
+		// (a ∪ b) ∩ (c ∪ d) where Z = (a ∪ b)
+		// -> Z ∩ (c ∪ d)
+		// -> (Z ∩ c) ∪ (Z ∪ d)
+		// -> ((a ∪ b) ∩ c) ∪ ((a ∪ b) ∩ d)
+		intersection: function(or1, or2) {
+			var c = or2.values[0],
+				d = or2.values[1];
+
+			var intersection1 = set.intersection(or1, c);
+			var intersection2 = set.intersection(or1, d);
+
+			if( !isOr(intersection1) || !isOr(intersection2) ) {
+				return set.union(intersection1,intersection2);
+			}
+			intersection1 = set.union(or2, or1.values[0]);
+			intersection2 = set.union(or2, or1.values[1]);
+
+			if( !isOr(intersection1) || !isOr(intersection2) ) {
+				return set.union(intersection1,intersection2);
+			}
+			else {
+				return new is.Or([or1, or2]);
+			}
+		},
+		// (a ∪ b) \ (c ∪ d) where Z = (a ∪ b)
+		// -> Z \ (c ∪ d)
+		// -> (Z \ c) ∩ (Z \ d)
+		// -> ((a ∪ b) \ c) ∩ ((a ∪ b) \ d)
+		difference: function(or1, or2) {
+			var d1 = set.difference(or1, or2.values[0]);
+			var d2 = set.difference(or1, or2.values[1]);
+			return set.intersection(d1, d2);
+		}
+	},
+	UNIVERSAL_Or: {
+		difference: function(universe, or){
+			var inverseFirst = set.difference(universe, or.values[0]),
+				inverseSecond = set.difference(universe, or.values[1]);
+			return set.intersection(inverseFirst, inverseSecond);
+		}
+	},
 };
 
 var names = Object.keys(comparisons);
