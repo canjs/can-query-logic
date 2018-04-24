@@ -2472,7 +2472,7 @@ var tests = {
         }
     },
 
-    // LessThan
+    // LessThan ==========================================
     LessThan_LessThan: {
         union: function(assert) {
             var a = new is.LessThan(5),
@@ -2663,7 +2663,244 @@ var tests = {
 		}
 	},
 
-    // LessThanEqual
+    LessThan_And: {
+        union: function(assert){
+            var a = new is.LessThan(10);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.LessThan(20)
+            );
+
+            a = new is.LessThan(33);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                a
+            );
+
+            a = new is.LessThan(6);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([a, b])
+            );
+        },
+        intersection: function(assert){
+            var a = new is.LessThan(21);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                b
+            );
+
+            a = new is.LessThan(10);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.And([new is.GreaterThan(7), new is.LessThan(10)])
+            );
+
+            a = new is.LessThan(6);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                set.EMPTY,
+                "should be empty"
+            );
+        },
+        difference: function(assert){
+
+            var a = new is.LessThan(21);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.Or([
+                    new is.LessThanEqual(7),
+                    new is.And([a, new is.GreaterThanEqual(20)]),
+
+                ]),
+                "wraps"
+            );
+
+            a = new is.LessThan(10);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.LessThanEqual(7),
+                "in between"
+            );
+
+            a = new is.LessThan(3);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                a,
+                "outside"
+            );
+
+        }
+    },
+    And_LessThan: {
+        difference: function(assert){
+
+            var a = new is.LessThan(21);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                set.EMPTY,
+                "within"
+            );
+
+            a = new is.LessThan(10);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.And([new is.GreaterThanEqual(10), new is.LessThan(20)]),
+                "in between"
+            );
+
+            a = new is.LessThan(4);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                b,
+                "outside"
+            );
+        }
+    },
+    LessThan_Or: {
+        union: function(assert){
+            var a = new is.LessThan(10);
+            var b = new is.Or([new is.GreaterThan(20), new is.LessThan(7)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([new is.GreaterThan(20), new is.LessThan(10)])
+            );
+
+            a = new is.LessThan(21);
+
+            assert.deepEqual(
+                set.union(a, b),
+                set.UNIVERSAL
+            );
+
+            a = new is.LessThan(6);
+
+            assert.deepEqual(
+                set.union(a, b),
+                b
+            );
+
+            a = new is.LessThan(7);
+            b = new is.Or([new is.LessThan(0), new is.In([null])]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([new is.In([null]), a]),
+                "union with a null"
+            );
+        },
+        intersection: function(assert){
+            var a = new is.LessThan(10);
+            var b = new is.Or([new is.LessThan(7), new is.GreaterThan(20)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.LessThan(7)
+            );
+
+            a = new is.LessThan(33);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.Or([new is.LessThan(7), new is.And([new is.GreaterThan(20),a])])
+            );
+
+            a = new is.LessThan(6);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                a
+            );
+        },
+        difference: function(assert){
+            var a = new is.LessThan(10);
+            var b = new is.Or([new is.LessThan(7), new is.GreaterThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.GreaterThanEqual(7), a]),
+                "inside"
+            );
+
+            a = new is.LessThan(33);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.GreaterThanEqual(7), new is.LessThanEqual(20)]),
+                "left"
+            );
+
+            a = new is.LessThan(6);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                set.EMPTY,
+                "right"
+            );
+        }
+    },
+    Or_LessThan: {
+        difference: function(assert){
+            var a = new is.LessThan(10);
+            var b = new is.Or([new is.LessThan(7), new is.GreaterThan(20)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.GreaterThan(20),
+                "inside"
+            );
+
+            a = new is.LessThan(33);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.GreaterThanEqual(33),
+                "left"
+            );
+
+            a = new is.LessThan(6);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.Or([
+                    new is.GreaterThan(20),
+                    new is.And([
+                        new is.LessThan(7),
+                        new is.GreaterThanEqual(6)
+                    ])
+                ]),
+                "right"
+            );
+        }
+    },
+
+
+    // LessThanEqual ===========================
 	LessThanEqual_LessThanEqual: {
 		union: function(assert) {
 			var a = new is.LessThanEqual(5),
@@ -2716,18 +2953,7 @@ var tests = {
         assert.ok( new is.LessThanEqual(5).isMember(5) );
         assert.notOk( new is.LessThanEqual(5).isMember(6) );
     },
-    LessThanEqual_And: {
-        intersection: function(assert){
-            var a = new is.LessThanEqual(0);
-            var b = new is.And([new is.GreaterThanEqual(0), new is.LessThan(1)]);
-            assert.deepEqual(
-                set.intersection(a, b),
-                new is.In([0]),
-                "overlap to in"
-            );
-        }
-    },
-	UNIVERSAL_LessThanEqual: {
+    UNIVERSAL_LessThanEqual: {
 		difference: function(assert){
 			var a = new is.LessThanEqual(5);
 			assert.deepEqual(
@@ -2736,6 +2962,229 @@ var tests = {
 			);
 		}
 	},
+    LessThanEqual_And: {
+        union: function(assert){
+            var a = new is.LessThanEqual(10);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.LessThan(20)
+            );
+
+            a = new is.LessThanEqual(33);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                a
+            );
+
+            a = new is.LessThanEqual(6);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([a, b])
+            );
+        },
+        intersection: function(assert){
+            var a = new is.LessThanEqual(0);
+            var b = new is.And([new is.GreaterThanEqual(0), new is.LessThan(1)]);
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.In([0]),
+                "overlap to in"
+            );
+        },
+        difference: function(assert){
+
+            var a = new is.LessThanEqual(21);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.Or([
+                    new is.LessThanEqual(7),
+                    new is.And([a, new is.GreaterThanEqual(20)]),
+
+                ]),
+                "wraps"
+            );
+
+            a = new is.LessThanEqual(10);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.LessThanEqual(7),
+                "in between"
+            );
+
+            a = new is.LessThanEqual(3);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                a,
+                "outside"
+            );
+
+        }
+    },
+    And_LessThanEqual: {
+        difference: function(assert){
+
+            var a = new is.LessThanEqual(21);
+            var b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                set.EMPTY,
+                "within"
+            );
+
+            a = new is.LessThanEqual(10);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.And([new is.GreaterThan(10), new is.LessThan(20)]),
+                "in between"
+            );
+
+            a = new is.LessThanEqual(4);
+            b = new is.And([new is.GreaterThan(7), new is.LessThan(20)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                b,
+                "outside"
+            );
+        }
+    },
+    LessThanEqual_Or: {
+        union: function(assert){
+
+            var a = new is.LessThanEqual(10);
+            var b = new is.Or([new is.GreaterThan(20), new is.LessThan(7)]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([new is.GreaterThan(20), new is.LessThanEqual(10)])
+            );
+
+            a = new is.LessThanEqual(21);
+
+            assert.deepEqual(
+                set.union(a, b),
+                set.UNIVERSAL
+            );
+
+            a = new is.LessThanEqual(6);
+
+            assert.deepEqual(
+                set.union(a, b),
+                b
+            );
+
+            a = new is.LessThanEqual(7);
+            b = new is.Or([new is.LessThan(0), new is.In([null])]);
+
+            assert.deepEqual(
+                set.union(a, b),
+                new is.Or([new is.In([null]), a]),
+                "union with a null"
+            );
+
+        },
+        intersection: function(assert){
+
+            var a = new is.LessThanEqual(10);
+            var b = new is.Or([new is.LessThanEqual(7), new is.GreaterThan(20)]);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.LessThanEqual(7)
+            );
+
+            a = new is.LessThanEqual(33);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                new is.Or([new is.LessThanEqual(7), new is.And([new is.GreaterThan(20),a])])
+            );
+
+            a = new is.LessThanEqual(6);
+
+            assert.deepEqual(
+                set.intersection(a, b),
+                a
+            );
+
+        },
+        difference: function(assert){
+
+            var a = new is.LessThanEqual(10);
+            var b = new is.Or([new is.LessThan(7), new is.GreaterThan(20)]);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.GreaterThanEqual(7), a]),
+                "inside"
+            );
+
+            a = new is.LessThanEqual(33);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                new is.And([new is.GreaterThanEqual(7), new is.LessThanEqual(20)]),
+                "left"
+            );
+
+            a = new is.LessThanEqual(6);
+
+            assert.deepEqual(
+                set.difference(a, b),
+                set.EMPTY,
+                "right"
+            );
+        }
+    },
+    Or_LessThanEqual: {
+        difference: function(assert){
+            var a = new is.LessThanEqual(10);
+            var b = new is.Or([new is.LessThan(7), new is.GreaterThan(20)]);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.GreaterThan(20),
+                "inside"
+            );
+
+            a = new is.LessThanEqual(33);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.GreaterThan(33),
+                "left"
+            );
+
+            a = new is.LessThanEqual(6);
+
+            assert.deepEqual(
+                set.difference(b, a),
+                new is.Or([
+                    new is.GreaterThan(20),
+                    new is.And([
+                        new is.LessThan(7),
+                        new is.GreaterThan(6)
+                    ])
+                ]),
+                "right"
+            );
+        }
+    },
 
     // AND =============
     And_And: {
