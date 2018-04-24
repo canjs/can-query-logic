@@ -103,6 +103,23 @@ QUnit.test("filterMembers basics", function(){
         {name: "Bohdi"},
         {name: "Ramiya"}
     ]);
+
+    subset = algebra.filterMembers({
+        filter: {
+            name: {$in: ["Payal","Ramiya","Justin"]}
+        },
+        page: {start: "1", end: "2"}
+    },{}, [
+        {name: "Bohdi"},
+        {name: "Ramiya"},
+        {name: "Payal"},
+        {name: "Justin"}
+    ]);
+
+    QUnit.deepEqual(subset,[
+        {name: "Payal"},
+        {name: "Justin"}
+    ]);
 });
 
 

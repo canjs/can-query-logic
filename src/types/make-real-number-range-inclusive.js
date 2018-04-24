@@ -118,8 +118,8 @@ module.exports = function(min, max) {
     }
 
     function RealNumberRangeInclusive(start, end){
-        this.start = arguments.length > 0 ? start : min;
-        this.end = arguments.length > 1 ? end : max;
+        this.start = arguments.length > 0 ? +start : min;
+        this.end = arguments.length > 1 ? +end : max;
     }
 
     function intersection(range1, range2){

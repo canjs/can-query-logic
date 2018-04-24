@@ -316,28 +316,3 @@ QUnit.test('rangeInclusive set.count', function(){
     var res = query.count({ start: 0, end: 99 });
 	equal(res, 100, "count is right");
 });
-
-
-
-QUnit.skip('rangeInclusive with string numbers (#17)', function(){
-	var algebra = new set.Algebra(
-		props.rangeInclusive('start','end')
-	);
-	ok(
-		algebra.isSubset(
-			{start: "1", end: "100"},
-			{start: "0", end: "100"}
-		),
-		".subset" );
-
-	var res = algebra.filterMembers({start: "2",end: "3"},{start: "1",end: "4"},[{id: 1},{id: 2},{id: 3},{id: 4}]);
-	deepEqual(res, [{id: 2},{id: 3}], ".filterMembers");
-
-	res = algebra.unionMembers(
-		{start: "2",end: "3"},
-		{start: "1",end: "4"},
-		[{id: 2},{id: 3}],
-		[{id: 1},{id: 2},{id: 3},{id: 4}]);
-	deepEqual(res, [{id: 1},{id: 2},{id: 3},{id: 4}], ".unionMembers");
-
-});

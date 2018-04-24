@@ -147,6 +147,7 @@ QUnit.test("auto-convert or schema into maybe type", function(){
     }, "serialized");
 });
 
+/*
 QUnit.skip("nested properties within ors", function(){
     var query = {
         filter: {
@@ -162,3 +163,4 @@ QUnit.skip("nested properties within ors", function(){
         name: new logicTypes.AndKeys({first: new is.In(["justin"])})
     }), "adds nested ands");
 });
+*/
