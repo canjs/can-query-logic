@@ -1,4 +1,3 @@
-
 var set = require("../set");
 var arrayUnionIntersectionDifference = require("../array-union-intersection-difference");
 
@@ -39,22 +38,22 @@ var comparisons = {
 	// This is used to And something like `GT(3)` n `LT(4)`.
 	// These are all value comparisons.
 	And: function ValueAnd(ands) {
-	    this.values = ands;
+		this.values = ands;
 	},
 	// This is used to OR something like `GT(4)` n `LT(3)`.
 	// These are all value comparisons.
 	Or: function ValueOr(ors) {
-	    this.values = ors;
+		this.values = ors;
 	}
 };
 
-comparisons.Or.prototype.orValues = function(){
-    return this.values;
+comparisons.Or.prototype.orValues = function() {
+	return this.values;
 };
 
 
 comparisons.In.test = function(values, b) {
-	return values.some(function(value){
+	return values.some(function(value) {
 		var values = set.ownAndMemberValue(value, b)
 		return values.own === values.member;
 	});
@@ -69,18 +68,19 @@ comparisons.NotIn.testValue = function(value, b) {
 
 function nullIsFalse(test) {
 	return function(arg1, arg2) {
-		if(arg1 == null || arg2 == null) {
+		if (arg1 == null || arg2 == null) {
 			return false;
 		} else {
 			return test(arg1, arg2);
 		}
 	};
 }
+
 function nullIsFalseTwoIsOk(test) {
 	return function(arg1, arg2) {
-		if(arg1 === arg2) {
+		if (arg1 === arg2) {
 			return true;
-		} else if(arg1 == null || arg2 == null) {
+		} else if (arg1 == null || arg2 == null) {
 			return false;
 		} else {
 			return test(arg1, arg2);
@@ -107,23 +107,24 @@ function isMemberThatUsesTest(value) {
 	var values = set.ownAndMemberValue(this.value, value);
 	return this.constructor.test(values.member, values.own);
 }
-[comparisons.GreaterThan, comparisons.GreaterThanEqual, comparisons.LessThan, comparisons.LessThanEqual, comparisons.LessThan].forEach(function(Type){
+[comparisons.GreaterThan, comparisons.GreaterThanEqual, comparisons.LessThan, comparisons.LessThanEqual, comparisons.LessThan].forEach(function(Type) {
 	Type.prototype.isMember = isMemberThatUsesTest;
 });
+
 function isMemberThatUsesTestOnValues(value) {
 	return this.constructor.test(this.values, value);
 }
-[comparisons.In, comparisons.NotIn].forEach(function(Type){
+[comparisons.In, comparisons.NotIn].forEach(function(Type) {
 	Type.prototype.isMember = isMemberThatUsesTestOnValues;
 });
 
-comparisons.And.prototype.isMember = function(value){
-	return this.values.every(function(and){
+comparisons.And.prototype.isMember = function(value) {
+	return this.values.every(function(and) {
 		return and.isMember(value);
 	});
 };
-comparisons.Or.prototype.isMember = function(value){
-	return this.values.some(function(and){
+comparisons.Or.prototype.isMember = function(value) {
+	return this.values.some(function(and) {
 		return and.isMember(value);
 	});
 };
@@ -132,7 +133,7 @@ comparisons.Or.prototype.isMember = function(value){
 
 function makeNot(Type) {
 	return {
-		test: function(vA, vB){
+		test: function(vA, vB) {
 			return !Type.test(vA, vB);
 		}
 	}
@@ -150,11 +151,11 @@ function makeEnum(type, Type, emptyResult) {
 	};
 }
 
-function isUniversal(aSet){
+function isUniversal(aSet) {
 	return set.isEqual(set.UNIVERSAL, aSet);
 }
 
-function swapArgs(fn){
+function swapArgs(fn) {
 	return function(a, b) {
 		return fn(b, a)
 	};
@@ -210,7 +211,7 @@ function make_filterFirstValueAgainstSecond(Comparison, Type, defaultReturn) {
 			return Comparison.test(gt, value);
 		});
 		return values.length ?
-			new Type(values) : defaultReturn || set.EMPTY ;
+			new Type(values) : defaultReturn || set.EMPTY;
 	};
 }
 
@@ -220,28 +221,34 @@ function make_filterFirstValues(Comparison, Type, defaultReturn) {
 			return Comparison.test(value, gt.value);
 		});
 		return values.length ?
-			new Type(values) : defaultReturn || set.EMPTY ;
+			new Type(values) : defaultReturn || set.EMPTY;
 	};
 }
 
 var isMemberTest = {
-	test: function isMemberTest(set, value){
+	test: function isMemberTest(set, value) {
 		return set.isMember(value);
 	}
 };
 var returnTrue = {
-	test: function returnTrue(){return true;}
+	test: function returnTrue() {
+		return true;
+	}
 };
 var returnFalse = {
-	test: function returnFalse(){return false;}
+	test: function returnFalse() {
+		return false;
+	}
 };
 
 function isOr(value) {
 	return (value instanceof is.Or);
 }
+
 function isAnd(value) {
 	return (value instanceof is.And);
 }
+
 function isAndOrOr(value) {
 	return isAnd(value) || isOr(value);
 }
@@ -257,39 +264,41 @@ function combineFilterFirstValues(options) {
 		});
 		var range = options.with ? new options.with(gt.value) : gt;
 		return values.length ?
-			options.combinedUsing([new options.arePut(values),range]) : range;
+			options.combinedUsing([new options.arePut(values), range]) : range;
 	};
 }
+
 function combineFilterFirstValuesAgainstSecond(options) {
 	return function(inSet, gt) {
 		var values = inSet.values.filter(function(value) {
 			return options.values.test(gt, value);
 		});
 		var range
-		if(options.complement) {
+		if (options.complement) {
 			range = set.difference(set.UNIVERSAL, gt);
-		} else if(options.with) {
+		} else if (options.with) {
 			range = new options.with(gt.value);
 		} else {
 			range = gt;
 		}
 		return values.length ?
-			options.combinedUsing([new options.arePut(values),range]) : range;
+			options.combinedUsing([new options.arePut(values), range]) : range;
 	};
 }
 
 function makeOrUnless(Comparison, result) {
 	return function(setA, setB) {
-		if( Comparison.test(setA.value, setB.value) ) {
+		if (Comparison.test(setA.value, setB.value)) {
 			return result || set.UNIVERSAL;
 		} else {
 			return makeOr([setA, setB]);
 		}
 	}
 }
+
 function makeAndUnless(Comparison, result) {
 	return function(setA, setB) {
-		if( Comparison.test(setA.value, setB.value) ) {
+		if (Comparison.test(setA.value, setB.value)) {
 			return result || set.EMPTY;
 		} else {
 			return makeAnd([setA, setB]);
@@ -299,7 +308,7 @@ function makeAndUnless(Comparison, result) {
 
 function makeComplementSecondArgIf(Comparison) {
 	return function(setA, setB) {
-		if( Comparison.test(setA.value, setB.value) ) {
+		if (Comparison.test(setA.value, setB.value)) {
 			return set.difference(set.UNIVERSAL, setB);
 		} else {
 			return setA;
@@ -320,7 +329,7 @@ var is = comparisons;
 
 var In_RANGE = {
 	union: combineFilterFirstValuesAgainstSecond({
-		values: makeNot( isMemberTest ),
+		values: makeNot(isMemberTest),
 		arePut: is.In,
 		combinedUsing: makeOr
 	}),
@@ -335,16 +344,16 @@ var RANGE_IN = {
 	}))
 };
 
-var NotIn_RANGE = function(){
+var NotIn_RANGE = function() {
 	return {
 		union: make_filterFirstValueAgainstSecond(makeNot(isMemberTest), is.NotIn, set.UNIVERSAL),
 		intersection: combineFilterFirstValuesAgainstSecond({
-			values:  isMemberTest,
+			values: isMemberTest,
 			arePut: is.NotIn,
 			combinedUsing: makeAnd
 		}),
 		difference: combineFilterFirstValuesAgainstSecond({
-			values:  makeNot(isMemberTest),
+			values: makeNot(isMemberTest),
 			arePut: is.NotIn,
 			combinedUsing: makeAnd,
 			complement: true
@@ -352,7 +361,7 @@ var NotIn_RANGE = function(){
 	}
 };
 var RANGE_NotIn = {
-	difference:  swapArgs(make_filterFirstValueAgainstSecond(isMemberTest, is.In, set.EMPTY))
+	difference: swapArgs(make_filterFirstValueAgainstSecond(isMemberTest, is.In, set.EMPTY))
 };
 
 var RANGE_And_Union = function(gt, and) {
@@ -360,7 +369,7 @@ var RANGE_And_Union = function(gt, and) {
 	var union1 = set.union(gt, and.values[0]);
 	var union2 = set.union(gt, and.values[1]);
 
-	if(!isAndOrOr(union1) && !isAndOrOr(union2)) {
+	if (!isAndOrOr(union1) && !isAndOrOr(union2)) {
 		return set.intersection(union1, union2);
 	} else {
 		return new is.Or([gt, and]);
@@ -371,15 +380,15 @@ var RANGE_And_Intersection = function(gt, and) {
 		and2 = and.values[1];
 	var intersection1 = set.intersection(gt, and1);
 	var intersection2 = set.intersection(gt, and2);
-	if(intersection1 === set.EMPTY || intersection2 === set.EMPTY) {
+	if (intersection1 === set.EMPTY || intersection2 === set.EMPTY) {
 		return set.EMPTY;
 	}
-	if(!isAndOrOr(intersection1) ) {
-		return new set.intersection( intersection1, and2);
+	if (!isAndOrOr(intersection1)) {
+		return new set.intersection(intersection1, and2);
 	}
 
-	if(!isAndOrOr(intersection2) ) {
-		return new set.intersection( intersection2, and1);
+	if (!isAndOrOr(intersection2)) {
+		return new set.intersection(intersection2, and1);
 	} else {
 		return new is.And([gt, and]);
 	}
@@ -387,20 +396,22 @@ var RANGE_And_Intersection = function(gt, and) {
 };
 
 var RANGE_And_Difference = function(gt, and) {
-	var and1 = and.values[0], and2 = and.values[1];
+	var and1 = and.values[0],
+		and2 = and.values[1];
 	var difference1 = set.difference(gt, and1);
 	var difference2 = set.difference(gt, and2);
-	if(difference1 === set.EMPTY) {
+	if (difference1 === set.EMPTY) {
 		return difference2;
 	}
-	if(difference2 === set.EMPTY) {
+	if (difference2 === set.EMPTY) {
 		return difference1;
 	}
 	return new is.Or([difference1, difference2]);
 };
 
-var And_RANGE_Difference = function(and, gt){
-	var and1 = and.values[0], and2 = and.values[1];
+var And_RANGE_Difference = function(and, gt) {
+	var and1 = and.values[0],
+		and2 = and.values[1];
 	var difference1 = set.difference(and1, gt);
 	var difference2 = set.difference(and2, gt);
 
@@ -409,34 +420,37 @@ var And_RANGE_Difference = function(and, gt){
 
 var RANGE_Or = {
 	union: function(gt, or) {
-		var or1 = or.values[0], or2 = or.values[1];
+		var or1 = or.values[0],
+			or2 = or.values[1];
 		var union1 = set.union(gt, or1);
-		if(!isAndOrOr(union1)){
+		if (!isAndOrOr(union1)) {
 			return set.union(union1, or2);
 		}
 		var union2 = set.union(gt, or2);
-		if(!isAndOrOr(union2)) {
+		if (!isAndOrOr(union2)) {
 			return set.union(or1, union2);
 		} else {
 			return new is.Or([gt, or]);
 		}
 	},
 	intersection: function(gt, or) {
-		var or1 = or.values[0], or2 = or.values[1];
+		var or1 = or.values[0],
+			or2 = or.values[1];
 		var intersection1 = set.intersection(gt, or1);
 		var intersection2 = set.intersection(gt, or2);
-		if(intersection1 === set.EMPTY) {
+		if (intersection1 === set.EMPTY) {
 			return intersection2;
 		}
-		if(intersection2 === set.EMPTY) {
+		if (intersection2 === set.EMPTY) {
 			return intersection1;
 		}
-		return set.union(intersection1,intersection2);
+		return set.union(intersection1, intersection2);
 	},
 	// v \ (a || b) -> (v \ a) n (v \ b)
 	difference: function(gt, or) {
 
-		var or1 = or.values[0], or2 = or.values[1];
+		var or1 = or.values[0],
+			or2 = or.values[1];
 		var difference1 = set.difference(gt, or1);
 		var difference2 = set.difference(gt, or2);
 		return set.intersection(difference1, difference2);
@@ -445,8 +459,9 @@ var RANGE_Or = {
 
 var Or_RANGE = {
 	// ( a || b ) \ v -> (a \ v) U (b \ v)
-	difference: function(or, gt){
-		var or1 = or.values[0], or2 = or.values[1];
+	difference: function(or, gt) {
+		var or1 = or.values[0],
+			or2 = or.values[1];
 		var difference1 = set.difference(or1, gt);
 		var difference2 = set.difference(or2, gt);
 		return set.union(difference1, difference2);
@@ -466,7 +481,7 @@ var comparators = {
 	},
 
 	In_NotIn: {
-		union: swapArgs( makeEnum("difference", is.NotIn, set.UNIVERSAL) ),
+		union: swapArgs(makeEnum("difference", is.NotIn, set.UNIVERSAL)),
 		// what does In have on its own
 		intersection: makeEnum("difference", is.In),
 		difference: makeEnum("intersection", is.In)
@@ -511,7 +526,7 @@ var comparators = {
 	NotIn_LessThan: NotIn_RANGE(),
 	LessThan_NotIn: RANGE_NotIn,
 
-	NotIn_LessThanEqual:  NotIn_RANGE(),
+	NotIn_LessThanEqual: NotIn_RANGE(),
 	LessThanEqual_NotIn: RANGE_NotIn,
 
 	NotIn_And: NotIn_RANGE(),
@@ -593,11 +608,11 @@ var comparators = {
 	GreaterThanEqual_LessThanEqual: {
 		union: makeOrUnless(is.LessThanEqual),
 		// intersect on a number
-		intersection: (function(){
+		intersection: (function() {
 			var makeAnd = makeAndUnless(is.GreaterThan);
-			return function gte_lte_intersection(gte, lte){
+			return function gte_lte_intersection(gte, lte) {
 				var inSet = new is.In([gte.value]);
-				if(inSet.isMember(lte.value)) {
+				if (inSet.isMember(lte.value)) {
 					return inSet
 				} else {
 					return makeAnd(gte, lte);
@@ -687,16 +702,16 @@ var comparators = {
 		// -> Z ∪ (c ∩ d)
 		// -> (Z ∪ c) ∩ (Z ∪ d)
 		// -> ((a ∩ b) ∪ c) ∪ ((a ∩ b) ∪ d)
-		union: function(and1, and2){
+		union: function(and1, and2) {
 			var union1 = set.union(and1, and2.values[0]);
 			var union2 = set.union(and1, and2.values[1]);
 
-			if(isAndOrOr(union1) || isAndOrOr(union2)) {
+			if (isAndOrOr(union1) || isAndOrOr(union2)) {
 				// try the other direction
 				union1 = set.union(and2, and1.values[0]);
 				union2 = set.union(and2, and1.values[1]);
 			}
-			if(isAndOrOr(union1) || isAndOrOr(union2)) {
+			if (isAndOrOr(union1) || isAndOrOr(union2)) {
 				return new is.Or([and1, and2]);
 			} else {
 				return set.intersection(union1, union2);
@@ -724,16 +739,15 @@ var comparators = {
 			var intersection1 = set.intersection(and1.values[0], and2.values[0]);
 			var intersection2 = set.intersection(and1.values[1], and2.values[1]);
 
-			if( !isAndOrOr(intersection1) || !isAndOrOr(intersection2) ) {
-				return set.intersection(intersection1,intersection2);
+			if (!isAndOrOr(intersection1) || !isAndOrOr(intersection2)) {
+				return set.intersection(intersection1, intersection2);
 			}
 			intersection1 = set.intersection(and1.values[0], and2.values[1]);
 			intersection2 = set.intersection(and1.values[1], and2.values[0]);
 
-			if( !isAndOrOr(intersection1) || !isAndOrOr(intersection2) ) {
-				return set.intersection(intersection1,intersection2);
-			}
-			else {
+			if (!isAndOrOr(intersection1) || !isAndOrOr(intersection2)) {
+				return set.intersection(intersection1, intersection2);
+			} else {
 				return new is.And([and1, and2]);
 			}
 		},
@@ -741,7 +755,7 @@ var comparators = {
 		// -> Z \ (c ∩ d)
 		// -> (Z \ c) ∪ (Z \ d)
 		// -> ((a ∩ b) \ c) ∪ ((a ∩ b) \ d)
-		difference: (function(){
+		difference: (function() {
 
 			return function(and1, and2) {
 				var d1 = set.difference(and1, and2.values[0]);
@@ -808,8 +822,8 @@ var comparators = {
 			var aUnion = set.union(and.values[0], or);
 			var bUnion = set.union(and.values[1], or);
 
-			if(!isAndOrOr(aUnion) || !isAndOrOr(bUnion)) {
-				return set.intersection(aUnion,bUnion);
+			if (!isAndOrOr(aUnion) || !isAndOrOr(bUnion)) {
+				return set.intersection(aUnion, bUnion);
 			}
 
 			return new is.Or([and, or]);
@@ -821,8 +835,8 @@ var comparators = {
 		intersection: function(and, or) {
 			var aIntersection = set.intersection(and, or.values[0]);
 			var bIntersection = set.intersection(and, or.values[1]);
-			if(!isOr(aIntersection) && !isOr(bIntersection)) {
-				return set.union(aIntersection,bIntersection);
+			if (!isOr(aIntersection) && !isOr(bIntersection)) {
+				return set.union(aIntersection, bIntersection);
 			}
 			return new is.And([and, or]);
 		},
@@ -833,7 +847,7 @@ var comparators = {
 		difference: function(and, or) {
 			var aDiff = set.difference(and, or.values[0]);
 			var bDiff = set.difference(and, or.values[1]);
-			return set.intersection(aDiff,bDiff);
+			return set.intersection(aDiff, bDiff);
 		}
 	},
 	Or_And: {
@@ -844,11 +858,11 @@ var comparators = {
 		difference: function(or, and) {
 			var aDiff = set.difference(or, and.values[0]);
 			var bDiff = set.difference(or, and.values[1]);
-			return set.union(aDiff,bDiff);
+			return set.union(aDiff, bDiff);
 		}
 	},
 	UNIVERSAL_And: {
-		difference: function(universe, and){
+		difference: function(universe, and) {
 			var inverseFirst = set.difference(universe, and.values[0]),
 				inverseSecond = set.difference(universe, and.values[1]);
 			return set.union(inverseFirst, inverseSecond);
@@ -857,20 +871,19 @@ var comparators = {
 
 	Or_Or: {
 		// (a ∪ b) ∪ (c ∪ d)
-		union: function(or1, or2){
+		union: function(or1, or2) {
 			var union1 = set.union(or1.values[0], or2.values[0]);
 			var union2 = set.union(or1.values[1], or2.values[1]);
 
-			if( !isAndOrOr(union1) || !isAndOrOr(union2) ) {
-				return set.union(union1,union2);
+			if (!isAndOrOr(union1) || !isAndOrOr(union2)) {
+				return set.union(union1, union2);
 			}
 			union1 = set.union(or1.values[0], or2.values[1]);
 			union2 = set.union(or1.values[1], or2.values[0]);
 
-			if( !isAndOrOr(union1) || !isAndOrOr(union2) ) {
-				return set.union(union1,union2);
-			}
-			else {
+			if (!isAndOrOr(union1) || !isAndOrOr(union2)) {
+				return set.union(union1, union2);
+			} else {
 				return new is.Or([or1, or2]);
 			}
 		},
@@ -885,16 +898,15 @@ var comparators = {
 			var intersection1 = set.intersection(or1, c);
 			var intersection2 = set.intersection(or1, d);
 
-			if( !isOr(intersection1) || !isOr(intersection2) ) {
-				return set.union(intersection1,intersection2);
+			if (!isOr(intersection1) || !isOr(intersection2)) {
+				return set.union(intersection1, intersection2);
 			}
 			intersection1 = set.union(or2, or1.values[0]);
 			intersection2 = set.union(or2, or1.values[1]);
 
-			if( !isOr(intersection1) || !isOr(intersection2) ) {
-				return set.union(intersection1,intersection2);
-			}
-			else {
+			if (!isOr(intersection1) || !isOr(intersection2)) {
+				return set.union(intersection1, intersection2);
+			} else {
 				return new is.Or([or1, or2]);
 			}
 		},
@@ -909,7 +921,7 @@ var comparators = {
 		}
 	},
 	UNIVERSAL_Or: {
-		difference: function(universe, or){
+		difference: function(universe, or) {
 			var inverseFirst = set.difference(universe, or.values[0]),
 				inverseSecond = set.difference(universe, or.values[1]);
 			return set.intersection(inverseFirst, inverseSecond);
