@@ -1,7 +1,7 @@
 @function can-query-logic.prototype.unionMembers unionMembers
 @parent can-query-logic.prototype
 
-@description
+@description Unifies records from two queries.
 
 @signature `queryLogic.unionMembers(queryA, queryB, aRecords, bRecords)`
 

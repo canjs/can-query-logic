@@ -530,7 +530,7 @@ QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
             return searchA;
         }
         // A:`ice` ∪ B:`cream` => `ice` || `cream`
-        return new QueryLogic.Or([searchA, searchB]);
+        return new QueryLogic.ValueOr([searchA, searchB]);
     },
     // Return a set that would load records shared by searchA and searchB.
     intersection(searchA, searchB){
@@ -545,7 +545,7 @@ QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
             return searchB;
         }
         // A:`ice` ∩ B:`cream` => `ice` && `cream`
-        // But there is no `QueryLogic.AndValues`,
+        // But suppose AND isn't supported,
         // So we return `UNDEFINABLE`.
         return QueryLogic.UNDEFINABLE;
     },
