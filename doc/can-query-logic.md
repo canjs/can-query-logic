@@ -56,7 +56,7 @@ todoQueryLogic.filterMembers({
     {id: 1, name: "do dishes", complete: false},
     {id: 2, name: "mow lawn", complete: true},
     ...
-]) //-> [matching items]
+]) //-> [matching records]
 ```
 
 By default `can-query-logic` supports queries represented by the [can-query-logic/query]
@@ -150,7 +150,7 @@ a query object look like this:
 
 This object represents a [can-query-logic/query Query]. This specific query is for requesting completed todos and have the todos sorted by their _name_.  
 
-A `QueryLogic` instance _understands_ what a `Query` represents. For example, it can filter items
+A `QueryLogic` instance _understands_ what a `Query` represents. For example, it can filter records
 that match a particular query:
 
 ```js
@@ -517,7 +517,7 @@ canReflect.assignSymbols(SearchableStringSet.prototype,{
 
 // Specify how to do the fundamental set comparisons.
 QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
-    // Return a set that would load all items in searchA and searchB.
+    // Return a set that would load all records in searchA and searchB.
     union(searchA, searchB){
         // If searchA's text contains searchB's text, then
         // searchB will include searchA's results.
@@ -532,7 +532,7 @@ QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
         // A:`ice` ∪ B:`cream` => `ice` || `cream`
         return new QueryLogic.Or([searchA, searchB]);
     },
-    // Return a set that would load items shared by searchA and searchB.
+    // Return a set that would load records shared by searchA and searchB.
     intersection(searchA, searchB){
         // If searchA's text contains searchB's text, then
         // searchA is the shared search results.
@@ -549,7 +549,7 @@ QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
         // So we return `UNDEFINABLE`.
         return QueryLogic.UNDEFINABLE;
     },
-    // Return a set that would load items in searchA that are not in
+    // Return a set that would load records in searchA that are not in
     // searchB.
     difference(searchA, searchB){
         // if searchA's text contains searchB's text, then
@@ -559,7 +559,7 @@ QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
             return QueryLogic.EMPTY;
         }
         // If searchA has results outside searchB's results
-        // then there are items, but we aren't able to
+        // then there are records, but we aren't able to
         // create a string that represents this.
         if(searchB.value.includes(searchA.value)) {
             // A:`foo` \ B:`food` => UNDEFINABLE

@@ -49,10 +49,10 @@ id returned by [can-query-logic.prototype.identityKeys].
 
 @param {{start: Number, end: Number}} [page] The optional `page` property selects a range of the sorted result. It's values are inclusive and begin at `0`.  This means that:
 
- - `{start: 0, end: 1}` - Selects the first two items in the result.
- - `{start: 10, end: 19}` - Selects 10 items after the first 10 items.
+ - `{start: 0, end: 1}` - Selects the first two records in the result.
+ - `{start: 10, end: 19}` - Selects 10 records after the first 10 records.
 
 The `start` value defaults to `0` and the `end` value defaults to `Infinity`.  This means that:
 
-- `{end: 99}` - Selects the first 100 items.
-- `{start: 100}` - Selects all items after the first 100.
+- `{end: 99}` - Selects the first 100 records.
+- `{start: 100}` - Selects all records after the first 100.
