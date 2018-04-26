@@ -36,7 +36,7 @@ QUnit.test("against non ranged set", function(){
 	 *		]
 	 */
     var query = new BasicQuery({
-        filter: new BasicQuery.AndKeys({ type: 'critical'}),
+        filter: new BasicQuery.KeysAnd({ type: 'critical'}),
         page: new BasicQuery.RecordRange(1,3)
     });
     var res = query.filterFrom(items);
@@ -66,7 +66,7 @@ QUnit.test("ordered ascending and paginated", function() {
 	 */
 
     var query = new BasicQuery({
-        filter: new BasicQuery.AndKeys({ type: 'critical'}),
+        filter: new BasicQuery.KeysAnd({ type: 'critical'}),
         page: new BasicQuery.RecordRange(1,3),
         sort: 'note'
     });
@@ -92,7 +92,7 @@ QUnit.test("ordered descending and paginated", function() {
 	 */
 
     var query = new BasicQuery({
-        filter: new BasicQuery.AndKeys({ type: 'critical'}),
+        filter: new BasicQuery.KeysAnd({ type: 'critical'}),
         page: new BasicQuery.RecordRange(1,3),
         sort: '-note'
     });
@@ -104,11 +104,11 @@ QUnit.test("ordered descending and paginated", function() {
 QUnit.test("against paginated set", function(){
 
     var query = new BasicQuery({
-        filter: new BasicQuery.AndKeys({ type: 'critical'}),
+        filter: new BasicQuery.KeysAnd({ type: 'critical'}),
         page: new BasicQuery.RecordRange(21,23)
     });
     var fromQuery = new BasicQuery({
-        filter: new BasicQuery.AndKeys({ type: 'critical'}),
+        filter: new BasicQuery.KeysAnd({ type: 'critical'}),
         page: new BasicQuery.RecordRange(20,27)
     });
 
@@ -119,10 +119,10 @@ QUnit.test("against paginated set", function(){
 
 QUnit.test("returns undefined against incompatible set", function() {
     var query = new BasicQuery({
-        filter: new BasicQuery.AndKeys({ note: 'C' })
+        filter: new BasicQuery.KeysAnd({ note: 'C' })
     });
     var fromQuery = new BasicQuery({
-        filter: new BasicQuery.AndKeys({ type: 'critical' })
+        filter: new BasicQuery.KeysAnd({ type: 'critical' })
     });
 	try{
 		var res = query.filterFrom(items, fromQuery);

@@ -120,7 +120,7 @@ var set = {
                     return SET.UNDEFINABLE;
                 }
 
-                var filter = data.filter;
+                var filter = data.filter || {};
                 if(hasKey(filter, {
                     "$ne": true,
                     "$in": function(val){ return val["$in"]; }
@@ -132,7 +132,7 @@ var set = {
                     return serializer(last);
                 }, data);
 
-                filter = out.filter;
+                filter = out.filter || {};
                 delete out.filter;
                 return canReflect.assign(out, filter);
             }

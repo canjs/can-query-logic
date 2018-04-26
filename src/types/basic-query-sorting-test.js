@@ -15,7 +15,7 @@ function legacyToQuery(set) {
 
     return new BasicQuery({
         page: page,
-        filter: Object.keys(copy).length ? new BasicQuery.AndKeys(copy) : set.UNIVERSAL
+        filter: Object.keys(copy).length ? new BasicQuery.KeysAnd(copy) : set.UNIVERSAL
     });
 }
 function queryToLegacy(query) {

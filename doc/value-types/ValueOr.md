@@ -1,3 +1,3 @@
-@function can-query-logic.Not Not
+@function can-query-logic.ValueOr ValueOr
 @parent can-query-logic.static-types
 @hide

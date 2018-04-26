@@ -929,6 +929,7 @@ var comparators = {
 	},
 };
 
+// Registers all the comparisons above
 var names = Object.keys(comparisons);
 names.forEach(function(name1, i) {
 	if (!comparators[name1 + "_" + name1]) {

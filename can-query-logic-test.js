@@ -1,7 +1,7 @@
 require("./src/types/make-real-number-range-inclusive-test");
 require("./src/types/comparisons-test");
 require("./src/types/and-or-not-test");
-require("./src/types/or-values-test");
+require("./src/types/values-or-test");
 require("./src/types/basic-query-sorting-test");
 require("./src/types/basic-query-filter-from-test");
 require("./src/types/basic-query-merge-test");

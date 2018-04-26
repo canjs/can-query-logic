@@ -119,7 +119,7 @@ function hydrateAndValues(values, schemaProperties, hydrateUnknown) {
         clone[prop] = hydrateAndValue(value, prop, schemaProperties[prop], hydrateChild);
     });
 
-    return new BasicQuery.AndKeys(clone);
+    return new BasicQuery.KeysAnd(clone);
 
 }
 // This tries to combine a bunch of OR-ed ANDS into a single AND.
@@ -179,7 +179,7 @@ function combineAnds(ands) {
         result[key] = keys[key][0];
     });
     result[unionKey] = unioned;
-    return new BasicQuery.AndKeys(result);
+    return new BasicQuery.KeysAnd(result);
 }
 
 function hydrateOrs(values, schemaProperties, hydrateUnknown ) {
@@ -207,7 +207,7 @@ module.exports = function(schema) {
             });
         }],
         // this destructures ANDs with OR-like clauses
-        [BasicQuery.AndKeys, function(and, serializer){
+        [BasicQuery.KeysAnd, function(and, serializer){
             var ors = [];
             var result = {};
             canReflect.eachKey(and.values, function(value, key){
@@ -241,9 +241,11 @@ module.exports = function(schema) {
 
             var filter = set.isEqual(basicQuery.filter, set.UNIVERSAL) ? {} : childSerializer(basicQuery.filter);
 
-            var res = {
-                filter: filter
-            };
+            var res = {};
+            if(canReflect.size(filter) !== 0) {
+                res.filter= filter;
+            }
+            
             if(!set.isEqual(basicQuery.page, defaultQuery.page)) {
                 // we always provide the start, even if it's 0
                 res.page = {

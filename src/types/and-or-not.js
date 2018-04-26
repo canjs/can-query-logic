@@ -1,9 +1,9 @@
-var OrValues = require("./or-values");
-var NotValue = require("./not-value");
-var AndKeys = require("./and-keys");
+var ValuesOr = require("./values-or");
+var ValuesNot = require("./values-not");
+var KeysAnd = require("./keys-and");
 
 module.exports = {
-    AndKeys: AndKeys,
-    Or: OrValues,
-    Not: NotValue
+    KeysAnd: KeysAnd,
+    ValuesOr: ValuesOr,
+    ValuesNot: ValuesNot
 };

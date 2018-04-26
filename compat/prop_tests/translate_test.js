@@ -107,7 +107,7 @@ test('set.difference', function(){
 	equal(res,  querySet.EMPTY);
 
 	res = algebra.difference({$where:{ completed: true }}, {$where:{ userId: 5 }});
-	equal(res, querySet.UNDEFINABLE); 
+	equal(res, querySet.UNDEFINABLE);
 
 });
 
@@ -119,10 +119,10 @@ test('set.union', function(){
 
 	// set / subset
 	var res = algebra.union({$where:{}}, {$where:{ completed: true }});
-	deepEqual(res , {$where:{}}, "set / subset");
+	deepEqual(res , {}, "set / subset");
 
 	res = algebra.union({$where:{ completed: true }}, {$where:{}});
-	deepEqual(res , {$where:{}}, "subset / set");
+	deepEqual(res , {}, "subset / set");
 
 	res = algebra.union({$where:{foo: "bar"}},{$where:{foo: "bar"}});
 	deepEqual(res, {$where:{foo: "bar"}}, "equal");

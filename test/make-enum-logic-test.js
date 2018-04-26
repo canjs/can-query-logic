@@ -82,10 +82,56 @@ QUnit.test("automatic enum", function(){
             complete: true
         }
     });
-    
+
     QUnit.deepEqual(res,{
         filter: {
             complete: [false, undefined, null]
         }
     }, "enum works");
+});
+
+QUnit.test("makeEnum from homepage with schema type", function(){
+    var Status = canReflect.assignSymbols({},{
+    	"can.new": function(val){
+    		return val;
+    	},
+    	"can.getSchema": function(){
+    		return {
+    			type: "Or",
+    			values: ["new","assigned","complete"]
+    		};
+    	}
+    });
+
+    var todoLogic = new QueryLogic({
+        identity: ["id"],
+        keys: {
+            status: Status
+        }
+    });
+    var unionQuery = todoLogic.union(
+        {filter: {status: ["new","assigned"] }},
+        {filter: {status: "complete" }}
+    );
+
+    QUnit.deepEqual( unionQuery, {});
+});
+
+
+QUnit.test("makeEnum from homepage", function(){
+
+    var Status = QueryLogic.makeEnum(["new","assigned","complete"]);
+
+    var todoLogic = new QueryLogic({
+        identity: ["id"],
+        keys: {
+            status: Status
+        }
+    });
+    var unionQuery = todoLogic.union(
+        {filter: {status: ["new","assigned"] }},
+        {filter: {status: "complete" }}
+    );
+
+    QUnit.deepEqual( unionQuery, {});
 });

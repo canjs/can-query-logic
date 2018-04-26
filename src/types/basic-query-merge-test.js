@@ -21,7 +21,7 @@ var everything = new BasicQuery({});
 QUnit.test("basics", function(){
 
     var fooBar = new BasicQuery({
-        filter: new BasicQuery.AndKeys({ foo: "bar" })
+        filter: new BasicQuery.KeysAnd({ foo: "bar" })
     });
     var res = everything.merge(fooBar,items, items.slice(0, 3), getId );
 	deepEqual(res, items);
@@ -95,10 +95,10 @@ QUnit.test("unionMembers filters for uniqueness", function(){
 	var unionItems = [bItems[0]].concat(aItems); // bItems[1] is already in aItems
 
     var a = new BasicQuery({
-        page: new BasicQuery.AndKeys({type: "critical"})
+        page: new BasicQuery.KeysAnd({type: "critical"})
     });
     var b = new BasicQuery({
-        page: new BasicQuery.AndKeys({note: "C"})
+        page: new BasicQuery.KeysAnd({note: "C"})
     });
     var union = a.merge(b,aItems, bItems, getId );
     deepEqual(union, unionItems);

@@ -59,7 +59,7 @@ QUnit.test("Searchable string", function(){
             if(searchB.value.includes(searchA.value)) {
                 return searchA;
             }
-            return new QueryLogic.Or([searchA, searchB]);
+            return new QueryLogic.ValuesOr([searchA, searchB]);
         },
         // a aa
         intersection(searchA, searchB){
@@ -81,7 +81,7 @@ QUnit.test("Searchable string", function(){
                 return QueryLogic.UNDEFINABLE;
             }
             // foo \ bar
-            return QueryLogic.UNKNOWABLE;
+            return QueryLogic.UNDEFINABLE;
         }
     });
 
@@ -128,7 +128,7 @@ QUnit.test("Searchable string", function(){
         filter: {name: "eat"}
     });
 
-    QUnit.deepEqual(hydrated.filter, new QueryLogic.And({
+    QUnit.deepEqual(hydrated.filter, new QueryLogic.KeysAnd({
         name: new SearchableStringSet("eat")
     }), "hydrated right");
 

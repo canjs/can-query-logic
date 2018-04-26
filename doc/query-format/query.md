@@ -1,4 +1,4 @@
-@typedef {Object} can-query-logic/query Query Structure
+@typedef {Object} can-query-logic/query Query
 @parent can-query-logic/query-format 0
 
 @description The default structure of objects used to represent

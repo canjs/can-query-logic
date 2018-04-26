@@ -44,8 +44,8 @@ QUnit.test("nested properties", function(){
     var basicQuery = converter.hydrate(query);
 
 
-    QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
-        name: new logicTypes.AndKeys({first: new is.In(["justin"])})
+    QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
+        name: new logicTypes.KeysAnd({first: new is.In(["justin"])})
     }), "adds nested ands");
 });
 
@@ -73,7 +73,7 @@ QUnit.test("$or with the same types unify into maybe", function(){
 
     var basicQuery = converter.hydrate(query);
 
-    QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
+    QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
         foo: new is.In(["bar"]),
         age: new MaybeSet({
             range: new is.GreaterThan(3),
@@ -127,7 +127,7 @@ QUnit.test("auto-convert or schema into maybe type", function(){
 
     var basicQuery = converter.hydrate(query);
 
-    /*QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
+    /*QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
         foo: new is.In(["bar"]),
         age: new MaybeSet({
             range: new is.GreaterThan(3),
@@ -159,8 +159,8 @@ QUnit.skip("nested properties within ors", function(){
 
     var basicQuery = converter.hydrate(query);
 
-    QUnit.deepEqual(basicQuery.filter, new logicTypes.AndKeys({
-        name: new logicTypes.AndKeys({first: new is.In(["justin"])})
+    QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
+        name: new logicTypes.KeysAnd({first: new is.In(["justin"])})
     }), "adds nested ands");
 });
 */

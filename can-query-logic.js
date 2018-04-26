@@ -3,8 +3,9 @@ var canSymbol = require("can-symbol");
 var canReflect = require("can-reflect");
 var makeBasicQueryConvert = require("./src/serializers/basic-query");
 var BasicQuery = require("./src/types/basic-query");
+var valueComparisons = require("./src/types/comparisons");
 var schemaSymbol = canSymbol.for("can.schema");
-
+var makeEnum = require("./src/types/make-enum");
 
 
 // Creates an algebra used to convert primitives to types and back
@@ -168,11 +169,27 @@ QueryLogic.UNDEFINABLE = set.UNDEFINABLE;
 // We don't know if this exists. Intersection between two paginated sets.
 QueryLogic.UNKNOWABLE = set.UNKNOWABLE;
 
+QueryLogic.makeEnum = function(values){
+    var Type = function(){};
+    makeEnum(Type, values);
+    return Type;
+};
 QueryLogic.defineComparison = set.defineComparison;
 QueryLogic.isSpecial = set.isSpecial;
 QueryLogic.isDefinedAndHasMembers = QueryLogic.isDefinedAndHasMembers;
 
-QueryLogic.And = BasicQuery.AndKeys;
-QueryLogic.Or = BasicQuery.Or;
+QueryLogic.KeysAnd = BasicQuery.KeysAnd;
+QueryLogic.ValuesOr = BasicQuery.Or;
+
+
+
+QueryLogic.In = valueComparisons.In;
+QueryLogic.NotIn = valueComparisons.NotIn;
+QueryLogic.GreaterThan = valueComparisons.GreaterThan;
+QueryLogic.GreaterThanEqual = valueComparisons.GreaterThanEqual;
+QueryLogic.LessThan = valueComparisons.LessThan;
+QueryLogic.LessThanEqual = valueComparisons.LessThanEqual;
+QueryLogic.ValueAnd = valueComparisons.And;
+QueryLogic.ValueOr = valueComparisons.Or;
 
 module.exports = QueryLogic;

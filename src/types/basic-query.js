@@ -7,9 +7,9 @@ var andOrNot = require("./and-or-not");
 var helpers = require("../helpers");
 var defineLazyValue = require("can-define-lazy-value");
 
-var AndKeys = andOrNot.AndKeys,
-    Or = andOrNot.Or,
-    Not = andOrNot.Not;
+var KeysAnd = andOrNot.KeysAnd,
+    Or = andOrNot.ValuesOr,
+    Not = andOrNot.ValuesNot;
 
 var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
 
@@ -31,7 +31,7 @@ function BasicQuery(query) {
 }
 
 // BasicQuery's static properties
-BasicQuery.AndKeys = AndKeys;
+BasicQuery.KeysAnd = KeysAnd;
 BasicQuery.Or = Or;
 BasicQuery.Not = Not;
 BasicQuery.RecordRange = RecordRange;
