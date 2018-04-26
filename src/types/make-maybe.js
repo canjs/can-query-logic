@@ -95,7 +95,7 @@ function makeMaybe(inValues, makeChildType) {
 			this.enum = result.enum;
 		}
 	}
-	Maybe.prototype.orValues = function(){
+	Maybe.prototype.orValues = function() {
 		return [this.range, this.enum]
 	};
 
@@ -166,12 +166,14 @@ function makeMaybe(inValues, makeChildType) {
 			});
 		}
 	});
-	makeChildType  = makeChildType || function(v){
+	makeChildType = makeChildType || function(v) {
 		return v;
 	}
 
-	Maybe.hydrate = function(value, childHydrate){
-		return new Maybe({range: childHydrate(value, makeChildType  )});
+	Maybe.hydrate = function(value, childHydrate) {
+		return new Maybe({
+			range: childHydrate(value, makeChildType)
+		});
 	};
 
 	return Maybe;
@@ -181,7 +183,7 @@ function makeMaybe(inValues, makeChildType) {
 
 makeMaybe.canMakeMaybeSetType = function(Type) {
 	var schema = canReflect.getSchema(Type);
-	if(schema && schema.type === "Or") {
+	if (schema && schema.type === "Or") {
 		var categories = schemaHelpers.categorizeOrValues(schema.values);
 
 		return categories.valueOfTypes.length === 1 &&
@@ -207,36 +209,36 @@ makeMaybe.canMakeMaybeSetType = function(Type) {
 // are used inbetween.
 //
 // The `MaybeString` could probably be directly used to hydrate values to what they should be.
-makeMaybe.makeMaybeSetTypes = function(Type){
+makeMaybe.makeMaybeSetTypes = function(Type) {
 	var schema = canReflect.getSchema(Type);
 	var categories = schemaHelpers.categorizeOrValues(schema.values);
 	var ComparisonSetType;
 
 	// No need to build the comparison type if we are given it.
-	if(Type[comparisonSetTypeSymbol]) {
+	if (Type[comparisonSetTypeSymbol]) {
 		ComparisonSetType = Type[comparisonSetTypeSymbol];
 	} else {
 
-		ComparisonSetType = function(value){
+		ComparisonSetType = function(value) {
 			this.value = canReflect.new(Type, value)
 		};
-		ComparisonSetType.prototype.valueOf = function(){
+		ComparisonSetType.prototype.valueOf = function() {
 			return this.value;
 		};
-		canReflect.assignSymbols(ComparisonSetType.prototype,{
-			"can.serialize": function(){
+		canReflect.assignSymbols(ComparisonSetType.prototype, {
+			"can.serialize": function() {
 				return this.value;
 			}
 		});
 		//!steal-remove-start
 		Object.defineProperty(ComparisonSetType, "name", {
-			value:  "Or["+categories.valueOfTypes[0].name+","+categories.primitives.map(String).join(" ")+"]"
+			value: "Or[" + categories.valueOfTypes[0].name + "," + categories.primitives.map(String).join(" ") + "]"
 		});
 		//!steal-remove-end
 	}
 
 	return {
-		Maybe: makeMaybe(categories.primitives, function hydrateMaybesValueType(value){
+		Maybe: makeMaybe(categories.primitives, function hydrateMaybesValueType(value) {
 			return new ComparisonSetType(value);
 		}),
 		ComparisonSetType: ComparisonSetType
