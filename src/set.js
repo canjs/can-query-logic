@@ -142,12 +142,11 @@ set = {
 	// Nothing
 	EMPTY: addSerializeToThis({
 		name: "EMPTY"
-	}), //-> false
+	}),
 	// The set exists, but we lack the language to represent it.
 	UNDEFINABLE: addSerializeToThis({
 		name: "UNDEFINABLE"
-	}), //->
-
+	}), 
 	// We don't know if this exists. Intersection between two paginated sets.
 	UNKNOWABLE: addSerializeToThis({
 		name: "UNKNOWABLE"
