@@ -54,10 +54,10 @@ result //-> [
 
 The `filterMembers` method allows `QueryLogic` to be used similar to a database. `QueryLogic` instances methods help solve other problems too:
 
-- __real-time__ - [can-query-logic.prototype.isMember] returns if a particular item
-belongs to a query and [can-query-logic.prototype.index] returns the location where that item belongs.
-- __caching__ - [can-query-logic.prototype.isSubset] can tell you if you've already loaded
-  data you are looking for.  [can-query-logic.prototype.difference] can tell you what data
+- __real-time__ - `.isMember` returns if a particular item
+belongs to a query and `.index` returns the location where that item belongs.
+- __caching__ - `.isSubset` can tell you if you've already loaded
+  data you are looking for.  `.difference` can tell you what data
   you need to load that already isn't in your cache.
 
 In fact, `can-query-logic`'s most unique ability is to be able to directly compare
