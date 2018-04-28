@@ -9,7 +9,7 @@ function Color(){}
 makeEnum(Color, ["red","green","blue"]);
 
 var TODO = canReflect.assignSymbols({},{
-    "can.schema": function(){
+    "can.getSchema": function(){
         return {
             kind: "record",
             identity: ["id"],

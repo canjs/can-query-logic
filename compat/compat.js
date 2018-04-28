@@ -83,7 +83,7 @@ var set = {
         });
 
         var obj = canReflect.assignSymbols({},{
-            "can.schema": function(){
+            "can.getSchema": function(){
                 var schema = {
                     kind: "record",
                     identity: [],

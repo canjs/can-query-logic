@@ -10,7 +10,7 @@ var makeEnum = require("../types/make-enum");
 
 var setTypeSymbol = canSymbol.for("can.SetType");
 var comparisonSetTypeSymbol = canSymbol.for("can.ComparisonSetType");
-var schemaSymbol = canSymbol.for("can.schema");
+var schemaSymbol = canSymbol.for("can.getSchema");
 
 var defaultQuery = new BasicQuery({});
 

@@ -78,7 +78,7 @@ format.  It supports a variety of operators and options.  It looks like:
 @param {function|can-reflect/schema} schemaOrType Defines the behavior of
 keys on a [can-query-logic/query]. This is done with either:
 
-  - A constructor function that supports the `can.schema` symbol. Currently, [can-define/map/map] supports the `can.schema` symbol:
+  - A constructor function that supports the `can.getSchema` symbol. Currently, [can-define/map/map] supports the `can.getSchema` symbol:
     ```js
     const Todo = DefineMap.extend({
         id: {

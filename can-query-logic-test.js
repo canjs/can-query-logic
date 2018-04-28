@@ -182,7 +182,7 @@ QUnit.test('index basics', function(){
 	equal(index, undefined, "no value if no id");
 
     var TODO_id = canReflect.assignSymbols({},{
-        "can.schema": function(){
+        "can.getSchema": function(){
             return {
                 kind: "record",
                 identity: ["_id"],

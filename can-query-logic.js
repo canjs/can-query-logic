@@ -4,7 +4,7 @@ var canReflect = require("can-reflect");
 var makeBasicQueryConvert = require("./src/serializers/basic-query");
 var BasicQuery = require("./src/types/basic-query");
 var valueComparisons = require("./src/types/comparisons");
-var schemaSymbol = canSymbol.for("can.schema");
+var schemaSymbol = canSymbol.for("can.getSchema");
 var makeEnum = require("./src/types/make-enum");
 
 
