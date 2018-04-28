@@ -28,14 +28,6 @@ function QueryLogic(Type, options){
         schema.identity = ["id"];
     }
 
-
-    var properties = schema.properties;
-
-    if(!properties) {
-        //console.warn("can-query given a type without a properties schema.  Using an empty schema.");
-        schema.properties = {};
-    }
-
     var converter = makeBasicQueryConvert(schema),
         hydrate,
         serialize;
