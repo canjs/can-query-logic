@@ -108,4 +108,21 @@ QUnit.test("MaybeDate", function(){
         ]},
         "difference works");
 
+    var gt1982 = {filter: {due: {$gt: date1982_10_20}}};
+
+    QUnit.ok( todoQueryLogic.isMember(gt1982,{
+        id: 0,
+        due: new Date(2000,0,1)
+    }), "works with a date object");
+
+    QUnit.ok( todoQueryLogic.isMember(gt1982,{
+        id: 0,
+        due: new Date(2000,0,1).toString()
+    }), "works with a string date");
+
+    QUnit.ok( todoQueryLogic.isMember(gt1982,{
+        id: 0,
+        due: new Date(2000,0,1).getTime()
+    }), "works with a integer date");
+
 });

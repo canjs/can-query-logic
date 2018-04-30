@@ -5,6 +5,7 @@ var schemaHelpers = require("../schema-helpers");
 var canSymbol = require("can-symbol");
 
 var comparisonSetTypeSymbol = canSymbol.for("can.ComparisonSetType");
+var isMemberSymbol = canSymbol.for("can.isMember");
 
 // This helper function seperates out sets that relate to the "maybe" values
 // like `null` or `undefined`. For example, if `rangeToBeSplit`
@@ -98,6 +99,11 @@ function makeMaybe(inValues, makeChildType) {
 	Maybe.prototype.orValues = function() {
 		return [this.range, this.enum]
 	};
+	Maybe.prototype[isMemberSymbol] = function isMember() {
+		var rangeIsMember = this.range[isMemberSymbol] || this.range.isMember,
+			enumIsMember = this.enum[isMemberSymbol] || this.enum.isMember;
+		return rangeIsMember.apply(this.range, arguments) || enumIsMember.apply(this.enum, arguments);
+	}
 
 	set.defineComparison(Maybe, Maybe, {
 		union: function(maybeA, maybeB) {
