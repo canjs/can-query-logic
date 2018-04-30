@@ -136,17 +136,31 @@ set = {
 	// The special types
 
 	// All values within the "universe". Other sets can equal UNIVERSAL.
-	UNIVERSAL: addSerializeToThis({
+	UNIVERSAL: canReflect.assignSymbols({
 		name: "UNIVERSAL"
+	}, {
+		"can.serialize": function() {
+			return this;
+		},
+		"can.isMember": function(){
+			return true;
+		}
 	}),
 	// Nothing
-	EMPTY: addSerializeToThis({
+	EMPTY: canReflect.assignSymbols({
 		name: "EMPTY"
+	}, {
+		"can.serialize": function() {
+			return this;
+		},
+		"can.isMember": function(){
+			return false;
+		}
 	}),
 	// The set exists, but we lack the language to represent it.
 	UNDEFINABLE: addSerializeToThis({
 		name: "UNDEFINABLE"
-	}), 
+	}),
 	// We don't know if this exists. Intersection between two paginated sets.
 	UNKNOWABLE: addSerializeToThis({
 		name: "UNKNOWABLE"

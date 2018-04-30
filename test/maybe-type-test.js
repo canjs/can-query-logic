@@ -125,4 +125,19 @@ QUnit.test("MaybeDate", function(){
         due: new Date(2000,0,1).getTime()
     }), "works with a integer date");
 
+    QUnit.notOk( todoQueryLogic.isMember(gt1982,{
+        id: 0,
+        due: new Date(1970,0,1).getTime()
+    }), "doesn't fail if falsey");
+
+    QUnit.notOk( todoQueryLogic.isMember(gt1982,{
+        id: 0,
+        due: null
+    }), "doesn't fail if falsey");
+
+    QUnit.ok( todoQueryLogic.isMember({filter: {due: {$in: [null,undefined]}}},{
+        id: 0,
+        due: null
+    }), "works if using in");
+
 });
