@@ -25,8 +25,7 @@ from:
 For example, the following builds _query logic_ from a [can-define/map/map]:
 
 ```js
-import QueryLogic from "can-query-logic";
-import DefineMap from "can-define/map/map";
+import {DefineMap, QueryLogic} from "can";
 
 const Todo = DefineMap.extend({
     id: {
@@ -247,8 +246,7 @@ happen on the data type you pass to your [can-connect can-connect connection]. F
 you might create a `Todo` data type and pass it to a connection like this:
 
 ```js
-import DefineMap from "can-define/map/map";
-import realTimeRest from "can-real-time-rest";
+import {DefineMap, realtimeRestModel} from "can";
 
 const Todo = DefineMap.extend({
   id: {
@@ -259,7 +257,7 @@ const Todo = DefineMap.extend({
   name: "string"
 });
 
-realTimeRest({
+realtimeRestModel({
   url: "/todos",
   Map: Todo
 });
@@ -270,9 +268,7 @@ Internally, `realTimeRest` is using `Todo` to create and configure a `QueryLogic
 instance for you.  The previous example is equivalent to:
 
 ```js
-import DefineMap from "can-define/map/map";
-import realTimeRest from "can-real-time-rest";
-import QueryLogic from "can-query-logic";
+import {DefineMap, realtimeRestModel, QueryLogic} from "can";
 
 const Todo = DefineMap.extend({
   id: {
@@ -285,7 +281,7 @@ const Todo = DefineMap.extend({
 
 var todoQueryLogic = new QueryLogic(Todo);
 
-realTimeRest({
+realtimeRestModel({
   url: "/todos",
   Map: Todo,
   queryLogic: todoQueryLogic
@@ -366,8 +362,7 @@ the [can-query-logic.makeEnum] method can be used to build a `Status` type that 
 enumerated values:
 
 ```js
-import QueryLogic from "can-query-logic";
-import DefineMap from "can-define/map/map";
+import {QueryLogic, DefineMap} from "can";
 
 const Status = QueryLogic.makeEnum(["new","assigned","complete"]);
 
