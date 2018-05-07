@@ -148,7 +148,17 @@ canReflect.assign(QueryLogic.prototype,{
     	copy.splice(index, 0, item);
 
     	return copy;
-    }
+    },
+
+    isPaginated: function(query) {
+        var basicQuery = this.hydrate(query);
+        return !set.isEqual(basicQuery.page, set.UNIVERSAL);
+    },
+    removePagination: function(query) {
+        var basicQuery = this.hydrate(query);
+        basicQuery.removePagination();
+        return this.serialize( basicQuery );
+    },
 
 });
 

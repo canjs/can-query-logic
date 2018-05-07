@@ -122,6 +122,9 @@ canReflect.assignMap(BasicQuery.prototype, {
 	isMember: function(props) {
 		// Use the AND type for it's isMember method
 		return this.filter.isMember(props);
+	},
+	removePagination: function(){
+		this.page = new RecordRange();
 	}
 });
 

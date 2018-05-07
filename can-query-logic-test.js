@@ -216,3 +216,19 @@ QUnit.test("filterMembers with reverse sort", function(){
     QUnit.deepEqual(sortedMembers,
         [{id: 2, name:"z"}, {id: 4, name:"s"}, {id: 3, name:"f"}, {id: 1, name:"a"}]);
 });
+
+QUnit.test("isPaginated, removePagination", function(assert){
+    assert.equal( algebra.isPaginated({}), false, "universe is not paginated");
+    assert.equal( algebra.isPaginated({filter: {foo: "bar"}}), false, "filter is not paginated");
+    assert.equal( algebra.isPaginated({sort: "bar"}), false, "sort is not paginated");
+
+    assert.equal( algebra.isPaginated({page: {start: 1, end: 2}}), true, "page is paginated");
+
+
+    assert.deepEqual( algebra.removePagination({}), {}, "removePagination universe");
+    assert.deepEqual( algebra.removePagination({filter: {foo: "bar"}}), {filter: {foo: "bar"}}, "removePagination filter");
+    assert.deepEqual( algebra.removePagination({sort: "bar"}), {sort: "bar"}, "removePagination sort");
+
+    assert.deepEqual( algebra.removePagination({page: {start: 1, end: 2}}), {}, "removePagination page");
+
+});
