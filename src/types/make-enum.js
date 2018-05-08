@@ -20,7 +20,7 @@ function makeEnumSetType(allValues, hydrate) {
 		}
 	});
 
-	Enum[isMemberSymbol] = function(value) {
+	Enum.prototype[isMemberSymbol] = function(value) {
 		return this.values.some(function(val) {
 			return set.isEqual(val, value);
 		});

@@ -8,6 +8,7 @@ require("./src/types/basic-query-merge-test");
 require("./src/serializers/basic-query-test");
 require("./src/serializers/comparisons-test");
 require("./src/types/make-maybe-test");
+require("./src/types/make-enum-test");
 require("./compat/compat-test");
 require("./test/special-comparison-logic-test");
 require("./test/make-enum-logic-test");
