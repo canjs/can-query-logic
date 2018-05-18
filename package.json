@@ -52,6 +52,7 @@
   },
   "devDependencies": {
     "can-define": "^2.0.3",
+    "can-test-helpers": "^1.1.2",
     "jshint": "^2.9.1",
     "steal": "^1.6.2",
     "steal-qunit": "^1.0.1",

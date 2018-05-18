@@ -4,6 +4,7 @@ var canReflect = require("can-reflect");
 var logicTypes = require("../types/and-or-not");
 var is = require("../types/comparisons");
 var makeMaybe = require("../types/make-maybe");
+var testHelpers = require("can-test-helpers");
 
 QUnit.module("can-query-logic/serializers/basic-query");
 
@@ -145,6 +146,33 @@ QUnit.test("auto-convert or schema into maybe type", function(){
             ]
         }
     }, "serialized");
+});
+
+
+testHelpers.dev.devOnlyTest("warn if query properties are not defined (#8)", function() {
+	QUnit.expect(3);
+
+	var message = "can-query-logic: Ignoring keys: start, end.";
+	var finishErrorCheck = testHelpers.dev.willWarn(message, function(actualMessage, success) {
+		QUnit.equal(actualMessage, message, "Warning is expected message");
+		QUnit.ok(success);
+	});
+
+
+    var query = {
+        filter: {
+            name: {
+                first: "justin"
+            }
+        },
+        start: 0,
+        end: 1
+    };
+
+    var converter = makeBasicQueryConvert(EmptySchema);
+
+    converter.hydrate(query);
+    QUnit.equal(finishErrorCheck(), 1);
 });
 
 /*

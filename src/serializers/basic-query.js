@@ -7,9 +7,9 @@ var Serializer = require("../serializer");
 var is = require("../types/comparisons");
 var makeMaybe = require("../types/make-maybe");
 var makeEnum = require("../types/make-enum");
+var logDev = require("can-log/dev/dev");
 
 var setTypeSymbol = canSymbol.for("can.SetType");
-var comparisonSetTypeSymbol = canSymbol.for("can.ComparisonSetType");
 var schemaSymbol = canSymbol.for("can.getSchema");
 
 var defaultQuery = new BasicQuery({});
@@ -245,7 +245,7 @@ module.exports = function(schema) {
             if(canReflect.size(filter) !== 0) {
                 res.filter= filter;
             }
-            
+
             if(!set.isEqual(basicQuery.page, defaultQuery.page)) {
                 // we always provide the start, even if it's 0
                 res.page = {
@@ -273,6 +273,18 @@ module.exports = function(schema) {
 
     return {
         hydrate: function(data){
+
+            //!steal-remove-start
+            var AcceptedFields = makeEnum(function(){},["filter","sort","page"]);
+            var diff = set.difference(new AcceptedFields(Object.keys(data)), AcceptedFields.UNIVERSAL);
+            if(diff.values && diff.values.length) {
+    			logDev.warn(
+    				"can-query-logic: Ignoring keys: " + diff.values.join(", ") + "."
+    			);
+    		}
+    		//!steal-remove-end
+
+
             var filter = canReflect.serialize(data.filter);
 
             // this mutates
