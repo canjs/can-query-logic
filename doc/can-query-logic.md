@@ -77,8 +77,10 @@ format.  It supports a variety of operators and options.  It looks like:
 @param {function|can-reflect/schema} schemaOrType Defines the behavior of
 keys on a [can-query-logic/query]. This is done with either:
 
-  - A constructor function that supports the `can.getSchema` symbol. Currently, [can-define/map/map] supports the `can.getSchema` symbol:
+  - A constructor function that supports [can-reflect.getSchema can-reflect.getSchema]. Currently, [can-define/map/map] supports the `can.getSchema` symbol:
     ```js
+    import {DefineMap} from "can";
+
     const Todo = DefineMap.extend({
         id: {
             identity: true,
@@ -87,10 +89,11 @@ keys on a [can-query-logic/query]. This is done with either:
         name: "string",
         complete: "boolean"
     });
-    new Query(Todo);
+    new QueryLogic(Todo);
     ```
-  - A schema object that looks like:
+  - A [can-reflect.getSchema schema object] that looks like the following:
     ```js
+    import {MaybeNumber, MaybeString, MaybeBoolean} from "can"
     new QueryLogic({
         // keys that uniquely represent this type
         identity: ["id"],
@@ -102,8 +105,33 @@ keys on a [can-query-logic/query]. This is done with either:
     })
     ```
 
+    Note that if a key type (ex: `name: MaybeString`) is __not__ provided, filtering by that
+    key will still work, but there won't be any type coercion. For example, the following
+    might not produce the desired results:
+
+    ```js
+    var queryLogic = new QueryLogic({identity: ["id"]});
+    queryLogic.union(
+        {filter: {age: 7}},
+        {filter: {age: "07"}}) //-> {filter: {age: {$in: [7,"07"]}}}
+    ```
+    Use types like [can-data-types/maybe-number/maybe-number] if you want to add basic
+    type coercion:
+
+    ```js
+    var queryLogic = new QueryLogic({
+        identity: ["id"],
+        keys: {age: MaybeNumber}
+    });
+    queryLogic.union(
+        {filter: {age: 7}},
+        {filter: {age: "07"}}) //-> {filter: {age: 7}}
+    ```
+
+    If you need even more special key behavior, read [defining properties with special logic](#Definingfilterpropertieswithspeciallogic).
+
   By default, filter properties like `status` in `{filter: {status: "complete"}}`
-  are used to create to one of the [can-query/types/comparisons comparison instances] like
+  are used to create to one of the [can-query-logic/comparison-operators] like
   `GreaterThan`. A matching schema key will overwrite this behavior. How this
   works is explained in the [Defining filter properties with special logic](#Definingfilterpropertieswithspeciallogic) section below.
 
