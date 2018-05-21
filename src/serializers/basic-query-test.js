@@ -175,6 +175,40 @@ testHelpers.dev.devOnlyTest("warn if query properties are not defined (#8)", fun
     QUnit.equal(finishErrorCheck(), 1);
 });
 
+QUnit.test("gt and lt", function(){
+    var query = {
+        filter: {
+            age: {
+                $gt: 0,
+                $lt: 100
+            }
+        }
+    };
+
+    var converter = makeBasicQueryConvert(EmptySchema);
+
+    var basicQuery = converter.hydrate(query);
+
+    QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
+        age: new is.And([
+            new is.GreaterThan(0),
+            new is.LessThan(100)
+        ])
+    }));
+
+    var res = converter.serializer.serialize(basicQuery);
+
+    QUnit.deepEqual(res, {
+        filter: {
+            age: {
+                $gt: 0,
+                $lt: 100
+            }
+        }
+    });
+
+});
+
 /*
 QUnit.skip("nested properties within ors", function(){
     var query = {
