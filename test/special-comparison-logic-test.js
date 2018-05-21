@@ -232,4 +232,16 @@ QUnit.test("value type", function(){
         }
     );
 
+    var result = queryLogic.filterMembers({
+        sort: "date"
+    },[
+        {id: 2, date: new Date(1982,9,20).toString()},
+        {id: 1, date: new Date(1981,9,20).toString()},
+        {id: 4, date: new Date(1984,9,20).toString()},
+        {id: 3, date: new Date(1983,9,20).toString()}
+    ]);
+
+    var ids = result.map(function(item){ return item.id});
+    QUnit.deepEqual(ids,[1,2,3,4], "sorted correctly");
+
 });

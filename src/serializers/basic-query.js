@@ -265,7 +265,25 @@ module.exports = function(schema) {
     ];
 
 
+    var sorters = {};
+    canReflect.eachKey(keys, function(schemaProp, key){
 
+        sorters[key] = {
+            // valueA is GT valueB
+            $gt: function(valueA, valueB) {
+                var $gt = hydrateAndValue({$gt: valueB}, key, schemaProp, function(){
+                    debugger;
+                });
+                return $gt.isMember(valueA);
+            },
+            $lt: function( valueA, valueB ){
+                var $lt = hydrateAndValue({$lt: valueB}, key, schemaProp, function(){
+                    debugger;
+                });
+                return $lt.isMember(valueA);
+            }
+        };
+    });
 
 
     var serializer = new Serializer(serializeMap);
@@ -309,7 +327,7 @@ module.exports = function(schema) {
             } else {
                 query.sort = id;
             }
-            return new BasicQuery(query);
+            return new BasicQuery(query, sorters);
         },
         serializer: serializer
     };

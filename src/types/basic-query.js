@@ -16,7 +16,8 @@ var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
 
 
 // Define the BasicQuery type
-function BasicQuery(query) {
+function BasicQuery(query, sorters) {
+	this._sorters = sorters;
 	assign(this, query);
 	if (!this.filter) {
 		this.filter = set.UNIVERSAL;
@@ -43,7 +44,7 @@ canReflect.assignMap(BasicQuery.prototype, {
 		return this.page.end - this.page.start + 1;
 	},
 	sortData: function(data) {
-		var sort = helpers.sorter(this.sort);
+		var sort = helpers.sorter(this.sort, this._sorters);
 		return data.slice(0).sort(sort);
 	},
 	filterMembersAndGetCount: function(bData, parentQuery) {
@@ -214,25 +215,22 @@ function metaInformation(queryA, queryB) {
 set.defineComparison(BasicQuery, BasicQuery, {
 	union: function(queryA, queryB) {
 
-		var pageIsEqual = set.isEqual(queryA.page, queryB.page);
-		var pagesAreUniversal = pageIsEqual && set.isEqual(queryA.page, set.UNIVERSAL);
+		var meta = metaInformation(queryA, queryB);
+
 
 		var filterUnion = set.union(queryA.filter, queryB.filter);
 
-		var sortIsEqual = set.isEqual(queryA.sort, queryB.sort);
-
-		if (pagesAreUniversal) {
+		if (meta.pagesAreUniversal) {
 			// We ignore the sort.
 			return new BasicQuery({
 				filter: filterUnion,
-				sort: sortIsEqual ? queryA.sort : undefined
+				sort: meta.sortIsEqual ? queryA.sort : undefined
 			});
 		}
 
-		var filterIsEqual = set.isEqual(queryA.filter, queryB.filter);
 
-		if (filterIsEqual) {
-			if (sortIsEqual) {
+		if (meta.filterIsEqual) {
+			if (meta.sortIsEqual) {
 				return new BasicQuery({
 					filter: queryA.filter,
 					sort: queryA.sort,

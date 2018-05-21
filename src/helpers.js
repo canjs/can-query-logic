@@ -1,3 +1,12 @@
+var defaultCompare = {
+    $gt: function(valueA, valueB) {
+        return valueA > valueB;
+    },
+    $lt: function(valueA, valueB) {
+        return valueA < valueB;
+    }
+};
+
 var helpers =  {
     // given two arrays of items, combines and only returns the unique ones
     uniqueConcat: function(itemsA, itemsB, getId) {
@@ -49,13 +58,18 @@ var helpers =  {
             return {prop: sortPropValue, desc: false};
         }
     },
-    sorter: function (sortPropValue) {
+    sorter: function (sortPropValue, sorters) {
         var data = helpers.sortData(sortPropValue);
+        var compare;
+        if(sorters && sorters[data.prop]) {
+            compare = sorters[data.prop];
+        } else {
+            compare = defaultCompare;
+        }
         return function(item1, item2){
             var item1Value = item1[data.prop];
             var item2Value = item2[data.prop];
             var temp;
-
 
             if(data.desc) {
                 temp = item1Value;
@@ -63,11 +77,11 @@ var helpers =  {
                 item2Value = temp;
             }
 
-            if(item1Value < item2Value) {
+            if( compare.$lt( item1Value, item2Value) ) {
                 return -1;
             }
 
-            if(item1Value > item2Value) {
+            if( compare.$gt( item1Value, item2Value)) {
                 return 1;
             }
 
