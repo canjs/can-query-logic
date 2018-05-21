@@ -5,6 +5,8 @@ var canReflect = require("can-reflect");
 var andOrNot = require("./and-or-not");
 var helpers = require("../helpers");
 var defineLazyValue = require("can-define-lazy-value");
+var canSymbol = require("can-symbol");
+var isMemberSymbol = canSymbol.for("can.isMember");
 
 // TYPES FOR FILTERING
 var KeysAnd = andOrNot.KeysAnd,
@@ -25,11 +27,11 @@ function makeSort(schemaKeys, hydrateAndValue){
             // valueA is GT valueB
             $gt: function(valueA, valueB) {
                 var $gt = hydrateAndValue({$gt: valueB}, key, schemaProp);
-                return $gt.isMember(valueA);
+                return $gt[isMemberSymbol](valueA);
             },
             $lt: function( valueA, valueB ){
                 var $lt = hydrateAndValue({$lt: valueB}, key, schemaProp);
-                return $lt.isMember(valueA);
+                return $lt[isMemberSymbol](valueA);
             }
         };
     });

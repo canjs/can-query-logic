@@ -1,6 +1,7 @@
 var set = require("../set");
 var arrayUnionIntersectionDifference = require("../array-union-intersection-difference");
-
+var canSymbol = require("can-symbol");
+var isMemberSymbol = canSymbol.for("can.isMember");
 // $ne	Matches all values that are not equal to a specified value.
 // $eq	Matches values that are equal to a specified value.
 //
@@ -128,6 +129,9 @@ comparisons.Or.prototype.isMember = function(value) {
 		return and.isMember(value);
 	});
 };
+Object.keys(comparisons).forEach(function(name){
+	comparisons[name].prototype[isMemberSymbol] = comparisons[name].prototype.isMember;
+});
 
 
 
