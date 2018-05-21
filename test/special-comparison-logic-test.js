@@ -244,4 +244,16 @@ QUnit.test("value type", function(){
     var ids = result.map(function(item){ return item.id});
     QUnit.deepEqual(ids,[1,2,3,4], "sorted correctly");
 
+    var index = queryLogic.index({
+            sort: "date"
+        },
+        [
+            {id: 1, date: new Date(2018,4,20).toString()}, // M
+            {id: 2, date: new Date(2018,4,21).toString()}, // Tu
+            {id: 3, date: new Date(2018,4,22).toString()}, // We
+            {id: 4, date: new Date(2018,4,23).toString()}  // Thurs
+        ],
+        {id: 4, date: new Date(2018,4,24).toString()}); //F
+
+    QUnit.equal(index, 4, "added at the end")
 });

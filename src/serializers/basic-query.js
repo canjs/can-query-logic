@@ -256,8 +256,8 @@ module.exports = function(schema) {
                 }
             }
 
-            if(basicQuery.sort !== id) {
-                res.sort = basicQuery.sort;
+            if(basicQuery.sort.key !== id) {
+                res.sort = basicQuery.sort.key;
             }
             return res;
 
@@ -265,27 +265,9 @@ module.exports = function(schema) {
     ];
 
 
-    var sorters = {};
-    canReflect.eachKey(keys, function(schemaProp, key){
 
-        sorters[key] = {
-            // valueA is GT valueB
-            $gt: function(valueA, valueB) {
-                var $gt = hydrateAndValue({$gt: valueB}, key, schemaProp, function(){
-                    debugger;
-                });
-                return $gt.isMember(valueA);
-            },
-            $lt: function( valueA, valueB ){
-                var $lt = hydrateAndValue({$lt: valueB}, key, schemaProp, function(){
-                    debugger;
-                });
-                return $lt.isMember(valueA);
-            }
-        };
-    });
-
-
+    // Makes a sort type that can make a compare function using the SetType
+    var Sort = BasicQuery.makeSort(keys, hydrateAndValue);
     var serializer = new Serializer(serializeMap);
     serializer.add(comparisonsConverter.serializer);
 
@@ -323,11 +305,11 @@ module.exports = function(schema) {
                 query.page = new BasicQuery.RecordRange(data.page.start, data.page.end);
             }
             if(data.sort) {
-                query.sort = data.sort;
+                query.sort = new Sort(data.sort);
             } else {
-                query.sort = id;
+                query.sort = new Sort(id);
             }
-            return new BasicQuery(query, sorters);
+            return new BasicQuery(query);
         },
         serializer: serializer
     };

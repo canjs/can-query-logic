@@ -6,18 +6,61 @@ var andOrNot = require("./and-or-not");
 var helpers = require("../helpers");
 var defineLazyValue = require("can-define-lazy-value");
 
+// TYPES FOR FILTERING
 var KeysAnd = andOrNot.KeysAnd,
 	Or = andOrNot.ValuesOr,
 	Not = andOrNot.ValuesNot;
 
+// TYPES FOR PAGINATION
 var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
 
-// Wire up the sub-types to be able to compare to each other
+// WILL MAKE A TYPE FOR SORTING
+function makeSort(schemaKeys, hydrateAndValue){
+	// Makes gt and lt functions that `helpers.sorter` can use
+	// to make a `compare` function for `Array.sort(compare)`.`
+	var sorters = {};
+    canReflect.eachKey(schemaKeys, function(schemaProp, key){
+
+        sorters[key] = {
+            // valueA is GT valueB
+            $gt: function(valueA, valueB) {
+                var $gt = hydrateAndValue({$gt: valueB}, key, schemaProp);
+                return $gt.isMember(valueA);
+            },
+            $lt: function( valueA, valueB ){
+                var $lt = hydrateAndValue({$lt: valueB}, key, schemaProp);
+                return $lt.isMember(valueA);
+            }
+        };
+    });
+
+	function Sort(key) {
+		this.key = key;
+		this.compare = helpers.sorter(key, sorters);
+	}
+
+	function identityIntersection(v1, v2) {
+		return v1.key === v2.key ? v1 : set.EMPTY;
+	}
+	function identityDifference(v1, v2) {
+		return v1.key === v2.key ? set.EMPTY : v1;
+	}
+	function identityUnion(v1, v2) {
+		return v1.key === v2.key ? v1 : set.UNDEFINABLE;
+	}
+	set.defineComparison(Sort, Sort, {
+		intersection: identityIntersection,
+		difference: identityDifference,
+		union: identityUnion
+	});
+	return Sort;
+}
+
+var DefaultSort = makeSort({});
 
 
 // Define the BasicQuery type
-function BasicQuery(query, sorters) {
-	this._sorters = sorters;
+function BasicQuery(query) {
 	assign(this, query);
 	if (!this.filter) {
 		this.filter = set.UNIVERSAL;
@@ -28,6 +71,9 @@ function BasicQuery(query, sorters) {
 	if (!this.sort) {
 		this.sort = "id";
 	}
+	if(typeof this.sort === "string") {
+		this.sort = new DefaultSort(this.sort);
+	}
 }
 
 // BasicQuery's static properties
@@ -35,6 +81,7 @@ BasicQuery.KeysAnd = KeysAnd;
 BasicQuery.Or = Or;
 BasicQuery.Not = Not;
 BasicQuery.RecordRange = RecordRange;
+BasicQuery.makeSort = makeSort;
 
 // BasicQuery's prototype methods.
 // These are "additional" features beyond what `set` provides.
@@ -44,8 +91,7 @@ canReflect.assignMap(BasicQuery.prototype, {
 		return this.page.end - this.page.start + 1;
 	},
 	sortData: function(data) {
-		var sort = helpers.sorter(this.sort, this._sorters);
-		return data.slice(0).sort(sort);
+		return data.slice(0).sort(this.sort.compare);
 	},
 	filterMembersAndGetCount: function(bData, parentQuery) {
 		if (parentQuery) {
@@ -64,7 +110,7 @@ canReflect.assignMap(BasicQuery.prototype, {
 		var count = aData.length;
 
 		// sort the data if needed
-		if (count && (this.sort !== parentQuery.sort)) {
+		if (count && (this.sort.key !== parentQuery.sort.key)) {
 			aData = this.sortData(aData);
 		}
 
@@ -85,7 +131,7 @@ canReflect.assignMap(BasicQuery.prototype, {
 			}
 		}
 		// everything but range is equal
-		else if (this.sort === parentQuery.sort && set.isEqual(parentQuery.filter, this.filter)) {
+		else if (this.sort.key === parentQuery.sort.key && set.isEqual(parentQuery.filter, this.filter)) {
 			return {
 				data: aData.slice(this.page.start - parentQuery.page.start, this.page.end - parentQuery.page.start + 1),
 				count: count
@@ -107,18 +153,15 @@ canReflect.assignMap(BasicQuery.prototype, {
 			var combined = helpers.uniqueConcat(aItems, bItems, getId);
 			return union.sortData(combined);
 		}
-
-		// basically if there's pagination, we might not be able to do this
-
-
 	},
 	index: function(props, items) {
-		var data = helpers.sortData(this.sort);
+		// make sure we have the property
+		var data = helpers.sortData(this.sort.key);
 		if (!Object.prototype.hasOwnProperty.call(props, data.prop)) {
 			return undefined;
 		}
-		var sort = helpers.sorter(this.sort);
-		return helpers.getIndex(sort, items, props);
+		// use the passed sort's compare function
+		return helpers.getIndex(this.sort.compare, items, props);
 	},
 	isMember: function(props) {
 		// Use the AND type for it's isMember method
@@ -130,7 +173,7 @@ canReflect.assignMap(BasicQuery.prototype, {
 });
 
 // Helpers used for the `set` comparators
-var CLAUSE_TYPES = ["filter", "page", "sort"];
+var CLAUSE_TYPES = ["filter", "page","sort"];
 
 function getDifferentClauseTypes(queryA, queryB) {
 	var differentTypes = [];
@@ -178,7 +221,7 @@ canReflect.eachKey({
 		return this.pageIsEqual && this.aPageIsUniversal;
 	},
 	"sortIsEqual": function() {
-		return this.queryA.sort === this.queryB.sort;
+		return this.queryA.sort.key === this.queryB.sort.key;
 	},
 	"aFilterIsSubset": function() {
 		return set.isSubset(this.queryA.filter, this.queryB.filter);
@@ -224,7 +267,7 @@ set.defineComparison(BasicQuery, BasicQuery, {
 			// We ignore the sort.
 			return new BasicQuery({
 				filter: filterUnion,
-				sort: meta.sortIsEqual ? queryA.sort : undefined
+				sort: meta.sortIsEqual ? queryA.sort.key : undefined
 			});
 		}
 
@@ -233,7 +276,7 @@ set.defineComparison(BasicQuery, BasicQuery, {
 			if (meta.sortIsEqual) {
 				return new BasicQuery({
 					filter: queryA.filter,
-					sort: queryA.sort,
+					sort: queryA.sort.key,
 					page: set.union(queryA.page, queryB.page)
 				});
 			} else {
@@ -270,7 +313,7 @@ set.defineComparison(BasicQuery, BasicQuery, {
 			if (set.isDefinedAndHasMembers(filterResult)) {
 				return new BasicQuery({
 					filter: filterResult,
-					sort: meta.sortIsEqual ? queryA.sort : undefined
+					sort: meta.sortIsEqual ? queryA.sort.key : undefined
 				});
 
 			} else {
@@ -289,7 +332,7 @@ set.defineComparison(BasicQuery, BasicQuery, {
 			if (meta.sortIsEqual) {
 				return new BasicQuery({
 					filter: queryA.filter,
-					sort: queryA.sort,
+					sort: queryA.sort.key,
 					page: set.intersection(queryA.page, queryB.page)
 				});
 			} else {
@@ -326,7 +369,7 @@ set.defineComparison(BasicQuery, BasicQuery, {
 			if (meta.pagesAreUniversal) {
 				return new BasicQuery({
 					filter: set.difference(queryA.filter, queryB.filter),
-					sort: queryA.sort
+					sort: queryA.sort.key
 				});
 			}
 
@@ -367,7 +410,7 @@ set.defineComparison(BasicQuery, BasicQuery, {
 							var query = {
 								filter: queryA.filter,
 								page: queryA.page,
-								sort: queryA.sort
+								sort: queryA.sort.key
 							};
 							query[clause] = result;
 							return new BasicQuery(query);

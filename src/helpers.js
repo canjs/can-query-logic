@@ -58,6 +58,7 @@ var helpers =  {
             return {prop: sortPropValue, desc: false};
         }
     },
+    defaultCompare: defaultCompare,
     sorter: function (sortPropValue, sorters) {
         var data = helpers.sortData(sortPropValue);
         var compare;
