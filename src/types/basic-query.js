@@ -159,7 +159,7 @@ canReflect.assignMap(BasicQuery.prototype, {
 	index: function(props, items) {
 		// make sure we have the property
 		var data = helpers.sortData(this.sort.key);
-		if (!Object.prototype.hasOwnProperty.call(props, data.prop)) {
+		if (!canReflect.hasOwnKey(props, data.prop)) {
 			return undefined;
 		}
 		// use the passed sort's compare function

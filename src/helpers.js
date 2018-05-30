@@ -1,3 +1,4 @@
+var canReflect = require("can-reflect");
 var defaultCompare = {
     $gt: function(valueA, valueB) {
         return valueA > valueB;
@@ -68,8 +69,8 @@ var helpers =  {
             compare = defaultCompare;
         }
         return function(item1, item2){
-            var item1Value = item1[data.prop];
-            var item2Value = item2[data.prop];
+            var item1Value = canReflect.getKeyValue(item1, data.prop);
+            var item2Value = canReflect.getKeyValue(item2, data.prop);
             var temp;
 
             if(data.desc) {

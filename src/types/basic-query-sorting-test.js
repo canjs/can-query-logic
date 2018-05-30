@@ -2,6 +2,7 @@ var BasicQuery = require("./basic-query");
 var QUnit = require("steal-qunit");
 var set = require("../set");
 var assign = require("can-assign");
+var canReflect = require("can-reflect");
 
 QUnit.module("can-query-logic/types/basic-query sorting");
 
@@ -315,4 +316,43 @@ QUnit.test('rangeInclusive set.count', function(){
     });
     var res = query.count({ start: 0, end: 99 });
 	equal(res, 100, "count is right");
+});
+
+
+QUnit.test("index uses can-reflect", function(){
+
+    var query = new BasicQuery({
+        sort: "name"
+    });
+    var obj1Read, obj2Read, itemKeyRead, itemOwnKeyRead;
+
+    var obj1 = canReflect.assignSymbols({},{
+            "can.getKeyValue": function(key){
+                obj1Read = true;
+                return ({id: 5, name: "x"})[key];
+            }
+        }),
+        obj2 = canReflect.assignSymbols({},{
+            "can.getKeyValue": function(key){
+                obj2Read = true;
+                return ({id: 7, name: "d"})[key];
+            }
+        }),
+        item = canReflect.assignSymbols({},{
+            "can.getKeyValue": function(key){
+                itemKeyRead = true;
+                return ({id: 1, name: "j"})[key];
+            },
+            "can.hasOwnKey": function(key) {
+                itemOwnKeyRead = true;
+                return key in ({id: 1, name: "j"});
+            }
+        });
+
+
+    var res = query.index(item,[obj2, obj1]);
+    QUnit.equal(res, 1, "inserted at 1");
+
+    QUnit.deepEqual([obj1Read, obj2Read, itemKeyRead, itemOwnKeyRead],
+        [true, true, true, true], "read everything");
 });
