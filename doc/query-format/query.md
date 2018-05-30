@@ -38,14 +38,27 @@ are available within `filter`.
 
 
 @param {String} [sort] The `sort` property is an optional value specifying:
+
 - the property used to sort the results of a query, and
-- the direction of the sort (`asc` for ascending or `desc` for descending).
+- the direction of the sort (start the value with `-` for descending).
 
-The sort property is specified as a string like `"age desc"`.  If there is no space,
-the sort is assumed to be `asc`.
+The sort property is specified as a string like `sort: "age"`. `sort: "age"`
+will return results ascending by the `age` property. `sort: "-age"` will return
+results descending by the `age` property.  
 
-The `sort` property defaults to `"ID_PROPERTY asc"` where `ID_PROPERTY` is the first
-id returned by [can-query-logic.prototype.identityKeys].
+This format follows [JSON API's recommendations](http://jsonapi.org/format/#fetching-sorting)
+on sorting. However, `can-query-logic` can only sort by a single property currently.
+
+
+The `sort` property defaults to `"ID_PROPERTY"` where `ID_PROPERTY` is the first
+identity property returned by [can-query-logic.prototype.identityKeys]. This is usually the first
+identity value on the schema passed to `new QueryLogic()`:
+
+```js
+new QueryLogic({
+    identity: ["_id"]
+}).identityKeys() //-> ["_id"]
+```
 
 @param {{start: Number, end: Number}} [page] The optional `page` property selects a range of the sorted result. It's values are inclusive and begin at `0`.  This means that:
 
