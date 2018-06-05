@@ -183,6 +183,19 @@ QUnit.test("difference", function() {
 	);
 	QUnit.deepEqual(res, gt3, "secondary and primary");
 
+	res = set.difference(
+		new MaybeDateStringSet({
+			range: new is.In([3]),
+			enum: set.EMPTY
+		}),
+		new MaybeDateStringSet({
+			range: new is.In([3]),
+			enum: set.EMPTY
+		})
+	);
+
+	QUnit.equal(res, set.EMPTY, "equal is empty");
+
 });
 
 QUnit.test("difference with ComparisonSet", function() {
@@ -304,7 +317,23 @@ QUnit.test("union", function() {
 });
 
 
+QUnit.test("isSubset", function() {
+	var res;
 
+	res = set.isSubset(
+		new MaybeDateStringSet({
+			range: new is.In([3]),
+			enum: set.EMPTY
+		}),
+		new MaybeDateStringSet({
+			range: new is.In([3]),
+			enum: set.EMPTY
+		})
+	);
+
+	QUnit.ok(res, "is a subset");
+
+});
 
 QUnit.test("can make maybe type from normal type and makeMaybeSetType", function() {
 	var MaybeNumber = canReflect.assignSymbols({}, {

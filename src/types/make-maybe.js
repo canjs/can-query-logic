@@ -95,6 +95,9 @@ function makeMaybe(inValues, makeChildType) {
 		} else {
 			this.enum = result.enum;
 		}
+		if(this.enum === set.EMPTY && this.range === set.EMPTY) {
+			return set.EMPTY;
+		}
 	}
 	Maybe.prototype.orValues = function() {
 		var values = [];
@@ -111,6 +114,8 @@ function makeMaybe(inValues, makeChildType) {
 			enumIsMember = this.enum[isMemberSymbol] || this.enum.isMember;
 		return rangeIsMember.apply(this.range, arguments) || enumIsMember.apply(this.enum, arguments);
 	}
+
+
 
 	set.defineComparison(Maybe, Maybe, {
 		union: function(maybeA, maybeB) {
