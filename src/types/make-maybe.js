@@ -97,7 +97,14 @@ function makeMaybe(inValues, makeChildType) {
 		}
 	}
 	Maybe.prototype.orValues = function() {
-		return [this.range, this.enum]
+		var values = [];
+		if( this.range !== set.EMPTY ) {
+			values.push(this.range);
+		}
+		if( this.enum !== set.EMPTY ) {
+			values.push(this.enum);
+		}
+		return values;
 	};
 	Maybe.prototype[isMemberSymbol] = function isMember() {
 		var rangeIsMember = this.range[isMemberSymbol] || this.range.isMember,

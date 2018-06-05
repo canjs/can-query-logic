@@ -411,7 +411,22 @@ QUnit.test("can make a maybe type from a ComparisonSetType", function() {
 });
 
 
+QUnit.test("orValues", function() {
+	var res = new MaybeDateStringSet({
+		range: new is.In([3]),
+		enum: set.EMPTY
+	});
 
+	QUnit.deepEqual(res.orValues(),[new is.In([3])] ,"only got range");
+
+	res = new MaybeDateStringSet({
+		range: set.EMPTY,
+		enum: new is.In([null])
+	});
+
+	QUnit.deepEqual(res.orValues(),[new is.In([null])] ,"only got enum");
+
+});
 
 /*
 QUnit.test("intersection", function(){

@@ -43,6 +43,11 @@ QUnit.test("basics", function(){
         ]},
         "difference works");
 
+    var query = todoQueryLogic.hydrate({filter: {age: 21}});
+
+    var serialized = todoQueryLogic.serialize(query);
+    QUnit.deepEqual( serialized, {filter: {age: 21}}, "can serialize back to what was provided" );
+
 });
 
 

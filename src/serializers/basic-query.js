@@ -224,11 +224,15 @@ module.exports = function(schema) {
                 }
             });
             if(ors.length) {
-                return {
-                    $or: ors.map(function(orPart){
-                        return canReflect.assign( canReflect.serialize(result), orPart);
-                    })
-                };
+                if(ors.length === 1 ) {
+                    return ors[0];
+                } else {
+                    return {
+                        $or: ors.map(function(orPart){
+                            return canReflect.assign( canReflect.serialize(result), orPart);
+                        })
+                    };
+                }
             } else {
                 return result;
             }
