@@ -89,6 +89,13 @@ var helpers =  {
 
             return 0;
         };
-    }
+    },
+		valueHydrator: function(value){
+				if(canReflect.isBuiltIn(value)) {
+						return value;
+				} else {
+						throw new Error("can-query-logic doesn't support comparison operator: "+JSON.stringify(value));
+				}
+		}
 };
 module.exports = helpers;

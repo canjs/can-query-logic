@@ -209,6 +209,25 @@ QUnit.test("gt and lt", function(){
 
 });
 
+QUnit.test("basicquery with no sort", function() {
+	var query = {};
+
+	var converter = makeBasicQueryConvert({
+		identity: ["id"],
+		type: "map",
+		keys: {
+			id: function(val) { return val; }
+		}
+	});
+	var basicQuery = converter.hydrate(query);
+
+	var objs = [{id: 0}, {id: 2}]
+	var item = {id: 1};
+
+	var res = basicQuery.index(item, objs);
+	QUnit.equal(res, 1, "inserted at 1");
+});
+
 /*
 QUnit.skip("nested properties within ors", function(){
     var query = {
