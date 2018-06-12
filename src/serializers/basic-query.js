@@ -8,6 +8,7 @@ var is = require("../types/comparisons");
 var makeMaybe = require("../types/make-maybe");
 var makeEnum = require("../types/make-enum");
 var logDev = require("can-log/dev/dev");
+var helpers = require("../helpers");
 
 var setTypeSymbol = canSymbol.for("can.SetType");
 var schemaSymbol = canSymbol.for("can.getSchema");
@@ -292,13 +293,7 @@ module.exports = function(schema) {
             var filter = canReflect.serialize(data.filter);
 
             // this mutates
-            var filterAnd = hydrateFilter(filter, keys, function(value){
-                if(canReflect.isBuiltIn(value)) {
-                    return value;
-                } else {
-                    throw new Error("can-query-logic doesn't support comparison operator: "+JSON.stringify(value));
-                }
-            });
+            var filterAnd = hydrateFilter(filter, keys, helpers.valueHydrator);
 
             // Conver the filter arguments
 
