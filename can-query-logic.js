@@ -5,6 +5,7 @@ var makeBasicQueryConvert = require("./src/serializers/basic-query");
 var BasicQuery = require("./src/types/basic-query");
 var valueComparisons = require("./src/types/comparisons");
 var schemaSymbol = canSymbol.for("can.getSchema");
+var newSymbol = canSymbol.for("can.new");
 var makeEnum = require("./src/types/make-enum");
 
 
@@ -173,6 +174,7 @@ QueryLogic.UNKNOWABLE = set.UNKNOWABLE;
 
 QueryLogic.makeEnum = function(values){
     var Type = function(){};
+		Type[newSymbol] = function(val) { return val; };
     makeEnum(Type, values);
     return Type;
 };
