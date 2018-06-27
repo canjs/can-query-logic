@@ -249,9 +249,11 @@ makeMaybe.makeMaybeSetTypes = function(Type) {
 			}
 		});
 		//!steal-remove-start
-		Object.defineProperty(ComparisonSetType, "name", {
-			value: "Or[" + categories.valueOfTypes[0].name + "," + categories.primitives.map(String).join(" ") + "]"
-		});
+		if(process.env.NODE_ENV !== 'production') {
+			Object.defineProperty(ComparisonSetType, "name", {
+				value: "Or[" + categories.valueOfTypes[0].name + "," + categories.primitives.map(String).join(" ") + "]"
+			});
+		}
 		//!steal-remove-end
 	}
 
