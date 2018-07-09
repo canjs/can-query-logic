@@ -48,6 +48,22 @@ QUnit.test("basics", function(){
     var serialized = todoQueryLogic.serialize(query);
     QUnit.deepEqual( serialized, {filter: {age: 21}}, "can serialize back to what was provided" );
 
+    res = todoQueryLogic.difference({},{
+        filter: {
+            age: {
+                $gt: 3,
+                $lt: 7
+            }
+        }
+    });
+
+    QUnit.deepEqual(res.filter,
+        {$or: [
+            {age: {$gte: 7} },
+            {age: {$lte: 3} },
+            {age: {$in: [undefined, null]}}
+        ]});
+
 });
 
 

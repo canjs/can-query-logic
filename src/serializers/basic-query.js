@@ -193,7 +193,17 @@ function hydrateOrs(values, schemaProperties, hydrateUnknown ) {
     return new BasicQuery.Or(comparisons);
 }
 
-
+function recursivelyAddOrs(ors, value, serializer, key){
+    value.orValues().forEach(function(orValue){
+        if(typeof orValue.orValues === "function") {
+            recursivelyAddOrs(ors, orValue, serializer, key);
+        } else {
+            var result = {};
+            result[key] = serializer(orValue);
+            ors.push( result );
+        }
+    });
+}
 
 module.exports = function(schema) {
 
@@ -212,16 +222,7 @@ module.exports = function(schema) {
             var result = {};
             canReflect.eachKey(and.values, function(value, key){
                 // is value universal ... if not, we don't need to add anything
-
-                if(typeof value.orValues === "function") {
-                    canReflect.addValues( ors, value.orValues().map(function(orValue){
-                        var result = {};
-                        result[key] = serializer(orValue);
-                        return result;
-                    }) );
-                } else {
-                    result[key] = serializer(value);
-                }
+                recursivelyAddOrs(ors, value, serializer, key);
             });
             if(ors.length) {
                 if(ors.length === 1 ) {
