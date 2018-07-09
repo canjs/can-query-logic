@@ -26,11 +26,13 @@ function makeSort(schemaKeys, hydrateAndValue){
         sorters[key] = {
             // valueA is GT valueB
             $gt: function(valueA, valueB) {
-                var $gt = hydrateAndValue({$gt: valueB}, key, schemaProp);
+                var $gt = hydrateAndValue({$gt: valueB}, key, schemaProp,
+									helpers.valueHydrator);
                 return $gt[isMemberSymbol](valueA);
             },
             $lt: function( valueA, valueB ){
-                var $lt = hydrateAndValue({$lt: valueB}, key, schemaProp);
+                var $lt = hydrateAndValue({$lt: valueB}, key, schemaProp,
+									helpers.valueHydrator);
                 return $lt[isMemberSymbol](valueA);
             }
         };

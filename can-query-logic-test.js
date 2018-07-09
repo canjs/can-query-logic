@@ -235,3 +235,10 @@ QUnit.test("isPaginated, removePagination", function(assert){
     assert.deepEqual( algebra.removePagination({page: {start: 1, end: 2}}), {}, "removePagination page");
 
 });
+
+QUnit.test("Value returned by makeEnum is constructorLike", function(assert){
+	var Status = QueryLogic.makeEnum(["new", "preparing", "delivery", "delivered"]);
+	var pass = canReflect.isConstructorLike(Status);
+
+	assert.ok(pass, "Status is constructor like");
+});
