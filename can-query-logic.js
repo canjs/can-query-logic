@@ -96,7 +96,7 @@ canReflect.assign(QueryLogic.prototype,{
 
     // identity keys
     identityKeys: function(){
-        console.warn("you probably can get the identity keys some other way");
+        //console.warn("you probably can get the identity keys some other way");
         return this.schema.identity;
     },
 
@@ -132,7 +132,7 @@ canReflect.assign(QueryLogic.prototype,{
     },
 
     memberIdentity: function(props) {
-        console.warn("you probably can get the member identity some other way");
+        // console.warn("you probably can get the member identity some other way");
         return canReflect.getIdentity(props, this.schema);
     },
     index: function(query, items, props){
