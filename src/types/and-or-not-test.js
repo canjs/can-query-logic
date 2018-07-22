@@ -2,6 +2,7 @@ var types = require("./and-or-not");
 var QUnit = require("steal-qunit");
 var set = require("../set");
 var makeEnum = require("../types/make-enum");
+var is = require("./comparisons");
 
 QUnit.module("can-query-logic/and-or");
 
@@ -378,5 +379,31 @@ QUnit.test("And with nested ands", function(){
         false,
         "dot.ed properties isMember dont match"
     );
+
+});
+
+QUnit.test("union with comparisons", function(){
+    var isGtJustinAndGt35 = new types.KeysAnd({
+        name: new is.GreaterThan("Justin"),
+        age: new is.GreaterThan(35)
+    });
+    var isGt25 = new types.KeysAnd({
+        age: new is.GreaterThan(25)
+    });
+    var result = set.union(isGtJustinAndGt35, isGt25);
+    QUnit.deepEqual(result, isGt25);
+
+    // if filtering in fewer dimensions is a superset, use that
+    var a = new types.KeysAnd({
+        name: new is.GreaterThan("Justin"),
+        age: new is.GreaterThan(35),
+        count: new is.GreaterThan(10)
+    });
+    var b = new types.KeysAnd({
+        age: new is.GreaterThan(25),
+        count: new is.GreaterThan(9)
+    });
+    result = set.union(b, a);
+    QUnit.deepEqual(result, b);
 
 });

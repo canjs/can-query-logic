@@ -171,10 +171,10 @@ var tests = {
 			a = new is.In([2, 4]);
 			b = new is.GreaterThan(2);
 
-			// TODO: this could actually just be new is.GreaterThan(2)
+			// TODO: this could actually just be new is.GreaterThanEqual(2)
 			assert.deepEqual(
 				set.union(a, b),
-				new is.Or([new is.In([2]), b])
+				new is.GreaterThanEqual(2)
 			);
 		},
 		intersection: function(assert) {
@@ -406,7 +406,7 @@ var tests = {
 			// TODO: this can be new is.LessThanEqual(4)
 			assert.deepEqual(
 				set.union(a, b),
-				new is.Or([new is.In([4]), b])
+				new is.LessThanEqual(4)
 			);
 		},
 		intersection: function(assert) {
@@ -631,6 +631,7 @@ var tests = {
 				set.union(a, b),
 				b
 			);
+
 		},
 		intersection: function(assert) {
 			var a = new is.In([5, 6]);
@@ -707,6 +708,16 @@ var tests = {
 				set.union(a, b),
 				b
 			);
+
+
+			var gt1 = new is.GreaterThan(1),
+				lt1 = new is.LessThan(1),
+				eq1 = new is.In([1]);
+
+			var intermediate = set.union(gt1,lt1);
+			var result = set.union( intermediate, eq1 );
+
+			QUnit.equal(result, set.UNIVERSAL, "foo > 1 || foo < 1 || foo === 1 => UNIVERSAL");
 		},
 		intersection: function(assert) {
 			var a = new is.In([5, 6]);
@@ -1544,6 +1555,14 @@ var tests = {
 			assert.deepEqual(
 				set.union(a, b),
 				new is.Or([a, b])
+			);
+
+			a = new is.GreaterThan(5);
+			b = new is.LessThan(5);
+
+			assert.deepEqual(
+				set.union(a, b),
+				new is.NotIn([5])
 			);
 		},
 		intersection: function(assert) {
@@ -3355,8 +3374,9 @@ var tests = {
 	},
 	And_Or: {
 		union: function(assert) {
-			var a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]),
-				b = new is.And([new is.GreaterThan(0), new is.LessThan(6)]);
+			var a, b;
+			a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]),
+			b = new is.And([new is.GreaterThan(0), new is.LessThan(6)]);
 
 			assert.deepEqual(
 				set.union(a, b),
@@ -3408,6 +3428,16 @@ var tests = {
 				set.union(a, b),
 				new is.Or([b, a]),
 				"disjoint"
+			);
+
+			a = new is.Or([new is.LessThan(0), new is.GreaterThan(20)]);
+			b = new is.And([new is.GreaterThan(0), new is.LessThanEqual(20)]);
+			var result = set.union(a, b);
+
+			assert.deepEqual(
+				result,
+				new is.NotIn([0]),
+				"NotIn"
 			);
 		},
 		intersection: function(assert) {

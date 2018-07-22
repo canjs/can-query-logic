@@ -277,6 +277,11 @@ set.defineComparison(KeysAnd, KeysAnd, {
 				sameKeys[key] = objA.values[key];
 			}
 		});
+		var aUnequal = {}, bUnequal = {};
+		aAndBKeysThatAreNotEqual.forEach(function(key){
+			aUnequal[key] = objA.values[key];
+			bUnequal[key] = objB.values[key];
+		});
 
 		// if all keys are shared
 		if (!diff.aOnlyKeys.length && !diff.bOnlyKeys.length) {
@@ -303,7 +308,23 @@ set.defineComparison(KeysAnd, KeysAnd, {
 				return checkIfUniversalAndReturnUniversal(objA);
 			}
 		}
-
+		// (count > 5 && age > 25 ) || (count > 7 && age > 35 && name > "Justin" )
+		//
+		// ( age > 25 ) || ( name > "Justin" && age > 35)  A U (B & C) => (A U B) & (A U C)
+		// ( age > 25 || name > "Justin" ) && (age > 25)
+		// lets see if one side is different
+		if (diff.aOnlyKeys.length > 0 && diff.bOnlyKeys.length === 0) {
+			// collect shared value
+			if( set.isSubset(new KeysAnd(aUnequal), new KeysAnd(bUnequal) )) {
+				return objB;
+			}
+		}
+		if (diff.bOnlyKeys.length > 0 && diff.aOnlyKeys.length === 0) {
+			// collect shared value
+			if( set.isSubset(new KeysAnd(bUnequal),  new KeysAnd(aUnequal) )) {
+				return objA;
+			}
+		}
 
 		return new keysLogic.ValuesOr([objA, objB]);
 	},

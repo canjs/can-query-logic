@@ -331,11 +331,52 @@ function makeOr(ors) {
 
 var is = comparisons;
 
+function combineValueWithRangeCheck(inSet, rangeSet, RangeOrEqType){
+	var gte = new RangeOrEqType(rangeSet.value);
+	var leftValues = inSet.values.filter(function(value){
+		return !gte.isMember(value);
+	});
+	if(!leftValues.length) {
+		return gte;
+	}
+
+	if(leftValues.length < inSet.values.length) {
+		return makeOr([new is.In(leftValues), gte]);
+	} else {
+		return makeOr([inSet, rangeSet]);
+	}
+}
+
+// This tries to unify In([1]) with GT(1) -> GTE(1)
+function makeOrWithInAndRange(inSet, rangeSet) {
+	if(rangeSet instanceof is.Or) {
+		var firstResult = makeOrWithInAndRange(inSet, rangeSet.values[0]);
+		if( !(firstResult instanceof is.Or) ) {
+			return set.union(firstResult, rangeSet.values[1]);
+		}
+		var secondResult = makeOrWithInAndRange(inSet, rangeSet.values[1]);
+		if( !(secondResult instanceof is.Or) ) {
+			return set.union(secondResult, rangeSet.values[0]);
+		}
+		return makeOr([inSet, rangeSet]);
+	} else {
+		if(rangeSet instanceof is.GreaterThan) {
+			return combineValueWithRangeCheck(inSet, rangeSet, is.GreaterThanEqual);
+		}
+		if(rangeSet instanceof is.LessThan) {
+			return combineValueWithRangeCheck(inSet, rangeSet, is.LessThanEqual);
+		}
+		return makeOr([inSet, rangeSet]);
+	}
+}
+
 var In_RANGE = {
 	union: combineFilterFirstValuesAgainstSecond({
 		values: makeNot(isMemberTest),
 		arePut: is.In,
-		combinedUsing: makeOr
+		combinedUsing: function(ors){
+			return makeOrWithInAndRange(ors[0], ors[1]);
+		}
 	}),
 	intersection: make_filterFirstValueAgainstSecond(isMemberTest, is.In, set.EMPTY),
 	difference: make_filterFirstValueAgainstSecond(makeNot(isMemberTest), is.In, set.EMPTY)
@@ -561,7 +602,16 @@ var comparators = {
 	},
 
 	GreaterThan_LessThan: {
-		union: makeOrUnless(is.LessThan),
+		union: (function(){
+			var makeOrUnlessLessThan = makeOrUnless(is.LessThan);
+			return function greaterThan_lessThan_union(a, b){
+				if( comparisons.In.test([a.value], b.value) ) {
+					return new is.NotIn([a.value]);
+				} else {
+					return makeOrUnlessLessThan(a, b);
+				}
+			}
+		})(),
 		intersection: makeAndUnless(is.GreaterThan),
 		difference: makeComplementSecondArgIf(is.LessThan)
 	},

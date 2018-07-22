@@ -163,14 +163,14 @@ canReflect.assign(QueryLogic.prototype,{
 
 });
 
-QueryLogic.UNIVERSAL = set.UNIVERSAL;
-// Nothing
-QueryLogic.EMPTY = set.EMPTY;
-// The set exists, but we lack the language to represent it.
-QueryLogic.UNDEFINABLE = set.UNDEFINABLE;
+// Copy everything on `set` to QueryLogic
+for(var prop in set) {
+    if(QueryLogic[prop] === undefined) {
+        QueryLogic[prop] = set[prop];
+    }
+}
 
-// We don't know if this exists. Intersection between two paginated sets.
-QueryLogic.UNKNOWABLE = set.UNKNOWABLE;
+
 
 QueryLogic.makeEnum = function(values){
     var Type = function(){};
@@ -178,9 +178,8 @@ QueryLogic.makeEnum = function(values){
     makeEnum(Type, values);
     return Type;
 };
-QueryLogic.defineComparison = set.defineComparison;
-QueryLogic.isSpecial = set.isSpecial;
-QueryLogic.isDefinedAndHasMembers = QueryLogic.isDefinedAndHasMembers;
+
+
 
 QueryLogic.KeysAnd = BasicQuery.KeysAnd;
 QueryLogic.ValuesOr = BasicQuery.Or;

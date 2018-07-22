@@ -61,7 +61,7 @@ QUnit.test("difference", function(){
         }
     });
 
-    
+
 });
 
 QUnit.test("subset", function(){
@@ -241,4 +241,24 @@ QUnit.test("Value returned by makeEnum is constructorLike", function(assert){
 	var pass = canReflect.isConstructorLike(Status);
 
 	assert.ok(pass, "Status is constructor like");
+});
+
+QUnit.test("can call low-level APIs from the outside", function(){
+    var gt1 = new QueryLogic.GreaterThan(1);
+    var lte1 = new QueryLogic.LessThanEqual(1);
+
+    QUnit.equal( QueryLogic.intersection(gt1, lte1), QueryLogic.EMPTY );
+    console.log(QueryLogic.EMPTY);
+
+
+    var isGtJustinAndGt35 = new QueryLogic.KeysAnd({
+        name: new QueryLogic.GreaterThan("Justin"),
+        age: new QueryLogic.GreaterThan(35)
+    });
+    var isGt25 = new QueryLogic.KeysAnd({
+        age: new QueryLogic.GreaterThan(25)
+    });
+
+    QUnit.deepEqual(QueryLogic.union(isGtJustinAndGt35, isGt25), isGt25, "fewer clauses");
+
 });
