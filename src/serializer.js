@@ -1,7 +1,12 @@
 var canReflect = require("can-reflect");
 
 var Serializer = function(entries){
-    this.serializers = new Map(entries || []);
+    var serializers = this.serializers = new Map();
+    if (entries) {
+        canReflect.each(entries, function(value, key) {
+            serializers.set(key, value);
+        });
+    }
     this.serialize = this.serialize.bind(this);
 };
 Serializer.prototype.add = function(serializers){
