@@ -7,13 +7,13 @@ QUnit.module("can-query-logic special comparison logic");
 QUnit.test("where to filter", function(){
 
     var todoQueryLogic = new QueryLogic({}, {
-        toQuery(params){
+        toQuery: function(params){
             var where = params.where;
             delete params.where;
             params.filter = where;
             return params;
         },
-        toParams(query){
+        toParams: function(query){
             var where = query.filter;
             delete query.filter;
             query.where = where;
@@ -21,11 +21,11 @@ QUnit.test("where to filter", function(){
         }
     });
     var q1 = {
-            where: {first: "FIRST"}
-        },
-        q2 = {
-            where: {second: "SECOND"}
-        };
+        where: {first: "FIRST"}
+    },
+    q2 = {
+        where: {second: "SECOND"}
+    };
 
     var q3 = todoQueryLogic.intersection(q1,q2);
 
@@ -52,7 +52,7 @@ QUnit.test("Searchable string", function(){
 
     // Specify how to do the fundamental set comparisons.
     QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
-        union(searchA, searchB){
+        union: function(searchA, searchB){
             if(searchA.value.includes(searchB.value)) {
                 return searchB;
             }
@@ -62,7 +62,7 @@ QUnit.test("Searchable string", function(){
             return new QueryLogic.ValuesOr([searchA, searchB]);
         },
         // a aa
-        intersection(searchA, searchB){
+        intersection: function(searchA, searchB){
             if(searchA.value.includes(searchB.value)) {
                 return searchA;
             }
@@ -71,7 +71,7 @@ QUnit.test("Searchable string", function(){
             }
             return QueryLogic.UNDEFINABLE;
         },
-        difference(searchA, searchB){
+        difference: function(searchA, searchB){
             // if a is a subset
             if(searchA.value.includes(searchB.value)) {
                 return QueryLogic.EMPTY;
@@ -86,11 +86,11 @@ QUnit.test("Searchable string", function(){
     });
 
     // Alternate comparisons
-    /*QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
-        isSubset(searchA, searchB){
-            return searchA.value.includes(searchB.value);
-        }
-    });*/
+    // QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
+    //     isSubset(searchA, searchB){
+    //         return searchA.value.includes(searchB.value);
+    //     }
+    // });
 
     // The type specified doesn't do anything here.
     // Sometimes it might be used for creating the actual value on
@@ -145,16 +145,16 @@ QUnit.test("Searchable string", function(){
     });
 
     QUnit.ok(
-        todoQueryLogic.isMember({
-            filter: {name: "eat"}
-        },{id: 1, name: "eat beans"}),
-        "isMember true");
+    todoQueryLogic.isMember({
+        filter: {name: "eat"}
+    },{id: 1, name: "eat beans"}),
+    "isMember true");
 
     QUnit.notOk(
-        todoQueryLogic.isMember({
-            filter: {name: "eat"}
-        },{id: 1, name: "foo bar"}),
-        "isMember false");
+    todoQueryLogic.isMember({
+        filter: {name: "eat"}
+    },{id: 1, name: "foo bar"}),
+    "isMember false");
 
 });
 
@@ -193,7 +193,7 @@ QUnit.test("value type", function(){
     });
 
     var oct20_1982 = new Date(1982,9,20),
-        date90s = new Date(1990,0,1);
+    date90s = new Date(1990,0,1);
 
     // new And({
     //   date: new GT( new DateStringSet("string") )
@@ -208,16 +208,16 @@ QUnit.test("value type", function(){
     var result = queryLogic.filterMembers({
         filter: {date: {$gt: oct20_1982.toString()}}
     },[
-        {id: 1, date: new Date(1981,9,20).toString()},
-        {id: 2, date: new Date(1982,9,20).toString()},
-        {id: 3, date: new Date(1983,9,20).toString()},
-        {id: 4, date: new Date(1984,9,20).toString()},
+    {id: 1, date: new Date(1981,9,20).toString()},
+    {id: 2, date: new Date(1982,9,20).toString()},
+    {id: 3, date: new Date(1983,9,20).toString()},
+    {id: 4, date: new Date(1984,9,20).toString()},
     ]);
 
     QUnit.deepEqual(
-        result.map(function(item){ return item.id;}),
-        [3,4],
-        "filtered correctly");
+    result.map(function(item){ return item.id;}),
+    [3,4],
+    "filtered correctly");
 
 
     var union = queryLogic.union({
@@ -227,32 +227,32 @@ QUnit.test("value type", function(){
     });
 
     QUnit.deepEqual(union,
-        {
-            filter: {date: {$in: [oct20_1982.toString(), date90s.toString()]}}
-        }
+    {
+        filter: {date: {$in: [oct20_1982.toString(), date90s.toString()]}}
+    }
     );
 
     var result = queryLogic.filterMembers({
         sort: "date"
     },[
-        {id: 2, date: new Date(1982,9,20).toString()},
-        {id: 1, date: new Date(1981,9,20).toString()},
-        {id: 4, date: new Date(1984,9,20).toString()},
-        {id: 3, date: new Date(1983,9,20).toString()}
+    {id: 2, date: new Date(1982,9,20).toString()},
+    {id: 1, date: new Date(1981,9,20).toString()},
+    {id: 4, date: new Date(1984,9,20).toString()},
+    {id: 3, date: new Date(1983,9,20).toString()}
     ]);
 
     var ids = result.map(function(item){ return item.id});
     QUnit.deepEqual(ids,[1,2,3,4], "sorted correctly");
 
     var index = queryLogic.index({
-            sort: "date"
-        },
-        [
+        sort: "date"
+    },
+    [
             {id: 1, date: new Date(2018,4,20).toString()}, // M
             {id: 2, date: new Date(2018,4,21).toString()}, // Tu
             {id: 3, date: new Date(2018,4,22).toString()}, // We
             {id: 4, date: new Date(2018,4,23).toString()}  // Thurs
-        ],
+            ],
         {id: 4, date: new Date(2018,4,24).toString()}); //F
 
     QUnit.equal(index, 4, "added at the end")
