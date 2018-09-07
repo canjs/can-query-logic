@@ -4,13 +4,18 @@
 @description Return the number of records in a query.
 
 @signature `queryLogic.count(query)` Returns the number of records that might be loaded by the `query`. This returns infinity unless
-a `page` is provided
+a `page` is provided.
 
-```js
-var queryLogic =  new QueryLogic();
-queryLogic.count({page: {start: 10, end: 19}}) //-> 10
-```
+  ```js
+  import {QueryLogic} from "can";
 
-@param  {can-query-logic/query} query
-@return {Number} The number of records in the query if known, `Infinity`
-if unknown.
+  const queryLogic =  new QueryLogic();
+
+  const count = queryLogic.count({page: {start: 10, end: 19}});
+  console.log( count ); //-> 10
+  ```
+  @codepen
+
+  @param  {can-query-logic/query} query
+  @return {Number} The number of records in the query if known, `Infinity`
+  if unknown.
