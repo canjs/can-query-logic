@@ -6,25 +6,28 @@ in the another set.
 
 @signature `queryLogic.difference(a, b)`
 
-Returns a set that represents the difference of sets _A_ and _B_. In set theory, a difference is
-represented by `A \ B`.
+  Returns a set that represents the difference of sets _A_ and _B_. In set theory, a difference is
+  represented by `A \ B`.
 
-```js
-var queryLogic = new QueryLogic();
+  ```js
+  import {QueryLogic} from "can";
 
+  const queryLogic = new QueryLogic();
 
-queryLogic.difference({
-    filter: { name: {$in: ["Ramiya", "Bohdi"]} }
-},{
-    filter: { name: "Bohdi" }
-}))
-//-> {filter: {name: "Ramiya"}}
+  const filter = queryLogic.difference(
+    { filter: { name: {$in: ["Ramiya", "Bohdi"]} } },
+    { filter: { name: "Bohdi" } }
+  );
+  console.log( filter ); //-> {filter: {name: "Ramiya"}}
 
-// A is totally inside B
-queryLogic.difference(
-    {filter: { name: "Bohdi" }},
-    {} )  //-> QueryLogic.EMPTY
-```
+  // A is totally inside B
+  const emptyFilter = queryLogic.difference(
+    { filter: { name: "Bohdi" } },
+    {}
+  );
+  console.log( emptyFilter ); //-> {name: "EMPTY"}
+  ```
+  @codepen
 
   @param  {can-query-logic/query} a A query.
   @param  {can-query-logic/query} b A query.
