@@ -25,7 +25,7 @@ in the another set.
     { filter: { name: "Bohdi" } },
     {}
   );
-  console.log( emptyFilter ); //-> {name: "EMPTY"}
+  console.log( emptyFilter ); //-> QueryLogic.EMPTY
   ```
   @codepen
 
