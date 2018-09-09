@@ -6,16 +6,17 @@
 
 @signature `queryLogic.identityKeys()`
 
-Return the identity keys used to identity instances associated with the query logic:
+  Return the identity keys used to identity instances associated with the query logic:
 
-```js
-import QueryLogic from "can-query-logic";
+  ```js
+  import {QueryLogic} from "can";
 
-var queryLogic = new QueryLogic({
-    identity: ["_id"]
-});
+  const queryLogic = new QueryLogic({
+      identity: ["_id"]
+  });
 
-queryLogic.identityKeys() //-> ["_id"]
-```
+  console.log( queryLogic.identityKeys() ); //-> ["_id"]
+  ```
+  @codepen
 
-@return {Array<String>} An Array of the identity keys.
+  @return {Array<String>} An Array of the identity keys.
