@@ -5,15 +5,22 @@
 
 @signature `queryLogic.union(queryA, queryB)`
 
-Returns a query that represents the union `queryA` and `queryB`. In set theory, a union is
-represented by `A ∪ B`.
+  Returns a query that represents the union `queryA` and `queryB`. In set theory, a union is
+  represented by `A ∪ B`.
 
-```js
-queryLogic.union(
-  { filter: {completed: true} },
-  { filter: {completed: false} }
-) //-> { filter: {completed: {$in: [true, false]}} }
-```
+  ```js
+  import {QueryLogic} from "can";
+
+  const queryLogic = new QueryLogic();
+
+  const myUnion = queryLogic.union(
+    { filter: {completed: true} },
+    { filter: {completed: false} }
+  );
+  // using JSON.stringify to show full object on codepen
+  console.log( JSON.stringify(myUnion) ); //-> "{ filter: {completed: {$in: [true, false]}} }"
+  ```
+  @codepen
 
   @param  {can-query-logic/query} queryA A query.
   @param  {can-query-logic/query} queryB A query.
