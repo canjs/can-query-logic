@@ -5,36 +5,47 @@
 
 @signature `queryLogic.isMember(query, record)`
 
- Used to tell if the `set` contains the instance object `record`.
+  Used to tell if the `set` contains the instance object `record`.
 
- ```js
- queryLogic.isMember(
-   {filter: {playerId: 5}},
-   {id: 5, type: "3pt", playerId: 5, gameId: 7}
- ) //-> true
- ```
+  ```js
+  import {QueryLogic} from "can";
 
- Use [can-query-logic.prototype.index] to know where to insert the `record` into a list of
- records.  
+  const queryLogic = new QueryLogic();
 
- `isMember` ignores the query's `page` values and will return `true` if the query's `filter` matches
- the data.  For example, "Zebra" might be the last record if all _animals_ were sorted by name. However,
- `isMember` will still return true:
+  const checkMember = queryLogic.isMember(
+    {filter: {playerId: 5}},
+    {id: 5, type: "3pt", playerId: 5, gameId: 7}
+  );
+  console.log( checkMember ); //-> true
+  ```
+  @codepen
 
- ```js
- animalQueryLogic.isMember(
-   {sort: "name", page: {start: 0, end: 0}},
-   {id: 1, name: "Zebra"}
- ) //-> true
- ```
+  Use [can-query-logic.prototype.index] to know where to insert the `record` into a list of
+  records.  
 
- This is a limitation of QueryLogic when used with paginated sets of data.
+  `isMember` ignores the query's `page` values and will return `true` if the query's `filter` matches
+  the data.  For example, "Zebra" might be the last record if all _animals_ were sorted by name. However,
+  `isMember` will still return true:
 
-   @param  {can-query-logic/query} set A set.
-   @param  {Object} record A JavaScript object of key-value pairs.
-   @return {Boolean} Returns `true` if `record` belongs in `set` and
+  ```js
+  import {QueryLogic} from "can";
+
+  const animalQueryLogic = new QueryLogic();
+
+  const checkAnimal = animalQueryLogic.isMember(
+    {sort: "name", page: {start: 0, end: 0}},
+    {id: 1, name: "Zebra"}
+  );
+  console.log( checkAnimal ); //-> true
+  ```
+  @codepen
+
+  This is a limitation of QueryLogic when used with paginated sets of data.
+
+  @param  {can-query-logic/query} set A set.
+  @param  {Object} record A JavaScript object of key-value pairs.
+  @return {Boolean} Returns `true` if `record` belongs in `set` and
    `false` it not.
-
 
 @body
 
