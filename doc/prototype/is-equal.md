@@ -5,15 +5,22 @@
 
 @signature `queryLogic.isEqual(a, b)`
 
-Returns true if the two queries represent the same data.
+  Returns true if the two queries represent the same data.
 
-```js
-queryLogic.isEqual(
-    {filter: {type: "critical"}},
-    {filter: {type: {$in: ["critical"]}}) //-> true
-```
+  ```js
+  import {QueryLogic} from "can";
+  
+  const queryLogic = new QueryLogic();
 
-@param  {can-query-logic/query} a A query.
-@param  {can-query-logic/query} b A query.
-@return {Boolean} True if the two queries are equal. [can-query-logic.UNKNOWABLE]
-  is not equal to [can-query-logic.UNKNOWABLE].
+  const checkEquality = queryLogic.isEqual(
+      {filter: {type: "critical"}},
+      {filter: {type: {$in: ["critical"]}}}
+  );
+  console.log( checkEquality ); //-> true
+  ```
+  @codepen
+
+  @param  {can-query-logic/query} a A query.
+  @param  {can-query-logic/query} b A query.
+  @return {Boolean} True if the two queries are equal. [can-query-logic.UNKNOWABLE]
+    is not equal to [can-query-logic.UNKNOWABLE].
