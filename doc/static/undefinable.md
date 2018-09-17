@@ -7,23 +7,33 @@ Represents a set that contains values, but can not be defined and is not the [ca
 it can not be represented by the available set types.  For example, consider performing
 a difference of people in Chicago compared to people named Justin who are 35:
 
-```js
-var inChicago = new QueryLogic.KeysAnd({location: "Chicago"})
-var isJustinAnd35 = new QueryLogic.KeysAnd({name: "Justin", age: 35})
+  ```js
+  import {QueryLogic} from "can";
 
-QueryLogic.difference(inChicago, isJustinAnd35) //-> ???
-```
+  const inChicago = new QueryLogic.KeysAnd( {location: "Chicago"} );
+  const isJustinAnd35 = new QueryLogic.KeysAnd( {name: "Justin", age: 35} );
 
-If `QueryLogic` supported a `Not` and an expanded `ValueAnd` type, the difference could be described as:
+  const undefinable = QueryLogic.difference(inChicago, isJustinAnd35);
+  console.log( undefinable ); //-> QueryLogic.UNDEFINABLE
+  ```
+  @codepen
 
-```js
-new QueryLogic.ValueAnd([
-    inChicago,
-    new QueryLogic.Not(isJustinAnd35)
-])
-```
+  If `QueryLogic` supported a `Not` and an expanded `ValueAnd` type, the difference could be described as:
 
-Currently, as `QueryLogic` does not fully support `Not` and `ValueAnd` used this way, it
-returns `QueryLogic.UNDEFINABLE`.  This indicates a difference exists (the existence of a difference is important for determining superset and subset), but we aren't able to express it.
+  ```js
+  import {QueryLogic} from "can";
 
-Use [can-query-logic.UNKNOWABLE] to represent
+  const inChicago = new QueryLogic.KeysAnd( {location: "Chicago"} );
+  const isJustinAnd35 = new QueryLogic.KeysAnd( {name: "Justin", age: 35} );
+
+  const undefinable = new QueryLogic.ValueAnd([
+      inChicago,
+      new QueryLogic.Not(isJustinAnd35)
+  ]);
+  console.log( undefinable );
+  ```
+
+  Currently, as `QueryLogic` does not fully support `Not` and `ValueAnd` used this way, it
+  returns `QueryLogic.UNDEFINABLE`.  This indicates a difference exists (the existence of a difference is important for determining superset and subset), but we aren't able to express it.
+
+  <!-- Use [can-query-logic.UNKNOWABLE] to represent -->
