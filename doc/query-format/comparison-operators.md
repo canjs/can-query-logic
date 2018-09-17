@@ -9,7 +9,7 @@ The `$eq` operator behaves like the [$eq MongoDB equivalent](https://docs.mongod
 
 @signature `{ $ne: <value> }`
 
-The `$ne` operator behaves like the [$eq MongoDB equivalent](https://docs.mongodb.com/manual/reference/operator/query/ne/)
+The `$ne` operator behaves like the [$ne MongoDB equivalent](https://docs.mongodb.com/manual/reference/operator/query/ne/)
 
 @signature `{ $in: [value,...] }`
 
