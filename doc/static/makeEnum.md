@@ -60,6 +60,6 @@ const Status = canReflect.assignSymbols({}, {
 
 console.log( Status[canSymbol.for("can.new")] );
 ```
-
+<!-- @codepen -->
 
 This has the added benefit of being able to convert values like "NEW" to "new".
