@@ -5,35 +5,35 @@ Create a schema type that represents a finite set of values.
 
 @signature `QueryLogic.makeEnum(values)`
 
-`makeEnum` allows queries to perform more powerful set logic because
-the potential values is finite.  The following example uses it to
-define a status property as one of three values:
+  `makeEnum` allows queries to perform more powerful set logic because
+  the potential values is finite.  The following example uses it to
+  define a status property as one of three values:
 
-```js
-import QueryLogic from "can-query-logic";
-import DefineMap from "can-define/map/map";
+  ```js
+  import {QueryLogic, DefineMap} from "can";
 
-const Status = QueryLogic.makeEnum(["new","assigned","complete"]);
+  const Status = QueryLogic.makeEnum(["new","assigned","complete"]);
 
-const Todo = DefineMap.extend({
+  const Todo = DefineMap.extend({
     id: "number",
     status: Status,
     complete: "boolean",
     name: "string"
-});
+  });
 
-const todoLogic = new QueryLogic(Todo);
-var unionQuery = todoLogic.union(
+  const todoLogic = new QueryLogic(Todo);
+  const unionQuery = todoLogic.union(
     {filter: {status: ["new","assigned"] }},
     {filter: {status: "complete" }}
-)
+  );
 
-unionQuery //-> {}
-```
+  console.log( JSON.stringify( unionQuery ) ); //-> "{'filter':{'status':{'$in':['new','assigned','complete']}}}"
+  ```
+  @codepen
 
-@param {Array} values An array of primitive values. For example: `["red","green"]`
-@return {function} A constructor function that can be used in a schema. The constructor has
- a `can.SetType` symbol that is used to perform set comparison logic.
+  @param {Array} values An array of primitive values. For example: `["red","green"]`
+  @return {function} A constructor function that can be used in a schema. The constructor has
+  a `can.SetType` symbol that is used to perform set comparison logic.
 
 
 @body
@@ -43,17 +43,23 @@ unionQuery //-> {}
 Instead of using `makeEnum`, an enum type can be defined the following:
 
 ```js
-var Status = canReflect.assignSymbols({},{
-    "can.new": function(val){
-        return val.toLowerCase();
-    },
-    "can.getSchema": function(){
-        return {
-            type: "Or",
-            values: ["new","assigned","complete"]
-        };
-    }
+import {Reflect as canReflect} from "can";
+import * as canSymbol from "//unpkg/can-symbol@1";
+
+const Status = canReflect.assignSymbols({}, {
+  "can.new": function(val){
+    return val.toLowerCase();
+  },
+  "can.getSchema": function(){
+    return {
+      type: "Or",
+      values: ["new","assigned","complete"]
+    };
+  }
 });
+
+console.log( Status[canSymbol.for("can.new")] );
 ```
+
 
 This has the added benefit of being able to convert values like "NEW" to "new".
