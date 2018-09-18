@@ -1,16 +1,10 @@
 If you are unable to make it match, or you need special
 query logic, this section describes how to change it in the following ways:
 
-
-
 There are a variety of different ways to configure your `QueryLogic`:
 
 - Easy mode configuration
 -
-
-
-
-
 
 The `can-query` package provides methods that
 perform data queries and compare queries against
@@ -20,7 +14,9 @@ For example, the following gets all completed
 tasks from a list of tasks:
 
 ```js
-var tasks = [
+import {QueryLogic} from "can";
+
+const tasks = [
   {
       id: 1,
       attributes: {
@@ -35,22 +31,24 @@ var tasks = [
           complete: false
       }
   }
-]
+];
 
-var result = query.filterMembers({
+const query = new QueryLogic();
+const result = query.filterMembers({
   where: {complete: true}
 }, tasks);
 
-result //-> [
-  {
-      id: 1,
-      attributes: {
-          name: "do the dishes",
-          complete: true
-      }
-  }
-]
+console.log( result ); //-> [
+//   {
+//       id: 1,
+//       attributes: {
+//           name: "do the dishes",
+//           complete: true
+//       }
+//   }
+// ]
 ```
+@codepen
 
 `can-query` is most unique in that it can
 can compare queries themselves.  For example,
@@ -58,14 +56,19 @@ the returns a query that represents the
 combination of two other queries:
 
 ```js
-var result = query.union({
+import {QueryLogic} from "can";
+
+const queryLogic = new QueryLogic();
+
+const result = queryLogic.union({
   where: {complete: true}
 },{
   where: {complete: false}
-})
+});
 
-result //-> {}
+console.log( result ); //-> {}
 ```
+@codepen
 
 `can-query` uses a [can-query/types/query standard query format] that
 looks like:
