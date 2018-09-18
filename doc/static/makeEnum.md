@@ -44,7 +44,6 @@ Instead of using `makeEnum`, an enum type can be defined the following:
 
 ```js
 import {Reflect as canReflect} from "can";
-import * as canSymbol from "//unpkg/can-symbol@1";
 
 const Status = canReflect.assignSymbols({}, {
   "can.new": function(val){
@@ -58,8 +57,10 @@ const Status = canReflect.assignSymbols({}, {
   }
 });
 
-console.log( Status[canSymbol.for("can.new")] );
+console.log( Status[Symbol.for("can.new")] ); //-> "can.new": function(val){
+  //   return val.toLowerCase();
+  // },
 ```
-<!-- @codepen -->
+@codepen
 
 This has the added benefit of being able to convert values like "NEW" to "new".
