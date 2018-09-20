@@ -254,8 +254,9 @@ that looks like:
 ```js
 import {QueryLogic} from "can";
 
-const queryLogic = new QueryLogic();
-{
+const queryLogic = new QueryLogic()
+
+const filter = queryLogic.filterMembers({
   // Selects only the todos that match.
   filter: {
     complete: {$in: [false, null]}
@@ -264,8 +265,17 @@ const queryLogic = new QueryLogic();
   sort: "-name",
   // Selects a range of the sorted result
   page: {start: 0, end: 19}
-}
+},
+[
+  {id: 1, name: "do dishes", complete: false},
+  {id: 2, name: "mow lawn", complete: true},
+  // ...
+]);
+
+console.log( filter ); //-> [{id: 1, name: "do dishes", complete: false}]
 ```
+@codepen
+@highlight 6-13
 
 This structures follows the [Fetching Data JSONAPI specification](http://jsonapi.org/format/#fetching).
 
@@ -496,23 +506,14 @@ For example, you might want to represent a date with a string like:
 
 The following creates a `DateStringSet` that translates a date string to a number:
 
-```js
-class DateStringSet {
-    constructor(value){
-        this.value = value;
-    }
-    // used to convert to a number
-    valueOf(){
-        return new Date(this.value).getTime()
-    }
-}
-```
+@sourceref ./can-query-logic-models/date-string-example.js
+@codepen
 
 These classes must provide:
 
 - `constructor` - initialized with the the value passed to a comparator (ex: `"Wed Apr 04 2018 10:00:00 GMT-0500 (CDT)"`).
-- [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf valueOf] - return a string or number
-  used to compare (ex: `1522854000000`).
+- [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf valueOf] - return a string or number used to compare (ex: `1522854000000`).
+- 
 
 To configure a `QueryLogic` to use a `SetType`, it must be the `can.SetType` property on a
 schema's `keys` object.  This can be done directly like:
@@ -537,9 +538,9 @@ Then this `DateString` is used to configure your data type like:
 
 ```js
 const Todo = DefineMap.extend({
-    id: {type: "number", identity: true},
-    name: "string",
-    date: DateString
+  id: {type: "number", identity: true},
+  name: "string",
+  date: DateString
 })
 ```
 
@@ -622,22 +623,24 @@ Then this `SearchableString` is used to configure your data type like:
 It can be very useful to test your `QueryLogic` before using it with [can-connect].
 
 ```js
-Type = DefineMap.extend({ ... })
+import {DefineMap, QueryLogic,} from "can";
 
-var queryLogic = new QueryLogic(Todo, {
+const Todo = DefineMap.extend({ ... });
+
+const queryLogic = new QueryLogic(Todo, {
   toQuery(params){ ... },
   toParams(query){ ... }
-})
+});
 
 unit.test("isMember", function(){
-  var result = queryLogic.isMember({
+  const result = queryLogic.isMember({
     filter: {special: "SOMETHING SPECIAL"}
   },{
     id: 0,
     name: "I'm very special"
   });
   assert.ok(result, "is member");
-})
+});
 
 ```
 
