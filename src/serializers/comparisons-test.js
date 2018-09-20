@@ -5,28 +5,42 @@ var canReflect = require("can-reflect");
 QUnit.module("can-query-logic/serializers/comparisons");
 
 QUnit.test("hydrate and serialize", function(){
-    var Type = function(value){
-        this.value = value;
-    };
+	var Type = function(value){
+		this.value = value;
+	};
 
-    canReflect.assignSymbols(Type.prototype,{
+	canReflect.assignSymbols(Type.prototype,{
 		"can.serialize": function(){
 			return this.value;
 		}
 	})
 
-    var hydrated = comparisons.hydrate({$in: [1,2]}, function(value){
-        return new Type(value);
-    });
+	var hydrated = comparisons.hydrate({$in: [1,2]}, function(value){
+		return new Type(value);
+	});
 
-    QUnit.deepEqual(hydrated.values, [
-        new Type(1),
-        new Type(2)
-    ], "hydrated");
+	QUnit.deepEqual(hydrated.values, [
+		new Type(1),
+		new Type(2)
+	], "hydrated");
 
-    var serialized = comparisons.serializer.serialize(hydrated);
+	var serialized = comparisons.serializer.serialize(hydrated);
 
-    QUnit.deepEqual(serialized,{
-        $in: [1,2]
-    }, "serialized");
+	QUnit.deepEqual(serialized,{
+		$in: [1,2]
+	}, "serialized");
+});
+
+QUnit.test("unknown hydrator is called in all cases", function(){
+
+	var hydrated = [];
+	var addToHydrated = function(value){
+		hydrated.push(value);
+	}
+
+	comparisons.hydrate({$in: [1,2]}, addToHydrated);
+	comparisons.hydrate("abc", addToHydrated);
+	comparisons.hydrate(["x","y"], addToHydrated);
+
+	QUnit.deepEqual(hydrated, [1,2, "abc","x","y"], "hydrated called with the right stuff");
 });
