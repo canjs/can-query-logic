@@ -393,7 +393,7 @@ Todo.getList({filter: {complete: true}}).then(todos => {
 @codepen
 @highlight 18,22,only
 
-You can use the `options`'s `toQuery` and `toParams` functions
+You can use the `options`' `toQuery` and `toParams` functions
 to set the `filter` property value to the passed in `where` property value.
 
 ```js
@@ -513,7 +513,7 @@ These classes must provide:
 
 - `constructor` - initialized with the the value passed to a comparator (ex: `"Wed Apr 04 2018 10:00:00 GMT-0500 (CDT)"`).
 - [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf valueOf] - return a string or number used to compare (ex: `1522854000000`).
-- 
+- `Symbol.for("can.serialize")` - returns a string or number to compare against [can-data-types] for the query.
 
 To configure a `QueryLogic` to use a `SetType`, it must be the `can.SetType` property on a
 schema's `keys` object.  This can be done directly like:
@@ -528,21 +528,15 @@ new QueryLogic({
 
 More commonly, `DateStringSet` is the `can.SetType` symbol of a type like:
 
-```js
-const DateString = {
-  [Symbol.for("can.SetType")]: DateStringSet
-};
-```
+@sourceref ./can-query-logic-models/date-string-example.js
+@codepen
+@highlight 19-21,only
 
 Then this `DateString` is used to configure your data type like:
 
-```js
-const Todo = DefineMap.extend({
-  id: {type: "number", identity: true},
-  name: "string",
-  date: DateString
-})
-```
+@sourceref ./can-query-logic-models/date-string-example.js
+@codepen
+@highlight 23-27,only
 
 > NOTE: Types like `DateString` need to be distinguished from `SetType`s like
 > `DateStringSet` because types like `DateString` have different values. For example,
@@ -623,7 +617,7 @@ Then this `SearchableString` is used to configure your data type like:
 It can be very useful to test your `QueryLogic` before using it with [can-connect].
 
 ```js
-import {DefineMap, QueryLogic,} from "can";
+import {DefineMap, QueryLogic} from "can";
 
 const Todo = DefineMap.extend({ ... });
 
@@ -652,61 +646,33 @@ __1. Types are defined:__
 
 A user defines the type of data that will be loaded from the server:
 
-```js
-import {DefineMap, QueryLogic} from "can";
-
-const Todo = DefineMap.extend({
-  id: {
-    identity: true,
-    type: Number
-  },
-  complete: Boolean,
-  name: String,
-  status: QueryLogic.makeEnum(["assigned","in-progress","complete"])
-});
-```
+@sourceref ./can-query-logic-models/todo-union-example.js
 @codepen
+@highlight 3-10,only
 
 __2. The defined type exposes a schema:__
 
 [can-define/map/map]s expose this type information as a schema:
 
-```js
-import {Reflect as canReflect} from "can";
-import {Todo} from "//unpkg.com/can-demo-models@5";
-const todoSchema = canReflect.getSchema(Todo);
-console.log( todoSchema ); //-> {
-//   identity: ["id"],
-//   keys: {
-//     id: Number,
-//     complete: Boolean,
-//     name: String,
-//     status: Status
-//   }
-// }
-```
+@sourceref ./can-query-logic-models/todo-union-example.js
 @codepen
+@highlight 12,only
 
 __3. The schema is used by `can-query-logic` to create set instances:__
 
-When a call to `.union()` happens like:
+When a call to `.filter()` happens like:
 
-```js
-var todoQuery = new QueryLogic(todoSchema);
-
-todoQuery.union(
-    { filter: {name: "assigned"} },
-    { filter: {name: "complete"} }
-)
-```
+@sourceref ./can-query-logic-models/todo-union-example.js
+@codepen
+@highlight 14-17,only
 
 The queries (ex: `{ filter: {name: "assigned"} }`) are hydrated to `SetType`s like:
 
 ```js
-var assignedSet = new BasicQuery({
-    filter: new And({
-        name: new Status[Symbol.for("can.SetType")]("assigned")
-    })
+const assignedSet = new BasicQuery({
+  filter: new And({
+    name: new Status[Symbol.for("can.SetType")]("assigned")
+  })
 });
 ```
 
@@ -716,26 +682,39 @@ var assignedSet = new BasicQuery({
 
 The following is a more complex query and what it gets hydrated to:
 
-```js
-// query
-{
-    filter: {
-        age: {$gt: 22}
-    },
-    sort: "-name",
-    page: {start: 0, end: 9}
-}
 
+```js
+import {QueryLogic, Reflect as canReflect} from "can";
+//query
+const queryLogic = new QueryLogic({
+  filter: {
+    age: {$gt: 22}
+  },
+  sort: "-name",
+  page: {start: 0, end: 9}
+});
+
+console.log( canReflect.getSchema(queryLogic) ); //-> {
+//   filter: {
+//     age: {$gt: 22}
+//   },
+//   sort: "-name",
+//   page: {start: 0, end: 9}
+// }
+```
+@codepen
+
+```js
 // hydrated set types
 new BasicQuery({
-    filter: new And({
-        age: new GreaterThan(22)
-    }),
-    sort: "-name",
-    page: new RealNumberRangeInclusive(0,9)
+  filter: new And({
+    age: new GreaterThan(22)
+  }),
+  sort: "-name",
+  page: new RealNumberRangeInclusive(0,9)
 });
 ```
-
+<!-- can has no export by the name of BasicQuery -->
 
 Once queries are hydrated, `can-query/src/set` is used to perform the union:
 
@@ -757,6 +736,7 @@ BasicQuery[Symbol.for("can.setComparisons")] = new Map([
     ])
 ]);
 ```
+<!-- can has no export by the name of BasicQuery -->
 
 Types like `BasicQuery` and `And` are "composer" types.  Their
  `union`, `difference` and `intersection` methods perform
