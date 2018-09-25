@@ -10,7 +10,7 @@ Create a logical AND of keys and their values.
   and `age` property is `35`:
 
   ```js
-  import {QueryLogic, Reflect as canReflect} from "can";
+  import {QueryLogic} from "can";
 
   const isJustinAnd35 = new QueryLogic.KeysAnd({
     first: "Justin",
