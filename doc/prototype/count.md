@@ -16,6 +16,7 @@ a `page` is provided.
   ```
   @codepen
 
-  @param  {can-query-logic/query} query
+  @param {can-query-logic/query} query A query representing a set of data.
+
   @return {Number} The number of records in the query if known, `Infinity`
   if unknown.
