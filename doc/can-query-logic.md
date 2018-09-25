@@ -26,7 +26,7 @@ data caching and real-time behavior.
 
   @sourceref ./can-query-logic-models/todo-example.js
   @codepen
-  @highlight 3-10,only
+  @highlight 3-10,12,only
 
   Once a _query logic_ instance is created, it can be used to
   perform actions using [can-query-logic/query queries].  For example,
