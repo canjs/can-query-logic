@@ -24,7 +24,7 @@ data caching and real-time behavior.
 
   For example, the following builds _query logic_ from a [can-define/map/map]:
 
-  @sourceref ./can-query-logic-models/todo-example.js
+  @sourceref ./examples/todo-example.js
   @codepen
   @highlight 3-10,12,only
 
@@ -32,7 +32,7 @@ data caching and real-time behavior.
   perform actions using [can-query-logic/query queries].  For example,
   the following might select 20 incomplete todos from a list of todos:
 
-  @sourceref ./can-query-logic-models/todo-example.js
+  @sourceref ./examples/todo-example.js
   @codepen
   @highlight 14-24,only
 
@@ -69,7 +69,7 @@ data caching and real-time behavior.
 
 - A constructor function that supports [can-reflect.getSchema can-reflect.getSchema]. Currently, [can-define/map/map] supports the `can.getSchema` symbol:
 
-  @sourceref ./can-query-logic-models/todo-example.js
+  @sourceref ./examples/todo-example.js
   @codepen
   @highlight 3,10,only
 
@@ -506,7 +506,7 @@ For example, you might want to represent a date with a string like:
 
 The following creates a `DateStringSet` that translates a date string to a number:
 
-@sourceref ./can-query-logic-models/date-string-example.js
+@sourceref ./examples/date-string-example.js
 @codepen
 
 These classes must provide:
@@ -528,13 +528,13 @@ new QueryLogic({
 
 More commonly, `DateStringSet` is the `can.SetType` symbol of a type like:
 
-@sourceref ./can-query-logic-models/date-string-example.js
+@sourceref ./examples/date-string-example.js
 @codepen
 @highlight 19-21,only
 
 Then this `DateString` is used to configure your data type like:
 
-@sourceref ./can-query-logic-models/date-string-example.js
+@sourceref ./examples/date-string-example.js
 @codepen
 @highlight 23-27,only
 
@@ -583,26 +583,26 @@ console.log( result ); //-> [
 
 Notice how all values that match `chicken` are returned.
 
-@sourceref ./can-query-logic-models/recipe-example.js
+@sourceref ./examples/recipe-example.js
 @codepen
 @highlight 3-75,only
 
 To configure a `QueryLogic` to use a `SetType`, it must be the `can.SetType` property on a
 schema's `keys` object.  This can be done directly like:
 
-@sourceref ./can-query-logic-models/recipe-example.js
+@sourceref ./examples/recipe-example.js
 @codepen
 @highlight 84-86,only
 
 More commonly, `SearchableStringSet` is the `can.SetType` symbol of a type like:
 
-@sourceref ./can-query-logic-models/searchable-todo-example.js
+@sourceref ./examples/searchable-todo-example.js
 @codepen
 @highlight 78-80,only
 
 Then this `SearchableString` is used to configure your data type like:
 
-@sourceref ./can-query-logic-models/searchable-todo-example.js
+@sourceref ./examples/searchable-todo-example.js
 @codepen
 @highlight 82-85,only
 
@@ -646,7 +646,7 @@ __1. Types are defined:__
 
 A user defines the type of data that will be loaded from the server:
 
-@sourceref ./can-query-logic-models/todo-union-example.js
+@sourceref ./examples/todo-union-example.js
 @codepen
 @highlight 3-10,only
 
@@ -654,7 +654,7 @@ __2. The defined type exposes a schema:__
 
 [can-define/map/map]s expose this type information as a schema:
 
-@sourceref ./can-query-logic-models/todo-union-example.js
+@sourceref ./examples/todo-union-example.js
 @codepen
 @highlight 12,only
 
@@ -662,7 +662,7 @@ __3. The schema is used by `can-query-logic` to create set instances:__
 
 When a call to `.filter()` happens like:
 
-@sourceref ./can-query-logic-models/todo-union-example.js
+@sourceref ./examples/todo-union-example.js
 @codepen
 @highlight 14-17,only
 
