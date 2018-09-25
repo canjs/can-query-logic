@@ -7,7 +7,7 @@ in the another set.
 @signature `queryLogic.difference(a, b)`
 
   Returns a set that represents the difference of sets _A_ and _B_. In set theory, a difference is
-  represented by `A \ B`.
+  represented by `A \ B`. The returned query would represent the values that are in one set that are not in the another set. Difference is sometimes known as [relative complement](https://en.wikipedia.org/wiki/Complement_(set_theory)#Relative_complement) in set theory.
 
   ```js
   import {QueryLogic} from "can";
