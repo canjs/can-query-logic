@@ -29,7 +29,7 @@ in the another set.
   ```
   @codepen
 
-  @param  {can-query-logic/query} a A query.
+  @param  {can-query-logic/query} a A query representing a set of data. The `a` query can be looked at as having the `b` values removed to produce the result.
   @param  {can-query-logic/query} b A query.
   @return {can-query-logic/query} Returns a query object, or one of the special sets:
   - [can-query-logic.EMPTY] - Query `a` is inside query `b`.
