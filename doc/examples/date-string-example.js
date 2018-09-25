@@ -26,10 +26,13 @@ const Todo = DefineMap.extend({
 	date: DateString
 });
 
-const todo = new Todo({
-	id: "1",
-	name: "Thomas",
-	date: "Wed Apr 04 2018 10:00:00 GMT-0500 (CDT)"
-})
+const queryLogic = new QueryLogic(Todo);
 
-console.log( todo.date.valueOf() );
+const filter = queryLogic.filterMembers(
+	{filter: {date: {$gt: "Wed Apr 04 2018 10:00:00 GMT-0500 (CDT)"}}},
+	[{id: 1, name: "grab coffee", date: "Wed Apr 03 2018 10:00:00 GMT-0500 (CDT)"},
+	{id: 2, name: "finish these docs", date: "Thurs Apr 05 2018 10:00:00 GMT-0500 (CDT)"},
+	{id: 3, name: "Learn CanJS", date: "Thurs Apr 05 2017 10:00:00 GMT-0500 (CDT)"}]
+); 
+
+console.log(filter); //-> {id: 2, name: "finish these docs", date: "Wed Apr 05 2018 10:00:00 GMT-0500 (CDT)"}
