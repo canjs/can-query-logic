@@ -302,7 +302,7 @@ import {Todo, todoFixture} from "//unpkg.com/can-demo-models@5";
 // creates a mock todo api
 todoFixture(1);
 
-Todo.list = DefineList.extend("TodoList", {
+Todo.List = DefineList.extend("TodoList", {
   "#": {Type: Todo}
 });
 
@@ -331,7 +331,7 @@ import {Todo, todoFixture} from "//unpkg.com/can-demo-models@5";
 // creates a mock todo api
 todoFixture(1);
 
-Todo.list = DefineList.extend("TodoList", {
+Todo.List = DefineList.extend("TodoList", {
   "#": {Type: Todo}
 });
 
@@ -372,7 +372,7 @@ import {Todo, todoFixture} from "//unpkg.com/can-demo-models@5";
 // creates a mock todo api
 todoFixture(5);
 
-Todo.list = DefineList.extend("TodoList", {
+Todo.List = DefineList.extend("TodoList", {
   "#": {Type: Todo}
 });
 
@@ -422,7 +422,7 @@ const todoQueryLogic = new QueryLogic(Todo, {
   }
 });
 
-Todo.list = DefineList.extend("TodoList", {
+Todo.List = DefineList.extend("TodoList", {
   "#": {Type: Todo}
 });
 
