@@ -13,8 +13,8 @@
   const queryLogic = new QueryLogic();
 
   const checkEquality = queryLogic.isEqual(
-      {filter: {type: "critical"}},
-      {filter: {type: {$in: ["critical"]}}}
+    {filter: {type: "critical"}},
+    {filter: {type: {$in: ["critical"]}}}
   );
   console.log( checkEquality ); //-> true
   ```

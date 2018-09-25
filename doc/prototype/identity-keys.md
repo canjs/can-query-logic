@@ -12,7 +12,7 @@
   import {QueryLogic} from "can";
 
   const queryLogic = new QueryLogic({
-      identity: ["_id"]
+    identity: ["_id"]
   });
 
   console.log( queryLogic.identityKeys() ); //-> ["_id"]

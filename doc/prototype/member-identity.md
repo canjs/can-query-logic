@@ -18,7 +18,7 @@
   console.log( idIdentity ); //-> 5
 
   const todoQueryLogic = new QueryLogic({
-      identity: ["studentId", "classId"]
+    identity: ["studentId", "classId"]
   });
   const studentIdentity = todoQueryLogic.memberIdentity({studentId: 6, classId: "7", foo: "bar"});
   console.log(studentIdentity); //-> '{"classId":"7","studentId":6}'

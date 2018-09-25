@@ -27,8 +27,8 @@ a difference of people in Chicago compared to people named Justin who are 35:
   const isJustinAnd35 = new QueryLogic.KeysAnd( {name: "Justin", age: 35} );
 
   const undefinable = new QueryLogic.ValueAnd([
-      inChicago,
-      new QueryLogic.Not(isJustinAnd35)
+    inChicago,
+    new QueryLogic.Not(isJustinAnd35)
   ]);
   console.log( undefinable );
   ```

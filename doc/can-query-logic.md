@@ -730,10 +730,10 @@ a `can.setComparisons` property and value like the following:
 import {BasicQuery} from "can";
 
 BasicQuery[Symbol.for("can.setComparisons")] = new Map([
-    [BasicQuery]: new Map([
-        [BasicQuery]: {union, difference, intersection}
-        [QueryLogic.UNIVERSAL]: {difference}
-    ])
+  [BasicQuery]: new Map([
+    [BasicQuery]: {union, difference, intersection}
+    [QueryLogic.UNIVERSAL]: {difference}
+  ])
 ]);
 ```
 <!-- can has no export by the name of BasicQuery -->
@@ -752,7 +752,7 @@ and simply return a new `BasicQuery` with the union of the filters:
 
 ```js
 new BasicQuery({
-    filter: set.union( assignedSet.filter, completeSet.filter )
+  filter: set.union( assignedSet.filter, completeSet.filter )
 })
 ```
 
@@ -760,9 +760,9 @@ This will eventually result in a query like:
 
 ```js
 new BasicQuery({
-    filter: new And({
-        name: new Status[Symbol.for("can.SetType")]("assigned", "complete")
-    })
+  filter: new And({
+    name: new Status[Symbol.for("can.SetType")]("assigned", "complete")
+  })
 })
 ```
 
@@ -772,9 +772,9 @@ Finally, this set will be serialized to:
 
 ```js
 {
-    filter: {
-        name: ["assigned", "complete"]
-    }
+  filter: {
+    name: ["assigned", "complete"]
+  }
 }
 ```
 

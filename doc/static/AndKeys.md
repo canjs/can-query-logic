@@ -13,8 +13,8 @@ Create a logical AND of keys and their values.
   import {QueryLogic, Reflect as canReflect} from "can";
 
   const isJustinAnd35 = new QueryLogic.KeysAnd({
-      first: "Justin",
-      age: 35
+    first: "Justin",
+    age: 35
   });
 
   console.log( isJustinAnd35.values ); //-> {first: Justin, age: 35}

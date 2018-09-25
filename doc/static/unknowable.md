@@ -14,11 +14,11 @@ can be figured out.
   const queryLogic = new QueryLogic();
 
   const diff = queryLogic.difference({
-      filter: {age: 35},
-      sort: "name"
+    filter: {age: 35},
+    sort: "name"
   },{
-      filter: {name: "Justin"},
-      sort: "age"
+    filter: {name: "Justin"},
+    sort: "age"
   });
   // codepen logs limited nesting of objects. Using JSON.stringify to circumvent issue.
   console.log( JSON.stringify( diff ) ); //-> "{'filter': {'age': '35', 'name': {'$ne': 'Justin'}}, sort: 'name'}"
@@ -35,13 +35,13 @@ can be figured out.
   const queryLogic = new QueryLogic();
 
   const diff = queryLogic.difference({
-      filter: {age: 35},
-      sort: "name",
-      page: {start: 0, end: 10}
+    filter: {age: 35},
+    sort: "name",
+    page: {start: 0, end: 10}
   },{
-      filter: {name: "Justin"},
-      sort: "age",
-      page: {start: 0, end: 12}
+    filter: {name: "Justin"},
+    sort: "age",
+    page: {start: 0, end: 12}
   });
   console.log( diff ); //-> QueryLogic.UNKNOWABLE
   ```

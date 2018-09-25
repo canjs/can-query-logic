@@ -11,9 +11,9 @@
   const queryLogic = new QueryLogic();
 
   const myIndex = queryLogic.index(
-  {sort: "age"},
-  [{id: 1, age: 3},{id: 2, age: 5},{id: 3, age: 8},{id: 4, age: 10}],
-  {id: 6, age: 3}
+    {sort: "age"},
+    [{id: 1, age: 3},{id: 2, age: 5},{id: 3, age: 8},{id: 4, age: 10}],
+    {id: 6, age: 3}
   );
   console.log( indices ); //-> 2
   ```
