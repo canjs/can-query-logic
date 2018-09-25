@@ -1,6 +1,8 @@
 @function can-query-logic.prototype.index index
 @parent can-query-logic.prototype
 
+@description returns the index where the `record` will be input.
+
 @signature `queryLogic.index(query, records, record)`
 
   Returns where `record` should be inserted into `records` which is represented by `query`.
@@ -13,9 +15,9 @@
   const myIndex = queryLogic.index(
     {sort: "age"},
     [{id: 1, age: 3},{id: 2, age: 5},{id: 3, age: 8},{id: 4, age: 10}],
-    {id: 6, age: 3}
+    {id: 6, age: 4}
   );
-  console.log( indices ); //-> 2
+  console.log( myIndex ); //-> 1
   ```
   @codepen
 
