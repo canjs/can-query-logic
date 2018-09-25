@@ -5,7 +5,7 @@
 
 @signature `queryLogic.isMember(query, record)`
 
-  Used to tell if the `set` contains the instance object `record`.
+  Used to tell if the `query` contains the instance object `record`.
 
   ```js
   import {QueryLogic} from "can";
