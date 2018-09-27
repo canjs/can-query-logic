@@ -20,12 +20,19 @@ can be figured out.
     filter: {name: "Justin"},
     sort: "age"
   });
-  // codepen logs limited nesting of objects. Using JSON.stringify to circumvent issue.
-  console.log( JSON.stringify( diff ) ); //-> "{'filter': {'age': '35', 'name': {'$ne': 'Justin'}}, sort: 'name'}"
+  // Codepen logs limited nesting of objects.
+  // Using JSON.stringify to circumvent issue.
+  console.log( JSON.stringify( diff ) ); //-> "{
+  //   'filter': {
+  //     'age': '35',
+  //     'name': {'$ne': 'Justin'}
+  //   },
+  //   'sort': 'name'
+  // }"
   ```
   @codepen
 
-  There might be records in the first set that are not in the second set. So there is a result.
+  Since it is possible that there might be records in the first set that won't be in the second set, thus [can-query-logic.prototype.difference difference] it returns a query.
 
   Now consider a similar example, but with pagination added:
 
