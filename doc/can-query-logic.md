@@ -438,7 +438,7 @@ Todo.getList({filter: {complete:true}}).toQuery().then(todos => {
 });
 
 ```
-@codepen
+<!-- @codepen -->
 <!-- not sure how toParams and toQuery are suppose to work -->
 
 
