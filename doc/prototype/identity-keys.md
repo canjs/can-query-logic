@@ -34,7 +34,7 @@
 
 ## Alternatives
 
-Using [can-reflect.getSchema.html canReflect.getSchema().identity]:
+Using [canReflect.getSchema().identity](can-reflect.getSchema.html):
 
 ```js
 import {QueryLogic, Reflect as canReflect} from "can";
