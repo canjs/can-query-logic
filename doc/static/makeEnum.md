@@ -27,7 +27,13 @@ Create a schema type that represents a finite set of values.
     {filter: {status: "complete" }}
   );
 
-  console.log( JSON.stringify( unionQuery ) ); //-> "{'filter':{'status':{'$in':['new','assigned','complete']}}}"
+  console.log( JSON.stringify( unionQuery ) ); //-> "{
+  //   'filter':{
+  //     'status':{
+  //       '$in':['new','assigned','complete']
+  //     }
+  //   }
+  // }"
   ```
   @codepen
 

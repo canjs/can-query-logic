@@ -35,4 +35,8 @@ const filter = queryLogic.filterMembers(
 	{id: 3, name: "Learn CanJS", date: "Thurs Apr 05 2017 10:00:00 GMT-0500 (CDT)"}]
 ); 
 
-console.log(filter); //-> {id: 2, name: "finish these docs", date: "Wed Apr 05 2018 10:00:00 GMT-0500 (CDT)"}
+console.log(filter); //-> {
+// 	id: 2,
+// 	name: "finish these docs",
+// 	date: "Wed Apr 05 2018 10:00:00 GMT-0500 (CDT)"
+// }

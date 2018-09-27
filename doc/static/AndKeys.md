@@ -44,7 +44,7 @@ const isChicago = new QueryLogic.KeysAnd({
 });
 
 const intersect = QueryLogic.intersection( isJustinAnd35, isChicago )
-console.log( intersect.values );//-> { first: "Justin", age: 35, location: "Chicago"}
+console.log( intersect.values );//-> {first: "Justin", age: 35, location: "Chicago"}
 ```
 @codepen
 

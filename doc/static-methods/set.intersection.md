@@ -20,8 +20,7 @@ Perform an intersection of set types.
   const lt6 = new QueryLogic.LessThan(6);
 
   const intersect = QueryLogic.intersection(gt3, lt6);
-  console.log( intersect ); //->
-  // new QueryLogic.ValueAnd( [
+  console.log( intersect ); //-> new QueryLogic.ValueAnd( [
   //   gt3,
   //   lt6
   // ] )
