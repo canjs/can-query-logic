@@ -431,15 +431,14 @@ Todo.connection = realtimeRestModel({
   queryLogic: todoQueryLogic
 });
 
-Todo.getList({filter: {complete:true}}).toQuery().then(todos => {
+Todo.getList({filter: {complete:true}}).then(todos => {
   todos.forEach(todo => {
-    console.log(todos.name); // shows FILTERED todos
+    console.log(todo.name); // shows FILTERED todos
   });
 });
 
 ```
-<!-- @codepen -->
-<!-- not sure how toParams and toQuery are suppose to work -->
+@codepen
 
 
 ### Defining filter properties with special logic
