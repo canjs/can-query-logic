@@ -140,7 +140,7 @@
 
   The `$lte` operator behaves like the [$lte MongoDB equivalent](https://docs.mongodb.com/manual/reference/operator/query/lte/)
 
-    ```js
+  ```js
   import {QueryLogic} from "can";
 
   const queryLogic = new QueryLogic();
