@@ -8,6 +8,15 @@
 
   Return the identity keys used to identity instances associated with the query logic:
 
+  <section class="warnings">
+  <div class="deprecated warning">
+  <h3>Deprecated</h3>
+  <div class="signature-wrapper">
+  <p>Using <code>.identityKeys</code> has been deprecated in favor of <code><a href="can-reflect.getSchema.html" title="Returns the schema for a type or value.">canReflect.getSchema().identity</a></code>.
+  </div>
+  </div>
+  </section>
+
   ```js
   import {QueryLogic} from "can";
 
@@ -20,3 +29,22 @@
   @codepen
 
   @return {Array<String>} An Array of the identity keys.
+
+@body
+
+## Alternatives
+
+Using [can-reflect.getSchema.html canReflect.getSchema().identity]:
+
+```js
+import {QueryLogic, Reflect as canReflect} from "can";
+
+const queryLogic = new QueryLogic({
+  identity: ["_id"]
+});
+
+const identity = canReflect.getSchema(queryLogic).identity;
+
+console.log( queryLogic.getSchema( identity ) ); //-> ["_id"]
+```
+@codepen
