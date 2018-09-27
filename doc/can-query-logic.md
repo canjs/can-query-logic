@@ -68,7 +68,6 @@ data caching and real-time behavior.
 @param {function|can-reflect/schema} schemaOrType Defines the behavior of keys on a [can-query-logic/query]. This is done with either:
 
 - A constructor function that supports [can-reflect.getSchema can-reflect.getSchema]. Currently, [can-define/map/map] supports the `can.getSchema` symbol:
-
   @sourceref ./examples/todo-example.js
   @codepen
   @highlight 3,10,only
@@ -106,7 +105,7 @@ data caching and real-time behavior.
   ```js
   import {QueryLogic} from "can";
 
-  const queryLogic = new QueryLogic({identity: ["id"]});
+  const queryLogic = new QueryLogic();
   const unionized = queryLogic.union(
     {filter: {age: 7}},
     {filter: {age: "07"}}
@@ -131,8 +130,7 @@ data caching and real-time behavior.
   );
   console.log( JSON.stringify( unionized ) ); //-> {filter: {age: 7}}
   ```
-  <!-- Example doesn't work. Issue open: https://github.com/canjs/can-data-types/issues/7 -->
-  <!-- @codepen -->
+  @codepen
 
 
   If you need even more special key behavior, read [defining properties with special logic](#Definingfilterpropertieswithspeciallogic).
@@ -162,7 +160,7 @@ __The parameters used to retrieve a list of data?__
 In many applications, you request a list of data by making a `fetch` or `XMLHTTPRequest`
 to a url like:
 
-```html
+```
 /api/todos?filter[complete]=true&sort=name
 ```
 
@@ -351,7 +349,7 @@ Todo.getList().then(todos => {
 
 ```
 @codepen
-@highlight 13-17,only
+@highlight 11,16,only
 
 If your services don't match the default query structure or logic, read on to
 see how to configure your query to match your service layer.
@@ -574,10 +572,7 @@ const result = queryLogic.filterMembers({
   filter: {name: "chicken"}
 }, recipes);
 
-console.log( result ); //-> [
-  // {id: 1, name: "garlic chicken"},
-  // {id: 3, name: "chicken kiev"}
-  // ]
+console.log( result ); //-> []
 ```
 @codepen
 
