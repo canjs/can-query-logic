@@ -66,6 +66,6 @@
 
   @param  {can-query-logic/query} a The query whose data will be returned.
   @param  {can-query-logic/query} [b] An optional superset of query `a`. If only two arguments are provided,
-    the universal set is used.
+    the [can-query-logic.UNIVERSAL universal set] is used.
   @param  {Array<Object>} bData The data in query `b`.
   @return {Array<Object>} The data in query `a`.
