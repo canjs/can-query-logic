@@ -5,15 +5,21 @@ Return a query that represents the intersection of two queries.
 
 @signature `queryLogic.intersection(a, b)`
 
-Returns a query that represents the intersection of queries _A_ and _B_. In set theory, an intersection is
-represented by `A ∩ B`.
+  Returns a query that represents the intersection of queries _A_ and _B_. In set theory, an intersection is
+  represented by `A ∩ B`.
 
-```js
-queryLogic.intersection(
-  { filter: {completed: true, due: "tomorrow"} },
-  { filter: {completed: true, type: "critical"} }
-) //-> {filter: {completed: true, due: "tomorrow", type: "critical"}}
-```
+  ```js
+  import {QueryLogic} from "can";
+
+  const queryLogic = new QueryLogic();
+
+  const filter = queryLogic.intersection(
+    { filter: {completed: true, due: "tomorrow"} },
+    { filter: {completed: true, type: "critical"} }
+  );
+  console.log( filter ); //-> {filter: {completed: true, due: "tomorrow", type: "critical"}}
+  ```
+  @codepen
 
   @param  {can-query-logic/query} a A query.
   @param  {can-query-logic/query} b A query.
