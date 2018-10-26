@@ -3,7 +3,7 @@ var canReflect = require("can-reflect");
 var Serializer = function(entries){
 	var serializers = this.serializers = new Map();
 	if (entries) {
-		canReflect.each(entries, function(entry) {
+		entries.forEach(function(entry) {
 			var key = entry[0], value = entry[1];
 			serializers.set(key, value);
 		});
