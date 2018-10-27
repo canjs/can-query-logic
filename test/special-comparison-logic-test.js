@@ -7,13 +7,13 @@ QUnit.module("can-query-logic special comparison logic");
 QUnit.test("where to filter", function(){
 
 	var todoQueryLogic = new QueryLogic({}, {
-		toQuery(params){
+		toQuery: function(params){
 			var where = params.where;
 			delete params.where;
 			params.filter = where;
 			return params;
 		},
-		toParams(query){
+		toParams: function(query){
 			var where = query.filter;
 			delete query.filter;
 			query.where = where;
@@ -52,7 +52,7 @@ QUnit.test("Searchable string", function(){
 
 	// Specify how to do the fundamental set comparisons.
 	QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
-		union(searchA, searchB){
+		union: function(searchA, searchB){
 			if(searchA.value.includes(searchB.value)) {
 				return searchB;
 			}
@@ -62,7 +62,7 @@ QUnit.test("Searchable string", function(){
 			return new QueryLogic.ValuesOr([searchA, searchB]);
 		},
 		// a aa
-		intersection(searchA, searchB){
+		intersection: function(searchA, searchB){
 			if(searchA.value.includes(searchB.value)) {
 				return searchA;
 			}
@@ -71,7 +71,7 @@ QUnit.test("Searchable string", function(){
 			}
 			return QueryLogic.UNDEFINABLE;
 		},
-		difference(searchA, searchB){
+		difference: function(searchA, searchB){
 			// if a is a subset
 			if(searchA.value.includes(searchB.value)) {
 				return QueryLogic.EMPTY;
