@@ -1,6 +1,5 @@
 var set = require("./set");
 var QUnit = require("steal-qunit");
-var canReflect = require("can-reflect");
 
 QUnit.module("can-query-logic/set");
 
