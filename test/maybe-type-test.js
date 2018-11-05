@@ -123,7 +123,7 @@ QUnit.test("MaybeDate", function(){
 			due: MaybeDate
 		}
 	});
-
+	/*
 	var date1982_10_20 = new Date(1982,9,20).toString();
 
 	res = todoQueryLogic.difference(
@@ -167,6 +167,47 @@ QUnit.test("MaybeDate", function(){
 	QUnit.ok( todoQueryLogic.isMember({filter: {due: {$in: [null,undefined]}}},{
 		id: 0,
 		due: null
-	}), "works if using in");
+	}), "works if using in");*/
 
+	var store = [
+		{
+			id: 1,
+			due: null
+		},
+		{
+			id: 2,
+			due: new Date(2001,0,1).toString()
+		},
+		{
+			id: 3,
+			due: new Date(2000,0,1).toString()
+		},
+		{
+			id: 4,
+			due: null
+		}
+	]
+
+	var results = todoQueryLogic.filterMembers({
+		sort: "due"
+	}, store);
+
+	QUnit.deepEqual(results, [
+		{
+			id: 1,
+			due: null
+		},
+		{
+			id: 4,
+			due: null
+		},
+		{
+			id: 3,
+			due: new Date(2000,0,1).toString()
+		},
+		{
+			id: 2,
+			due: new Date(2001,0,1).toString()
+		}
+	]);
 });

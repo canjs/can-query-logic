@@ -17,26 +17,37 @@ var KeysAnd = andOrNot.KeysAnd,
 var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
 
 // WILL MAKE A TYPE FOR SORTING
-function makeSort(schemaKeys, hydrateAndValue){
+function makeSort(schemaKeys, hydrateAndValue) {
 	// Makes gt and lt functions that `helpers.sorter` can use
 	// to make a `compare` function for `Array.sort(compare)`.`
 	var sorters = {};
-    canReflect.eachKey(schemaKeys, function(schemaProp, key){
+	canReflect.eachKey(schemaKeys, function(schemaProp, key) {
 
-        sorters[key] = {
-            // valueA is GT valueB
-            $gt: function(valueA, valueB) {
-                var $gt = hydrateAndValue({$gt: valueB}, key, schemaProp,
-									helpers.valueHydrator);
-                return $gt[isMemberSymbol](valueA);
-            },
-            $lt: function( valueA, valueB ){
-                var $lt = hydrateAndValue({$lt: valueB}, key, schemaProp,
-									helpers.valueHydrator);
-                return $lt[isMemberSymbol](valueA);
-            }
-        };
-    });
+		sorters[key] = {
+			// valueA is GT valueB
+			$gt: function(valueA, valueB) {
+				// handle sorting with null / undefined values
+				if(valueA == null || valueB == null) {
+					return helpers.typeCompare.$gt(valueA, valueB);
+				}
+				var $gt = hydrateAndValue({
+						$gt: valueB
+					}, key, schemaProp,
+					helpers.valueHydrator);
+				return $gt[isMemberSymbol](valueA);
+			},
+			$lt: function(valueA, valueB) {
+				if(valueA == null || valueB == null) {
+					return helpers.typeCompare.$lt(valueA, valueB);
+				}
+				var $lt = hydrateAndValue({
+						$lt: valueB
+					}, key, schemaProp,
+					helpers.valueHydrator);
+				return $lt[isMemberSymbol](valueA);
+			}
+		};
+	});
 
 	function Sort(key) {
 		this.key = key;
@@ -46,9 +57,11 @@ function makeSort(schemaKeys, hydrateAndValue){
 	function identityIntersection(v1, v2) {
 		return v1.key === v2.key ? v1 : set.EMPTY;
 	}
+
 	function identityDifference(v1, v2) {
 		return v1.key === v2.key ? set.EMPTY : v1;
 	}
+
 	function identityUnion(v1, v2) {
 		return v1.key === v2.key ? v1 : set.UNDEFINABLE;
 	}
@@ -75,7 +88,7 @@ function BasicQuery(query) {
 	if (!this.sort) {
 		this.sort = "id";
 	}
-	if(typeof this.sort === "string") {
+	if (typeof this.sort === "string") {
 		this.sort = new DefaultSort(this.sort);
 	}
 }
@@ -171,13 +184,13 @@ canReflect.assignMap(BasicQuery.prototype, {
 		// Use the AND type for it's isMember method
 		return this.filter.isMember(props);
 	},
-	removePagination: function(){
+	removePagination: function() {
 		this.page = new RecordRange();
 	}
 });
 
 // Helpers used for the `set` comparators
-var CLAUSE_TYPES = ["filter", "page","sort"];
+var CLAUSE_TYPES = ["filter", "page", "sort"];
 
 function getDifferentClauseTypes(queryA, queryB) {
 	var differentTypes = [];

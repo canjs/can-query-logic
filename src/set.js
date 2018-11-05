@@ -195,19 +195,27 @@ set = {
 		}
 		return value.constructor;
 	},
+	// This tries to get two comparable values from objects.
+	// In many ways this is similar to what JavaScript does if it sees
+	// `new Date() > new Date()`, it tries to coerce one value into the other value.
 	ownAndMemberValue: function(startOwnValue, startMemberValue) {
 		// If either side has a value, then try to type-coerse.
 		if (startOwnValue != null || startMemberValue != null) {
+			// First try to get `.valueOf` from either side
 			var ownValue = startOwnValue != null ? startOwnValue.valueOf() : startOwnValue,
 				memberValue = startMemberValue != null ? startMemberValue.valueOf() : startMemberValue;
-			// if we have nulls or undefineds
+
+			// If we ot passed a null on either side, return extracted values
 			if (startOwnValue == null || startMemberValue == null) {
 				return {
 					own: ownValue,
 					member: memberValue
 				};
 			}
-			if (ownValue.constructor !== memberValue.constructor) {
+			// If we read the values, but they aren't the same type ...
+			// we will try to convert the member to the same type as the `startOwnValue`'s type.
+			// And then read `.valueOf()` from that.
+			if (ownValue == null || ownValue.constructor !== memberValue.constructor) {
 				memberValue = new startOwnValue.constructor(memberValue).valueOf();
 			}
 			return {

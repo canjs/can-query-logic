@@ -1,3 +1,4 @@
+require("./src/set-test");
 require("./src/types/make-real-number-range-inclusive-test");
 require("./src/types/comparisons-test");
 require("./src/types/and-or-not-test");
@@ -26,184 +27,295 @@ QUnit.module("can-query-logic");
 
 
 
-QUnit.test("union", function(){
-    var unionResult = algebra.union({
-        filter: {
-            name: "Ramiya"
-        }
-    },{
-        filter: {
-            name: "Bohdi"
-        }
-    });
+QUnit.test("union", function() {
+	var unionResult = algebra.union({
+		filter: {
+			name: "Ramiya"
+		}
+	}, {
+		filter: {
+			name: "Bohdi"
+		}
+	});
 
-    QUnit.deepEqual(unionResult, {
-        filter: {
-            name: {$in: ["Ramiya", "Bohdi"]},
-        }
-    });
+	QUnit.deepEqual(unionResult, {
+		filter: {
+			name: {
+				$in: ["Ramiya", "Bohdi"]
+			},
+		}
+	});
 });
 
-QUnit.test("difference", function(){
-    var differenceResult = algebra.difference({
-        filter: {
-            name: {$in: ["Ramiya", "Bohdi"]}
-        }
-    },{
-        filter: {
-            name: "Bohdi"
-        }
-    });
+QUnit.test("difference", function() {
+	var differenceResult = algebra.difference({
+		filter: {
+			name: {
+				$in: ["Ramiya", "Bohdi"]
+			}
+		}
+	}, {
+		filter: {
+			name: "Bohdi"
+		}
+	});
 
-    QUnit.deepEqual(differenceResult, {
-        filter: {
-            name: "Ramiya",
-        }
-    });
-
-
-});
-
-QUnit.test("subset", function(){
-    var subsetResult = algebra.isSubset({
-        filter: {
-            name: "Bohdi"
-        }
-    },{
-        filter: {
-            name: {$in: ["Ramiya", "Bohdi"]}
-        }
-    });
-
-    QUnit.deepEqual(subsetResult,true);
-});
-
-QUnit.test("isMember", function(){
-    var hasResult = algebra.isMember({
-        filter: {
-            name: "Bohdi"
-        }
-    },{
-        name: "Bohdi"
-    });
-
-    QUnit.deepEqual(hasResult,true);
-});
-
-QUnit.test("filterMembers basics", function(){
-    var subset = algebra.filterMembers({
-        filter: {
-            name: {$in: ["Bohdi","Ramiya"]}
-        }
-    },{}, [
-        {name: "Bohdi"},
-        {name: "Ramiya"},
-        {name: "Payal"},
-        {name: "Justin"}
-    ]);
-
-    QUnit.deepEqual(subset,[
-        {name: "Bohdi"},
-        {name: "Ramiya"}
-    ]);
-
-    subset = algebra.filterMembers({
-        filter: {
-            name: {$in: ["Payal","Ramiya","Justin"]}
-        },
-        page: {start: "1", end: "2"}
-    },{}, [
-        {name: "Bohdi"},
-        {name: "Ramiya"},
-        {name: "Payal"},
-        {name: "Justin"}
-    ]);
-
-    QUnit.deepEqual(subset,[
-        {name: "Payal"},
-        {name: "Justin"}
-    ]);
-});
-
-
-QUnit.test("unionMembers basics", function(){
-    var union = algebra.unionMembers({
-        filter: {
-            name: "Bohdi"
-        }
-    },{
-        filter: {
-            name: "Ramiya"
-        }
-    }, [
-        {name: "Bohdi", id: 1},
-    ],[
-        {name: "Ramiya", id: 2},
-    ]);
-
-    QUnit.deepEqual(union,[
-        {name: "Bohdi", id: 1},
-        {name: "Ramiya", id: 2}
-    ]);
-});
-
-QUnit.test("count basics", function(){
-
-    QUnit.equal(algebra.count({}), Infinity);
-    QUnit.equal(algebra.count({page: {start: 1, end: 2}}), 2);
+	QUnit.deepEqual(differenceResult, {
+		filter: {
+			name: "Ramiya",
+		}
+	});
 
 
 });
 
-QUnit.test('index basics', function(){
+QUnit.test("subset", function() {
+	var subsetResult = algebra.isSubset({
+		filter: {
+			name: "Bohdi"
+		}
+	}, {
+		filter: {
+			name: {
+				$in: ["Ramiya", "Bohdi"]
+			}
+		}
+	});
 
-	var index = algebra.index(
-		{sort: "name"},
-		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}],
-		{name: "k"});
+	QUnit.deepEqual(subsetResult, true);
+});
+
+QUnit.test("isMember", function() {
+	var hasResult = algebra.isMember({
+		filter: {
+			name: "Bohdi"
+		}
+	}, {
+		name: "Bohdi"
+	});
+
+	QUnit.deepEqual(hasResult, true);
+});
+
+QUnit.test("filterMembers basics", function() {
+	var subset = algebra.filterMembers({
+		filter: {
+			name: {
+				$in: ["Bohdi", "Ramiya"]
+			}
+		}
+	}, {}, [{
+			name: "Bohdi"
+		},
+		{
+			name: "Ramiya"
+		},
+		{
+			name: "Payal"
+		},
+		{
+			name: "Justin"
+		}
+	]);
+
+	QUnit.deepEqual(subset, [{
+			name: "Bohdi"
+		},
+		{
+			name: "Ramiya"
+		}
+	]);
+
+	subset = algebra.filterMembers({
+		filter: {
+			name: {
+				$in: ["Payal", "Ramiya", "Justin"]
+			}
+		},
+		page: {
+			start: "1",
+			end: "2"
+		}
+	}, {}, [{
+			name: "Bohdi"
+		},
+		{
+			name: "Ramiya"
+		},
+		{
+			name: "Payal"
+		},
+		{
+			name: "Justin"
+		}
+	]);
+
+	QUnit.deepEqual(subset, [{
+			name: "Payal"
+		},
+		{
+			name: "Justin"
+		}
+	]);
+});
+
+
+QUnit.test("unionMembers basics", function() {
+	var union = algebra.unionMembers({
+		filter: {
+			name: "Bohdi"
+		}
+	}, {
+		filter: {
+			name: "Ramiya"
+		}
+	}, [{
+		name: "Bohdi",
+		id: 1
+	}, ], [{
+		name: "Ramiya",
+		id: 2
+	}, ]);
+
+	QUnit.deepEqual(union, [{
+			name: "Bohdi",
+			id: 1
+		},
+		{
+			name: "Ramiya",
+			id: 2
+		}
+	]);
+});
+
+QUnit.test("count basics", function() {
+
+	QUnit.equal(algebra.count({}), Infinity);
+	QUnit.equal(algebra.count({
+		page: {
+			start: 1,
+			end: 2
+		}
+	}), 2);
+
+
+});
+
+QUnit.test('index basics', function() {
+
+	var index = algebra.index({
+			sort: "name"
+		},
+		[{
+			id: 1,
+			name: "g"
+		}, {
+			id: 2,
+			name: "j"
+		}, {
+			id: 3,
+			name: "m"
+		}, {
+			id: 4,
+			name: "s"
+		}], {
+			name: "k"
+		});
 	equal(index, 2);
 
-    index = algebra.index(
-		{sort: "-name"},
-		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}].reverse(),
-		{name: "k"});
+	index = algebra.index({
+			sort: "-name"
+		},
+		[{
+			id: 1,
+			name: "g"
+		}, {
+			id: 2,
+			name: "j"
+		}, {
+			id: 3,
+			name: "m"
+		}, {
+			id: 4,
+			name: "s"
+		}].reverse(), {
+			name: "k"
+		});
 	equal(index, 2);
 
-    index = algebra.index(
-		{},
-		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}],
-		{id: 0, name: "k"});
+	index = algebra.index({},
+		[{
+			id: 1,
+			name: "g"
+		}, {
+			id: 2,
+			name: "j"
+		}, {
+			id: 3,
+			name: "m"
+		}, {
+			id: 4,
+			name: "s"
+		}], {
+			id: 0,
+			name: "k"
+		});
 
 	equal(index, 0);
 
 
-	index = algebra.index(
-		{},
-		[{id: 1, name:"g"}, {id: 2, name:"j"}, {id: 3, name:"m"}, {id: 4, name:"s"}],
-		{name: "k"});
+	index = algebra.index({},
+		[{
+			id: 1,
+			name: "g"
+		}, {
+			id: 2,
+			name: "j"
+		}, {
+			id: 3,
+			name: "m"
+		}, {
+			id: 4,
+			name: "s"
+		}], {
+			name: "k"
+		});
 
 	equal(index, undefined, "no value if no id");
 
-    var TODO_id = canReflect.assignSymbols({},{
-        "can.getSchema": function(){
-            return {
-                kind: "record",
-                identity: ["_id"],
-                keys: {
-                    id: Number,
-                    points: Number,
-                    complete: Boolean,
-                    name: String
-                }
-            };
-        }
-    });
-    var algebra2 = new QueryLogic(TODO_id);
+	var TODO_id = canReflect.assignSymbols({}, {
+		"can.getSchema": function() {
+			return {
+				kind: "record",
+				identity: ["_id"],
+				keys: {
+					id: Number,
+					points: Number,
+					complete: Boolean,
+					name: String
+				}
+			};
+		}
+	});
+	var algebra2 = new QueryLogic(TODO_id);
 
-    index = algebra2.index(
-		{},
-		[{id: 1, _id: 0}, {id: 2, _id: 1}, {id: 3, _id: 3}, {id: 4, _id: 4}],
-		{id: 0, _id: 2});
+	index = algebra2.index({},
+		[{
+			id: 1,
+			_id: 0
+		}, {
+			id: 2,
+			_id: 1
+		}, {
+			id: 3,
+			_id: 3
+		}, {
+			id: 4,
+			_id: 4
+		}], {
+			id: 0,
+			_id: 2
+		});
 
 	equal(index, 2);
 
@@ -211,54 +323,106 @@ QUnit.test('index basics', function(){
 
 });
 
-QUnit.test("filterMembers with reverse sort", function(){
-    var sortedMembers = algebra.filterMembers(
-		{sort: "-name"},
-		[{id: 1, name:"a"}, {id: 2, name:"z"}, {id: 3, name:"f"}, {id: 4, name:"s"}]);
+QUnit.test("filterMembers with reverse sort", function() {
+	var sortedMembers = algebra.filterMembers({
+			sort: "-name"
+		},
+		[{
+			id: 1,
+			name: "a"
+		}, {
+			id: 2,
+			name: "z"
+		}, {
+			id: 3,
+			name: "f"
+		}, {
+			id: 4,
+			name: "s"
+		}]);
 
-    QUnit.deepEqual(sortedMembers,
-        [{id: 2, name:"z"}, {id: 4, name:"s"}, {id: 3, name:"f"}, {id: 1, name:"a"}]);
+	QUnit.deepEqual(sortedMembers,
+		[{
+			id: 2,
+			name: "z"
+		}, {
+			id: 4,
+			name: "s"
+		}, {
+			id: 3,
+			name: "f"
+		}, {
+			id: 1,
+			name: "a"
+		}]);
 });
 
-QUnit.test("isPaginated, removePagination", function(assert){
-    assert.equal( algebra.isPaginated({}), false, "universe is not paginated");
-    assert.equal( algebra.isPaginated({filter: {foo: "bar"}}), false, "filter is not paginated");
-    assert.equal( algebra.isPaginated({sort: "bar"}), false, "sort is not paginated");
+QUnit.test("isPaginated, removePagination", function(assert) {
+	assert.equal(algebra.isPaginated({}), false, "universe is not paginated");
+	assert.equal(algebra.isPaginated({
+		filter: {
+			foo: "bar"
+		}
+	}), false, "filter is not paginated");
+	assert.equal(algebra.isPaginated({
+		sort: "bar"
+	}), false, "sort is not paginated");
 
-    assert.equal( algebra.isPaginated({page: {start: 1, end: 2}}), true, "page is paginated");
+	assert.equal(algebra.isPaginated({
+		page: {
+			start: 1,
+			end: 2
+		}
+	}), true, "page is paginated");
 
 
-    assert.deepEqual( algebra.removePagination({}), {}, "removePagination universe");
-    assert.deepEqual( algebra.removePagination({filter: {foo: "bar"}}), {filter: {foo: "bar"}}, "removePagination filter");
-    assert.deepEqual( algebra.removePagination({sort: "bar"}), {sort: "bar"}, "removePagination sort");
+	assert.deepEqual(algebra.removePagination({}), {}, "removePagination universe");
+	assert.deepEqual(algebra.removePagination({
+		filter: {
+			foo: "bar"
+		}
+	}), {
+		filter: {
+			foo: "bar"
+		}
+	}, "removePagination filter");
+	assert.deepEqual(algebra.removePagination({
+		sort: "bar"
+	}), {
+		sort: "bar"
+	}, "removePagination sort");
 
-    assert.deepEqual( algebra.removePagination({page: {start: 1, end: 2}}), {}, "removePagination page");
+	assert.deepEqual(algebra.removePagination({
+		page: {
+			start: 1,
+			end: 2
+		}
+	}), {}, "removePagination page");
 
 });
 
-QUnit.test("Value returned by makeEnum is constructorLike", function(assert){
+QUnit.test("Value returned by makeEnum is constructorLike", function(assert) {
 	var Status = QueryLogic.makeEnum(["new", "preparing", "delivery", "delivered"]);
 	var pass = canReflect.isConstructorLike(Status);
 
 	assert.ok(pass, "Status is constructor like");
 });
 
-QUnit.test("can call low-level APIs from the outside", function(){
-    var gt1 = new QueryLogic.GreaterThan(1);
-    var lte1 = new QueryLogic.LessThanEqual(1);
+QUnit.test("can call low-level APIs from the outside", function() {
+	var gt1 = new QueryLogic.GreaterThan(1);
+	var lte1 = new QueryLogic.LessThanEqual(1);
 
-    QUnit.equal( QueryLogic.intersection(gt1, lte1), QueryLogic.EMPTY );
-    console.log(QueryLogic.EMPTY);
+	QUnit.equal(QueryLogic.intersection(gt1, lte1), QueryLogic.EMPTY);
 
 
-    var isGtJustinAndGt35 = new QueryLogic.KeysAnd({
-        name: new QueryLogic.GreaterThan("Justin"),
-        age: new QueryLogic.GreaterThan(35)
-    });
-    var isGt25 = new QueryLogic.KeysAnd({
-        age: new QueryLogic.GreaterThan(25)
-    });
+	var isGtJustinAndGt35 = new QueryLogic.KeysAnd({
+		name: new QueryLogic.GreaterThan("Justin"),
+		age: new QueryLogic.GreaterThan(35)
+	});
+	var isGt25 = new QueryLogic.KeysAnd({
+		age: new QueryLogic.GreaterThan(25)
+	});
 
-    QUnit.deepEqual(QueryLogic.union(isGtJustinAndGt35, isGt25), isGt25, "fewer clauses");
+	QUnit.deepEqual(QueryLogic.union(isGtJustinAndGt35, isGt25), isGt25, "fewer clauses");
 
 });
