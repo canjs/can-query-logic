@@ -5,7 +5,7 @@ var typeNumber = {"undefined": 0, "null": 1, "number": 3, "string": 4, "object":
 var getTypeNumber = function(obj) {
 	var type = typeof obj;
 	if(obj === null) {
-		type = "null"
+		type = "null";
 	}
 	return typeNumber[type];
 };
@@ -15,7 +15,7 @@ var typeCompare = {
 		return getTypeNumber(valueA) > getTypeNumber(valueB);
 	},
 	$lt: function(valueA, valueB) {
-		return getTypeNumber(valueA) < getTypeNumber(valueB)
+		return getTypeNumber(valueA) < getTypeNumber(valueB);
 	}
 };
 
