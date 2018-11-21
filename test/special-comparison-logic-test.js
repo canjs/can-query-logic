@@ -35,6 +35,10 @@ QUnit.test("where to filter", function(){
 	}, "got intersection");
 });
 
+var stringIncludes = function(strA, strB) {
+	return strA.indexOf(strB) >= 0;
+};
+
 QUnit.test("Searchable string", function(){
 	// Create a set type that is used to do comparisons.
 	function SearchableStringSet(value) {
@@ -44,7 +48,7 @@ QUnit.test("Searchable string", function(){
 	canReflect.assignSymbols(SearchableStringSet.prototype,{
 		// Returns if the name on a todo is actually a member of the set.
 		"can.isMember": function(value){
-			return value.includes(this.value);
+			return stringIncludes(value, this.value);
 		},
 		"can.serialize": function(){
 			return this.value;
@@ -54,31 +58,31 @@ QUnit.test("Searchable string", function(){
 	// Specify how to do the fundamental set comparisons.
 	QueryLogic.defineComparison(SearchableStringSet,SearchableStringSet,{
 		union: function(searchA, searchB){
-			if(searchA.value.includes(searchB.value)) {
+			if(stringIncludes(searchA.value, searchB.value)) {
 				return searchB;
 			}
-			if(searchB.value.includes(searchA.value)) {
+			if(stringIncludes(searchB.value, searchA.value)) {
 				return searchA;
 			}
 			return new QueryLogic.ValuesOr([searchA, searchB]);
 		},
 		// a aa
 		intersection: function(searchA, searchB){
-			if(searchA.value.includes(searchB.value)) {
+			if(stringIncludes(searchA.value, searchB.value)) {
 				return searchA;
 			}
-			if(searchB.value.includes(searchA.value)) {
+			if(stringIncludes(searchB.value, searchA.value)) {
 				return searchB;
 			}
 			return QueryLogic.UNDEFINABLE;
 		},
 		difference: function(searchA, searchB){
 			// if a is a subset
-			if(searchA.value.includes(searchB.value)) {
+			if(stringIncludes(searchA.value, searchB.value)) {
 				return QueryLogic.EMPTY;
 			}
 			// a is a superset
-			if(searchB.value.includes(searchA.value)) {
+			if(stringIncludes(searchB.value, searchA.value)) {
 				return QueryLogic.UNDEFINABLE;
 			}
 			// foo \ bar
