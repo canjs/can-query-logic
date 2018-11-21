@@ -1,6 +1,7 @@
 var QueryLogic = require("../can-query-logic");
 var QUnit = require("steal-qunit");
 var canReflect = require("can-reflect");
+var canSymbol = require("can-symbol");
 
 QUnit.module("can-query-logic special comparison logic");
 
@@ -100,7 +101,7 @@ QUnit.test("Searchable string", function(){
 
 	}
 
-	SearchableString[Symbol.for("can.SetType")] = SearchableStringSet;
+	SearchableString[canSymbol.for("can.SetType")] = SearchableStringSet;
 
 	var todoQueryLogic = new QueryLogic({
 		keys: {
