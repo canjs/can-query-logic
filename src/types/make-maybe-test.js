@@ -7,15 +7,12 @@ var canReflect = require("can-reflect");
 
 QUnit.module("can-query-logic/types/make-maybe")
 
-class DateStringSet {
-	constructor(value) {
-		this.value = value;
-	}
-	// used to convert to a number
-	valueOf() {
-		return this.value == null ? this.value : new Date(this.value).getTime();
-	}
+function DateStringSet(value) {
+	this.value = value;
 }
+DateStringSet.prototype.valueOf = function() {
+	return this.value == null ? this.value : new Date(this.value).getTime();
+};
 
 var ComparisonSet = function(value) {
 	this.value = value;
