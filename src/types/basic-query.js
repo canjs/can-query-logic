@@ -16,6 +16,26 @@ var KeysAnd = andOrNot.KeysAnd,
 // TYPES FOR PAGINATION
 var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
 
+
+// ## makeSort
+// Takes:
+// - `schemaKeys` - a schema
+// - `hydrateAndValue` - Useful to create something like `new GreaterThan( new MaybeDate("10-20-82") )`
+//
+// Makes a `new Sort(key)` constructor function. This constructor function is used like:
+//
+// ```
+// new Sort("dueDate")
+// ```
+//
+// That constructor function has all the comparison methods (union, intersection, difference)
+// built to compare against the `key` value.
+//
+// Instances of `Sort` have a `compare` method that will
+// return a function that can be passed to `Array.prototype.sort`.
+//
+// That compare function will read the right property and return `-1` or `1`
+
 // WILL MAKE A TYPE FOR SORTING
 function makeSort(schemaKeys, hydrateAndValue) {
 	// Makes gt and lt functions that `helpers.sorter` can use
@@ -30,21 +50,57 @@ function makeSort(schemaKeys, hydrateAndValue) {
 				if(valueA == null || valueB == null) {
 					return helpers.typeCompare.$gt(valueA, valueB);
 				}
+				// The following can certainly be done faster
 				var $gt = hydrateAndValue({
 						$gt: valueB
 					}, key, schemaProp,
 					helpers.valueHydrator);
-				return $gt[isMemberSymbol](valueA);
+
+				var $eq = hydrateAndValue({
+						$eq: valueA
+					}, key, schemaProp,
+					helpers.valueHydrator);
+
+				return set.isEqual( set.union($gt, $eq), $gt );
+				/*
+				var hydratedIn =  hydrateAndValue({
+						$eq: valueA
+					}, key, schemaProp,
+					helpers.valueHydrator);
+				return $gt[isMemberSymbol](hydratedIn.values[0]);*/
 			},
 			$lt: function(valueA, valueB) {
 				if(valueA == null || valueB == null) {
 					return helpers.typeCompare.$lt(valueA, valueB);
 				}
+
+
 				var $lt = hydrateAndValue({
 						$lt: valueB
 					}, key, schemaProp,
 					helpers.valueHydrator);
-				return $lt[isMemberSymbol](valueA);
+
+				var $eq = hydrateAndValue({
+						$eq: valueA
+					}, key, schemaProp,
+					helpers.valueHydrator);
+
+				return set.isEqual( set.union($lt, $eq), $lt );
+				/*
+				// This doesn't work because it will try to create new SetType(new In([]))
+				var hydratedValue =  hydrateAndValue({
+						$eq: valueA
+					}, key, schemaProp,
+					helpers.valueHydrator);
+				return $lt[isMemberSymbol](hydratedValue);*/
+
+				/*
+				// This doesn't work because of maybe types.
+				var hydratedIn =  hydrateAndValue({
+						$eq: valueA
+					}, key, schemaProp,
+					helpers.valueHydrator);
+				return $lt[isMemberSymbol](hydratedIn.values[0]); */
 			}
 		};
 	});

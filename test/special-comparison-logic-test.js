@@ -263,3 +263,43 @@ QUnit.test("value type", function(){
 
 	QUnit.equal(index, 4, "added at the end")
 });
+
+QUnit.test("sort a type that is similar to the member values (#31)", function(){
+	function StringIgnoreCaseSet(value){
+		this.value = value;
+	}
+	StringIgnoreCaseSet.prototype.valueOf = function(){
+		return this.value.toLowerCase();
+	};
+	canReflect.assignSymbols(StringIgnoreCaseSet.prototype,{
+		"can.serialize": function(){
+			return this.value;
+		}
+	});
+	var StringIgnoreCase = canReflect.assignSymbols({},{
+		"can.SetType": StringIgnoreCaseSet,
+		"can.new": function(value){
+			return value;
+		}
+	});
+
+	var queryLogic = new QueryLogic({
+		keys: {
+			name: StringIgnoreCase
+		},
+		identity: ["id"]
+	});
+
+	var filter = queryLogic.filterMembers(
+		{sort: "name"},
+		[{id: 1, name: "grab coffee"},
+		{id: 2, name: "finish these docs"},
+		{id: 3, name: "Learn CanJS"}]
+	);
+	QUnit.deepEqual([
+		{id: 2, name: "finish these docs"},
+		{id: 1, name: "grab coffee"},
+		{id: 3, name: "Learn CanJS"}
+	], filter);
+
+});
