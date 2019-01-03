@@ -16,3 +16,9 @@ QUnit.test(".ownAndMemberValue", function(){
 		member: "1"
 	}, "{null} and '1'");
 });
+
+QUnit.test(".isDefinedAndHasMembers", function(){
+	QUnit.equal(set.isDefinedAndHasMembers({}), true);
+	QUnit.equal(set.isDefinedAndHasMembers(set.UNIVERSAL), true);
+	QUnit.equal(set.isDefinedAndHasMembers(set.UNDEFINABLE), false);
+});
