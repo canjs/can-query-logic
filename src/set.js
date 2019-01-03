@@ -172,7 +172,7 @@ set = {
 	},
 	isDefinedAndHasMembers: function(setA) {
 		if (setA !== set.EMPTY && setA !== set.UNDEFINABLE && setA !== set.UNKNOWABLE) {
-			return setA;
+			return !!setA;
 		} else {
 			return false;
 		}
