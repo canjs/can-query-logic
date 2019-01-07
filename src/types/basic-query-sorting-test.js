@@ -356,3 +356,22 @@ QUnit.test("index uses can-reflect", function(){
     QUnit.deepEqual([obj1Read, obj2Read, itemKeyRead, itemOwnKeyRead],
         [true, true, true, true], "read everything");
 });
+
+
+QUnit.test("index should not sort unchanged items #33", function(assert) {
+	var items = [
+		{id: 1, name: "Item 1"},
+		{id: 2, name: "Item 1"},
+		{id: 3, name: "Item 1"},
+		{id: 4, name: "Item 1"},
+		{id: 5, name: "Item 1"}
+	];
+
+	var query = new BasicQuery({
+        sort: "name"
+	});
+	
+	var res = query.index({id:4, name: "Item 1"}, items);
+
+	QUnit.equal(res, 4);
+});
