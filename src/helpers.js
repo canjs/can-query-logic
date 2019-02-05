@@ -84,7 +84,7 @@ var helpers = {
 		if (range.length > 0) {
 			for (var i = 0; i < range.length; i++) {
 				var itemInRange = range[i],
-					id = canReflect.getSchema(itemInRange).identity;
+					id = canReflect.getSchema(itemInRange).identity[0];
 				if (canReflect.hasOwnKey(props, id) && props[id] === itemInRange[id]) {
 					high = items.indexOf(itemInRange);
 					break;
