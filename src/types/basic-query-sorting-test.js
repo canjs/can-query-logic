@@ -359,13 +359,43 @@ QUnit.test("index uses can-reflect", function(){
 
 
 QUnit.test("index should not sort unchanged items #33", function(assert) {
+	canReflect.assignSymbols({},{
+		"can.getSchema": function() {
+			return {
+				type: "map",
+				identity: ["id"],
+				keys: {
+					id: Number,
+					name: String
+				}
+			};
+		}
+	});
+	
 	var items = [
-		{id: 1, name: "Item 1"},
+		{id: 1, name: "Item 0"},
 		{id: 2, name: "Item 1"},
 		{id: 3, name: "Item 1"},
 		{id: 4, name: "Item 1"},
-		{id: 5, name: "Item 1"}
+		{id: 5, name: "Item 2"}
 	];
+
+	canReflect.eachIndex(items, function(item, i) {
+		canReflect.assignSymbols(item, {
+			"can.getSchema": function() {
+				return {
+					type: "map",
+					identity: ["id"],
+					keys: {
+						id: Number,
+						name: String
+					}
+				};
+			}
+		});
+	});
+
+
 
 	var query = new BasicQuery({
         sort: "name"
@@ -373,5 +403,5 @@ QUnit.test("index should not sort unchanged items #33", function(assert) {
 	
 	var res = query.index({id:4, name: "Item 1"}, items);
 
-	QUnit.equal(res, 4);
+	QUnit.equal(res, 3);
 });
