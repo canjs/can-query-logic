@@ -5,11 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/canjs/can-query-logic/blob/master/LICENSE)
 [![npm version](https://badge.fury.io/js/can-query-logic.svg)](https://www.npmjs.com/package/can-query-logic)
 [![Travis build status](https://travis-ci.org/canjs/can-query-logic.svg?branch=master)](https://travis-ci.org/canjs/can-query-logic)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/canjs/can-query-logic?branch=master&svg=true)](https://ci.appveyor.com/project/matthewp/can-query-logic)
-[![Coverage status](https://coveralls.io/repos/github/canjs/can-query-logic/badge.svg?branch=master)](https://coveralls.io/github/canjs/can-query-logic?branch=master)
 [![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-query-logic.svg)](https://greenkeeper.io/)
 
-retrieve a list of data__ represent.  This awareness helps other libraries like
+Perform data queries and compare queries against each other. Provides logic useful for data caching and real-time behavior.
 
 ## Documentation
 
