@@ -60,8 +60,10 @@ var helpers = {
 		} else if (compare(props, items[items.length - 1]) === 1) {
 			return items.length;
 		}
+
 		var low = 0,
-			high = items.length;
+			high = items.length,
+			range = [];
 
 		// From lodash lodash 4.6.1 <https://lodash.com/>
 		// Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
@@ -69,10 +71,24 @@ var helpers = {
 			var mid = (low + high) >>> 1,
 				item = items[mid],
 				computed = compare(props, item);
-			if (computed === -1) {
+			
+			if (computed === 0) {
+				range.push(item);
+				low++;
+			} else if (computed === -1) {
 				high = mid;
 			} else {
 				low = mid + 1;
+			}
+		}
+		if (range.length > 0) {
+			for (var i = 0; i < range.length; i++) {
+				var itemInRange = range[i],
+					id = canReflect.getSchema(itemInRange).identity[0];
+				if (canReflect.hasOwnKey(props, id) && props[id] === itemInRange[id]) {
+					high = items.indexOf(itemInRange);
+					break;
+				}	
 			}
 		}
 		return high;
