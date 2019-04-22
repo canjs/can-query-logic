@@ -71,10 +71,11 @@ var helpers = {
 			var mid = (low + high) >>> 1,
 				item = items[mid],
 				computed = compare(props, item);
-			
+
 			if (computed === 0) {
 				range.push(item);
-				low++;
+				low = mid + 1;
+				high--;
 			} else if (computed === -1) {
 				high = mid;
 			} else {

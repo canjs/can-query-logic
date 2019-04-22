@@ -398,7 +398,7 @@ QUnit.test("index should not sort unchanged items #33", function(assert) {
 
 
 	var query = new BasicQuery({
-        sort: "name"
+		sort: "name"
 	});
 	
 	var res = query.index({id:4, name: "Item 1"}, items);
