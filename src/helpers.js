@@ -49,6 +49,56 @@ var helpers = {
 			}
 		});
 	},
+	// Get the index of an item by it's identity
+	// Starting from the middle of the items
+	// return the index of match in the right direction
+	// or in the left direction
+	// otherwise return the last index
+	// see getIdentityIndexByDirection
+	getIdentityIndex: function(compare, items, props, startIndex) {
+		var identity = canReflect.getIdentity(props),
+			starterItem = items[startIndex];
+		// check if the middle has a match
+		if (compare(props, starterItem) === 0) {
+			if (identity === canReflect.getIdentity(starterItem)) {
+				return startIndex;
+			}
+		}
+		
+		var rightResult = this.getIdentityIndexByDirection(compare, items, props, startIndex+1, 1),
+			leftResult;
+		if(rightResult.index) {
+			return rightResult.index;
+		} else {
+			leftResult = this.getIdentityIndexByDirection(compare, items, props, startIndex-1, -1);
+		}
+		if(leftResult.index !== undefined) {
+			return leftResult.index;
+		}
+		// put at the last index item that doesn't match an identity
+		return rightResult.lastIndex;
+	},
+	// Get the index of an item by it's identity
+	// for a given direction (right or left)
+	// 1 for right
+	// -1 for left
+	getIdentityIndexByDirection: function(compare, items, props, startIndex, direction) {
+		var currentIndex = startIndex;
+		var identity = canReflect.getIdentity(props);
+		while(currentIndex >= 0 && currentIndex < items.length) {
+			var currentItem = items[currentIndex];
+			var computed = compare(props, currentItem);
+			if(computed === 0) {
+				if( identity === canReflect.getIdentity(currentItem)) {
+					return {index: currentIndex};
+				}
+			} else {
+				return {lastIndex: currentIndex - direction};
+			}
+			currentIndex = currentIndex + direction;
+		}
+		return {lastIndex: currentIndex - direction};
+	},
 	//
 	getIndex: function(compare, items, props) {
 		if (!items || !items.length) {
@@ -62,8 +112,7 @@ var helpers = {
 		}
 
 		var low = 0,
-			high = items.length,
-			range = [];
+			high = items.length;
 
 		// From lodash lodash 4.6.1 <https://lodash.com/>
 		// Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
@@ -71,25 +120,12 @@ var helpers = {
 			var mid = (low + high) >>> 1,
 				item = items[mid],
 				computed = compare(props, item);
-
 			if (computed === 0) {
-				range.push(item);
-				low = mid + 1;
-				high--;
+				return this.getIdentityIndex(compare, items, props, mid);
 			} else if (computed === -1) {
 				high = mid;
 			} else {
 				low = mid + 1;
-			}
-		}
-		if (range.length > 0) {
-			for (var i = 0; i < range.length; i++) {
-				var itemInRange = range[i],
-					id = canReflect.getSchema(itemInRange).identity[0];
-				if (canReflect.hasOwnKey(props, id) && props[id] === itemInRange[id]) {
-					high = items.indexOf(itemInRange);
-					break;
-				}	
 			}
 		}
 		return high;
