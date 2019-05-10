@@ -26,7 +26,7 @@ var TODO = canReflect.assignSymbols({},{
 
 var algebra = new QueryLogic(TODO);
 
-QUnit.test("union - enum", function(){
+QUnit.test("union - enum", function(assert) {
 
     var unionResult = algebra.union({
         filter: {
@@ -40,7 +40,7 @@ QUnit.test("union - enum", function(){
         }
     });
 
-    QUnit.deepEqual(unionResult, {
+    assert.deepEqual(unionResult, {
         filter: {
             name: "Justin",
             status: ["red","green"]
@@ -49,7 +49,7 @@ QUnit.test("union - enum", function(){
 });
 
 
-QUnit.test("automatic enum", function(){
+QUnit.test("automatic enum", function(assert) {
 
     var MaybeBoolean = canReflect.assignSymbols({},{
     	"can.new": function(val){
@@ -83,14 +83,14 @@ QUnit.test("automatic enum", function(){
         }
     });
 
-    QUnit.deepEqual(res,{
+    assert.deepEqual(res,{
         filter: {
             complete: [false, undefined, null]
         }
     }, "enum works");
 });
 
-QUnit.test("makeEnum from homepage with schema type", function(){
+QUnit.test("makeEnum from homepage with schema type", function(assert) {
     var Status = canReflect.assignSymbols({},{
     	"can.new": function(val){
     		return val;
@@ -114,11 +114,11 @@ QUnit.test("makeEnum from homepage with schema type", function(){
         {filter: {status: "complete" }}
     );
 
-    QUnit.deepEqual( unionQuery, {});
+    assert.deepEqual( unionQuery, {});
 });
 
 
-QUnit.test("makeEnum from homepage", function(){
+QUnit.test("makeEnum from homepage", function(assert) {
 
     var Status = QueryLogic.makeEnum(["new","assigned","complete"]);
 
@@ -133,5 +133,5 @@ QUnit.test("makeEnum from homepage", function(){
         {filter: {status: "complete" }}
     );
 
-    QUnit.deepEqual( unionQuery, {});
+    assert.deepEqual( unionQuery, {});
 });

@@ -27,7 +27,7 @@ QUnit.module("can-query-logic");
 
 
 
-QUnit.test("union", function() {
+QUnit.test("union", function(assert) {
 	var unionResult = algebra.union({
 		filter: {
 			name: "Ramiya"
@@ -38,7 +38,7 @@ QUnit.test("union", function() {
 		}
 	});
 
-	QUnit.deepEqual(unionResult, {
+	assert.deepEqual(unionResult, {
 		filter: {
 			name: {
 				$in: ["Ramiya", "Bohdi"]
@@ -47,7 +47,7 @@ QUnit.test("union", function() {
 	});
 });
 
-QUnit.test("difference", function() {
+QUnit.test("difference", function(assert) {
 	var differenceResult = algebra.difference({
 		filter: {
 			name: {
@@ -60,7 +60,7 @@ QUnit.test("difference", function() {
 		}
 	});
 
-	QUnit.deepEqual(differenceResult, {
+	assert.deepEqual(differenceResult, {
 		filter: {
 			name: "Ramiya",
 		}
@@ -69,7 +69,7 @@ QUnit.test("difference", function() {
 
 });
 
-QUnit.test("subset", function() {
+QUnit.test("subset", function(assert) {
 	var subsetResult = algebra.isSubset({
 		filter: {
 			name: "Bohdi"
@@ -82,10 +82,10 @@ QUnit.test("subset", function() {
 		}
 	});
 
-	QUnit.deepEqual(subsetResult, true);
+	assert.deepEqual(subsetResult, true);
 });
 
-QUnit.test("isMember", function() {
+QUnit.test("isMember", function(assert) {
 	var hasResult = algebra.isMember({
 		filter: {
 			name: "Bohdi"
@@ -94,10 +94,10 @@ QUnit.test("isMember", function() {
 		name: "Bohdi"
 	});
 
-	QUnit.deepEqual(hasResult, true);
+	assert.deepEqual(hasResult, true);
 });
 
-QUnit.test("filterMembers basics", function() {
+QUnit.test("filterMembers basics", function(assert) {
 	var subset = algebra.filterMembers({
 		filter: {
 			name: {
@@ -118,7 +118,7 @@ QUnit.test("filterMembers basics", function() {
 		}
 	]);
 
-	QUnit.deepEqual(subset, [{
+	assert.deepEqual(subset, [{
 			name: "Bohdi"
 		},
 		{
@@ -150,7 +150,7 @@ QUnit.test("filterMembers basics", function() {
 		}
 	]);
 
-	QUnit.deepEqual(subset, [{
+	assert.deepEqual(subset, [{
 			name: "Payal"
 		},
 		{
@@ -160,7 +160,7 @@ QUnit.test("filterMembers basics", function() {
 });
 
 
-QUnit.test("unionMembers basics", function() {
+QUnit.test("unionMembers basics", function(assert) {
 	var union = algebra.unionMembers({
 		filter: {
 			name: "Bohdi"
@@ -177,7 +177,7 @@ QUnit.test("unionMembers basics", function() {
 		id: 2
 	}, ]);
 
-	QUnit.deepEqual(union, [{
+	assert.deepEqual(union, [{
 			name: "Bohdi",
 			id: 1
 		},
@@ -188,10 +188,10 @@ QUnit.test("unionMembers basics", function() {
 	]);
 });
 
-QUnit.test("count basics", function() {
+QUnit.test("count basics", function(assert) {
 
-	QUnit.equal(algebra.count({}), Infinity);
-	QUnit.equal(algebra.count({
+	assert.equal(algebra.count({}), Infinity);
+	assert.equal(algebra.count({
 		page: {
 			start: 1,
 			end: 2
@@ -201,7 +201,7 @@ QUnit.test("count basics", function() {
 
 });
 
-QUnit.test('index basics', function() {
+QUnit.test('index basics', function(assert) {
 
 	var index = algebra.index({
 			sort: "name"
@@ -221,7 +221,7 @@ QUnit.test('index basics', function() {
 		}], {
 			name: "k"
 		});
-	equal(index, 2);
+	assert.equal(index, 2);
 
 	index = algebra.index({
 			sort: "-name"
@@ -241,7 +241,7 @@ QUnit.test('index basics', function() {
 		}].reverse(), {
 			name: "k"
 		});
-	equal(index, 2);
+	assert.equal(index, 2);
 
 	index = algebra.index({},
 		[{
@@ -261,7 +261,7 @@ QUnit.test('index basics', function() {
 			name: "k"
 		});
 
-	equal(index, 0);
+	assert.equal(index, 0);
 
 
 	index = algebra.index({},
@@ -281,7 +281,7 @@ QUnit.test('index basics', function() {
 			name: "k"
 		});
 
-	equal(index, undefined, "no value if no id");
+	assert.equal(index, undefined, "no value if no id");
 
 	var TODO_id = canReflect.assignSymbols({}, {
 		"can.getSchema": function() {
@@ -317,13 +317,13 @@ QUnit.test('index basics', function() {
 			_id: 2
 		});
 
-	equal(index, 2);
+	assert.equal(index, 2);
 
 	//var algebra = new set.Algebra(set.props.id("id"));
 
 });
 
-QUnit.test("filterMembers with reverse sort", function() {
+QUnit.test("filterMembers with reverse sort", function(assert) {
 	var sortedMembers = algebra.filterMembers({
 			sort: "-name"
 		},
@@ -341,7 +341,7 @@ QUnit.test("filterMembers with reverse sort", function() {
 			name: "s"
 		}]);
 
-	QUnit.deepEqual(sortedMembers,
+	assert.deepEqual(sortedMembers,
 		[{
 			id: 2,
 			name: "z"
@@ -408,11 +408,11 @@ QUnit.test("Value returned by makeEnum is constructorLike", function(assert) {
 	assert.ok(pass, "Status is constructor like");
 });
 
-QUnit.test("can call low-level APIs from the outside", function() {
+QUnit.test("can call low-level APIs from the outside", function(assert) {
 	var gt1 = new QueryLogic.GreaterThan(1);
 	var lte1 = new QueryLogic.LessThanEqual(1);
 
-	QUnit.equal(QueryLogic.intersection(gt1, lte1), QueryLogic.EMPTY);
+	assert.equal(QueryLogic.intersection(gt1, lte1), QueryLogic.EMPTY);
 
 
 	var isGtJustinAndGt35 = new QueryLogic.KeysAnd({
@@ -423,6 +423,6 @@ QUnit.test("can call low-level APIs from the outside", function() {
 		age: new QueryLogic.GreaterThan(25)
 	});
 
-	QUnit.deepEqual(QueryLogic.union(isGtJustinAndGt35, isGt25), isGt25, "fewer clauses");
+	assert.deepEqual(QueryLogic.union(isGtJustinAndGt35, isGt25), isGt25, "fewer clauses");
 
 });
