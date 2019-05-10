@@ -5,7 +5,7 @@ var canSymbol = require("can-symbol");
 
 QUnit.module("can-query-logic special comparison logic");
 
-QUnit.test("where to filter", function(){
+QUnit.test("where to filter", function(assert) {
 
 	var todoQueryLogic = new QueryLogic({}, {
 		toQuery: function(params){
@@ -30,7 +30,7 @@ QUnit.test("where to filter", function(){
 
 	var q3 = todoQueryLogic.intersection(q1,q2);
 
-	QUnit.deepEqual(q3,{
+	assert.deepEqual(q3,{
 		where: {first: "FIRST", second: "SECOND"}
 	}, "got intersection");
 });
@@ -39,7 +39,7 @@ var stringIncludes = function(strA, strB) {
 	return strA.indexOf(strB) >= 0;
 };
 
-QUnit.test("Searchable string", function(){
+QUnit.test("Searchable string", function(assert) {
 	// Create a set type that is used to do comparisons.
 	function SearchableStringSet(value) {
 		this.value = value;
@@ -119,7 +119,7 @@ QUnit.test("Searchable string", function(){
 		filter: {name: "eat"}
 	});
 
-	QUnit.equal(res, true, "is subset");
+	assert.equal(res, true, "is subset");
 
 	res = todoQueryLogic.isSubset({
 		filter: {name: "eat"}
@@ -127,13 +127,13 @@ QUnit.test("Searchable string", function(){
 		filter: {name: "beat"}
 	});
 
-	QUnit.equal(res, false, "not subset");
+	assert.equal(res, false, "not subset");
 
 	var hydrated = todoQueryLogic.hydrate({
 		filter: {name: "eat"}
 	});
 
-	QUnit.deepEqual(hydrated.filter, new QueryLogic.KeysAnd({
+	assert.deepEqual(hydrated.filter, new QueryLogic.KeysAnd({
 		name: new SearchableStringSet("eat")
 	}), "hydrated right");
 
@@ -143,19 +143,19 @@ QUnit.test("Searchable string", function(){
 		filter: {name: "foo"}
 	});
 
-	QUnit.deepEqual(res, {
+	assert.deepEqual(res, {
 		filter: {
 			name: ["eat","foo"]
 		}
 	});
 
-	QUnit.ok(
+	assert.ok(
 		todoQueryLogic.isMember({
 			filter: {name: "eat"}
 		},{id: 1, name: "eat beans"}),
 		"isMember true");
 
-	QUnit.notOk(
+	assert.notOk(
 		todoQueryLogic.isMember({
 			filter: {name: "eat"}
 		},{id: 1, name: "foo bar"}),
@@ -163,7 +163,7 @@ QUnit.test("Searchable string", function(){
 
 });
 
-QUnit.test("value type", function(){
+QUnit.test("value type", function(assert) {
 
 
 
@@ -219,7 +219,7 @@ QUnit.test("value type", function(){
 		{id: 4, date: new Date(1984,9,20).toString()},
 	]);
 
-	QUnit.deepEqual(
+	assert.deepEqual(
 		result.map(function(item){ return item.id;}),
 		[3,4],
 		"filtered correctly");
@@ -231,7 +231,7 @@ QUnit.test("value type", function(){
 		filter: {date: [date90s.toString()]}
 	});
 
-	QUnit.deepEqual(union,
+	assert.deepEqual(union,
 		{
 			filter: {date: {$in: [oct20_1982.toString(), date90s.toString()]}}
 		},
@@ -248,7 +248,7 @@ QUnit.test("value type", function(){
 	]);
 
 	var ids = result.map(function(item){ return item.id});
-	QUnit.deepEqual(ids,[1,2,3,4], "sorted correctly");
+	assert.deepEqual(ids,[1,2,3,4], "sorted correctly");
 
 	var index = queryLogic.index({
 			sort: "date"
@@ -261,10 +261,10 @@ QUnit.test("value type", function(){
 		],
 		{id: 4, date: new Date(2018,4,24).toString()}); //F
 
-	QUnit.equal(index, 4, "added at the end")
+	assert.equal(index, 4, "added at the end")
 });
 
-QUnit.test("sort a type that is similar to the member values (#31)", function(){
+QUnit.test("sort a type that is similar to the member values (#31)", function(assert) {
 	function StringIgnoreCaseSet(value){
 		this.value = value;
 	}
@@ -296,7 +296,7 @@ QUnit.test("sort a type that is similar to the member values (#31)", function(){
 		{id: 2, name: "finish these docs"},
 		{id: 3, name: "Learn CanJS"}]
 	);
-	QUnit.deepEqual([
+	assert.deepEqual([
 		{id: 2, name: "finish these docs"},
 		{id: 1, name: "grab coffee"},
 		{id: 3, name: "Learn CanJS"}

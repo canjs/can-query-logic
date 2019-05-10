@@ -8,9 +8,9 @@ QUnit.module("can-query-logic/types/make-real-number-range-inclusive");
 // Might have "real numbers"
 // But want even and odds and integers
 // Can't "build up" to real with all those other combinations
-QUnit.test("isSubset", function(){
+QUnit.test("isSubset", function(assert) {
 
-    QUnit.equal(
+    assert.equal(
         set.isSubset(
             new RealNumberRangeInclusive(1,4),
             new RealNumberRangeInclusive(0,5)
@@ -18,7 +18,7 @@ QUnit.test("isSubset", function(){
         true,
         "1-4 subset of 0-5");
 
-    QUnit.equal(
+    assert.equal(
         set.isSubset(
             new RealNumberRangeInclusive(0,5),
             new RealNumberRangeInclusive(1,4)
@@ -29,9 +29,9 @@ QUnit.test("isSubset", function(){
 
 });
 
-QUnit.test("isEqual with universal", function(){
+QUnit.test("isEqual with universal", function(assert) {
 
-    QUnit.equal(
+    assert.equal(
         set.isEqual(
             new RealNumberRangeInclusive(1,4),
             set.UNIVERSAL
@@ -39,7 +39,7 @@ QUnit.test("isEqual with universal", function(){
         false,
         "universal second");
 
-    QUnit.equal(
+    assert.equal(
         set.isEqual(
             set.UNIVERSAL,
             new RealNumberRangeInclusive(1,4)
@@ -48,7 +48,7 @@ QUnit.test("isEqual with universal", function(){
         false,
         "universal first");
 
-    QUnit.equal(
+    assert.equal(
         set.isEqual(
             new RealNumberRangeInclusive(-Infinity, Infinity),
             set.UNIVERSAL
@@ -56,7 +56,7 @@ QUnit.test("isEqual with universal", function(){
         true,
         "eq universal second");
 
-    QUnit.equal(
+    assert.equal(
         set.isEqual(
             set.UNIVERSAL,
             new RealNumberRangeInclusive(-Infinity, Infinity)

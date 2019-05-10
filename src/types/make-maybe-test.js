@@ -24,34 +24,34 @@ ComparisonSet.prototype.valueOf = function() {
 var MaybeDateStringSet = makeMaybe([null, undefined], DateStringSet);
 
 
-QUnit.test("construtor normalizes", function() {
+QUnit.test("construtor normalizes", function(assert) {
 	var isNull_3 = new MaybeDateStringSet({
 		range: new is.In([null, 3])
 	});
 
-	QUnit.deepEqual(isNull_3.range, new is.In([3]), "3 left in range");
-	QUnit.deepEqual(isNull_3.enum, new is.In([null]), "range moved to in");
+	assert.deepEqual(isNull_3.range, new is.In([3]), "3 left in range");
+	assert.deepEqual(isNull_3.enum, new is.In([null]), "range moved to in");
 
 	// with value of values
 	var isNull_3AsDateString = new MaybeDateStringSet({
 		range: new is.In([new DateStringSet(null), new DateStringSet(3)])
 	});
-	QUnit.deepEqual(isNull_3AsDateString.range, new is.In([new DateStringSet(3)]), "3 left in range");
-	QUnit.deepEqual(isNull_3AsDateString.enum, new is.In([new DateStringSet(null)]), "range moved to in");
+	assert.deepEqual(isNull_3AsDateString.range, new is.In([new DateStringSet(3)]), "3 left in range");
+	assert.deepEqual(isNull_3AsDateString.enum, new is.In([new DateStringSet(null)]), "range moved to in");
 
 
 	var isNull = new MaybeDateStringSet({
 		range: new is.In([null])
 	});
 
-	QUnit.deepEqual(isNull.range, set.EMPTY, "empty if only null");
-	QUnit.deepEqual(isNull.enum, new is.In([null]), "range moved to in");
+	assert.deepEqual(isNull.range, set.EMPTY, "empty if only null");
+	assert.deepEqual(isNull.enum, new is.In([null]), "range moved to in");
 
 	var res = new MaybeDateStringSet({
 		range: new is.NotIn([null, 3])
 	});
-	QUnit.deepEqual(res.range, new is.NotIn([3]), "not in range");
-	QUnit.deepEqual(res.enum, new is.In([undefined]), "not in enum");
+	assert.deepEqual(res.range, new is.NotIn([3]), "not in range");
+	assert.deepEqual(res.enum, new is.In([undefined]), "not in enum");
 
 	res = new MaybeDateStringSet({
 		range: new is.And([
@@ -59,12 +59,12 @@ QUnit.test("construtor normalizes", function() {
 			new is.GreaterThan(4)
 		])
 	});
-	QUnit.deepEqual(res.range, new is.GreaterThan(4), "And with not in");
-	QUnit.deepEqual(res.enum, set.EMPTY, "And with not in");
+	assert.deepEqual(res.range, new is.GreaterThan(4), "And with not in");
+	assert.deepEqual(res.enum, set.EMPTY, "And with not in");
 
 });
 
-QUnit.test("difference with universal", function() {
+QUnit.test("difference with universal", function(assert) {
 	var res;
 
 	var gt3 = new MaybeDateStringSet({
@@ -73,7 +73,7 @@ QUnit.test("difference with universal", function() {
 
 	res = set.difference(set.UNIVERSAL, gt3);
 
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		enum: new is.In([null, undefined]),
 		range: new is.LessThanEqual(3)
 	}), "UNIVERSAL \\ $gt:3");
@@ -85,7 +85,7 @@ QUnit.test("difference with universal", function() {
 		})
 	);
 
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: set.UNIVERSAL,
 		enum: new is.In([undefined])
 	}), "UNIVERSAL \\ null");
@@ -97,7 +97,7 @@ QUnit.test("difference with universal", function() {
 		})
 	);
 
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: set.UNIVERSAL,
 		enum: new is.In([null])
 	}), "UNIVERSAL \\ !null");
@@ -109,11 +109,11 @@ QUnit.test("difference with universal", function() {
 			range: new is.LessThanEqual(3)
 		})
 	);
-	QUnit.deepEqual(res, gt3, "secondary and primary");
+	assert.deepEqual(res, gt3, "secondary and primary");
 
 });
 
-QUnit.test("difference", function() {
+QUnit.test("difference", function(assert) {
 	var res;
 
 	var gt3 = new MaybeDateStringSet({
@@ -128,7 +128,7 @@ QUnit.test("difference", function() {
 			range: new is.GreaterThan(4)
 		}));
 
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: set.difference(new is.GreaterThan(3), new is.GreaterThan(4))
 	}), "$gt:3 \\ $gt:4");
 
@@ -142,7 +142,7 @@ QUnit.test("difference", function() {
 			enum: new is.In([null])
 		})
 	);
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: new is.GreaterThan(3)
 	}), "{ne: undef} \\ {lt: 3} | null -> {gte: 3}");
 
@@ -155,7 +155,7 @@ QUnit.test("difference", function() {
 			range: new is.LessThanEqual(3)
 		})
 	);
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: new is.GreaterThan(3),
 		enum: new is.In([null])
 	}), "{ne: undef} \\ {lt: 3}|null -> {gte: 3} | null");
@@ -168,7 +168,7 @@ QUnit.test("difference", function() {
 	);
 
 
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: new is.NotIn([null])
 	}), "UNIVERSAL \\ null");
 
@@ -178,7 +178,7 @@ QUnit.test("difference", function() {
 			range: new is.LessThanEqual(3)
 		})
 	);
-	QUnit.deepEqual(res, gt3, "secondary and primary");
+	assert.deepEqual(res, gt3, "secondary and primary");
 
 	res = set.difference(
 		new MaybeDateStringSet({
@@ -191,11 +191,11 @@ QUnit.test("difference", function() {
 		})
 	);
 
-	QUnit.equal(res, set.EMPTY, "equal is empty");
+	assert.equal(res, set.EMPTY, "equal is empty");
 
 });
 
-QUnit.test("difference with ComparisonSet", function() {
+QUnit.test("difference with ComparisonSet", function(assert) {
 	var three = new ComparisonSet(3),
 		four = new ComparisonSet(3);
 	var res;
@@ -212,7 +212,7 @@ QUnit.test("difference with ComparisonSet", function() {
 			range: new is.GreaterThan(four)
 		}));
 
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: set.difference(new is.GreaterThan(three), new is.GreaterThan(four))
 	}), "$gt:3 \\ $gt:4");
 
@@ -226,7 +226,7 @@ QUnit.test("difference with ComparisonSet", function() {
 			enum: new is.In([null])
 		})
 	);
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: new is.GreaterThan(three)
 	}), "{ne: undef} \\ {lt: 3} | null -> {gte: 3}");
 
@@ -239,7 +239,7 @@ QUnit.test("difference with ComparisonSet", function() {
 			range: new is.LessThanEqual(three)
 		})
 	);
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: new is.GreaterThan(three),
 		enum: new is.In([null])
 	}), "{ne: undef} \\ {lt: 3}|null -> {gte: 3} | null");
@@ -252,7 +252,7 @@ QUnit.test("difference with ComparisonSet", function() {
 	);
 
 
-	QUnit.deepEqual(res, new MaybeDateStringSet({
+	assert.deepEqual(res, new MaybeDateStringSet({
 		range: new is.NotIn([null])
 	}), "UNIVERSAL \\ null");
 
@@ -263,11 +263,11 @@ QUnit.test("difference with ComparisonSet", function() {
 			range: new is.LessThanEqual(three)
 		})
 	);
-	QUnit.deepEqual(res, gt3, "secondary and primary");
+	assert.deepEqual(res, gt3, "secondary and primary");
 
 });
 
-QUnit.test("intersection", function() {
+QUnit.test("intersection", function(assert) {
 	var res;
 
 	res = set.intersection(
@@ -281,7 +281,7 @@ QUnit.test("intersection", function() {
 		})
 	);
 
-	QUnit.deepEqual(res,
+	assert.deepEqual(res,
 		new MaybeDateStringSet({
 			range: new is.GreaterThan(5),
 			enum: new is.In([null])
@@ -290,7 +290,7 @@ QUnit.test("intersection", function() {
 	);
 });
 
-QUnit.test("union", function() {
+QUnit.test("union", function(assert) {
 	var res;
 
 	res = set.union(
@@ -304,7 +304,7 @@ QUnit.test("union", function() {
 		})
 	);
 
-	QUnit.deepEqual(res,
+	assert.deepEqual(res,
 		new MaybeDateStringSet({
 			range: new is.GreaterThan(3),
 			enum: new is.In([null, undefined])
@@ -314,7 +314,7 @@ QUnit.test("union", function() {
 });
 
 
-QUnit.test("isSubset", function() {
+QUnit.test("isSubset", function(assert) {
 	var res;
 
 	res = set.isSubset(
@@ -328,11 +328,11 @@ QUnit.test("isSubset", function() {
 		})
 	);
 
-	QUnit.ok(res, "is a subset");
+	assert.ok(res, "is a subset");
 
 });
 
-QUnit.test("can make maybe type from normal type and makeMaybeSetType", function() {
+QUnit.test("can make maybe type from normal type and makeMaybeSetType", function(assert) {
 	var MaybeNumber = canReflect.assignSymbols({}, {
 		"can.new": function(val) {
 			if (val == null) {
@@ -348,7 +348,7 @@ QUnit.test("can make maybe type from normal type and makeMaybeSetType", function
 		}
 	});
 
-	QUnit.ok(makeMaybe.canMakeMaybeSetType(MaybeNumber), "got everything we need");
+	assert.ok(makeMaybe.canMakeMaybeSetType(MaybeNumber), "got everything we need");
 
 
 	var types = makeMaybe.makeMaybeSetTypes(MaybeNumber);
@@ -365,13 +365,13 @@ QUnit.test("can make maybe type from normal type and makeMaybeSetType", function
 		notUndefined,
 		nullOrLTE3
 	);
-	QUnit.deepEqual(res, new types.Maybe({
+	assert.deepEqual(res, new types.Maybe({
 		range: new is.GreaterThan(new types.ComparisonSetType(3))
 	}), "{ne: undef} \\ {lt: 3} | null -> {gte: 3}");
 
 });
 
-QUnit.test("can make a maybe type from a ComparisonSetType", function() {
+QUnit.test("can make a maybe type from a ComparisonSetType", function(assert) {
 	function toDate(str) {
 		var type = typeof str;
 		if (type === 'string') {
@@ -410,12 +410,12 @@ QUnit.test("can make a maybe type from a ComparisonSetType", function() {
 		"can.ComparisonSetType": DateStringSet
 	});
 
-	QUnit.ok(makeMaybe.canMakeMaybeSetType(MaybeDate), "got everything we need");
+	assert.ok(makeMaybe.canMakeMaybeSetType(MaybeDate), "got everything we need");
 
 
 	var types = makeMaybe.makeMaybeSetTypes(MaybeDate);
 
-	QUnit.equal(types.ComparisonSetType, DateStringSet, "got the comparison type");
+	assert.equal(types.ComparisonSetType, DateStringSet, "got the comparison type");
 
 	var date1982_10_20 = new Date(1982, 9, 20).toString();
 
@@ -431,26 +431,26 @@ QUnit.test("can make a maybe type from a ComparisonSetType", function() {
 		notUndefined,
 		nullOrLTE3
 	);
-	QUnit.deepEqual(res, new types.Maybe({
+	assert.deepEqual(res, new types.Maybe({
 		range: new is.GreaterThan(new types.ComparisonSetType(date1982_10_20))
 	}), "{ne: undef} \\ {lt: '" + date1982_10_20 + "'} | null -> {gte: '" + date1982_10_20 + "'}");
 });
 
 
-QUnit.test("orValues", function() {
+QUnit.test("orValues", function(assert) {
 	var res = new MaybeDateStringSet({
 		range: new is.In([3]),
 		enum: set.EMPTY
 	});
 
-	QUnit.deepEqual(res.orValues(),[new is.In([3])] ,"only got range");
+	assert.deepEqual(res.orValues(),[new is.In([3])] ,"only got range");
 
 	res = new MaybeDateStringSet({
 		range: set.EMPTY,
 		enum: new is.In([null])
 	});
 
-	QUnit.deepEqual(res.orValues(),[new is.In([null])] ,"only got enum");
+	assert.deepEqual(res.orValues(),[new is.In([null])] ,"only got enum");
 
 });
 
@@ -491,7 +491,7 @@ QUnit.test("difference", function(){
 
     res = set.difference( set.UNIVERSAL, greaterThan3 );
 
-    QUnit.deepEqual(res,);
+    assert.deepEqual(res,);
 
 });
 */

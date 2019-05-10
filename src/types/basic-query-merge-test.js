@@ -18,16 +18,16 @@ var items = [
 
 var everything = new BasicQuery({});
 
-QUnit.test("basics", function(){
+QUnit.test("basics", function(assert) {
 
     var fooBar = new BasicQuery({
         filter: new BasicQuery.KeysAnd({ foo: "bar" })
     });
     var res = everything.merge(fooBar,items, items.slice(0, 3), getId );
-	deepEqual(res, items);
+	assert.deepEqual(res, items);
 });
 
-QUnit.test("unionMembers against ranged sets", function(){
+QUnit.test("unionMembers against ranged sets", function(assert) {
     var a = new BasicQuery({
         page: new BasicQuery.RecordRange(10,13)
     });
@@ -42,11 +42,11 @@ QUnit.test("unionMembers against ranged sets", function(){
 
 
     union = a.merge(b,items.slice(4,8),items.slice(0,4), getId );
-	deepEqual(union, items, "disjoint after");
+	assert.deepEqual(union, items, "disjoint after");
 
 });
 
-QUnit.test("unionMembers against overlapping ranged sets", function(){
+QUnit.test("unionMembers against overlapping ranged sets", function(assert) {
     var a = new BasicQuery({
         page: new BasicQuery.RecordRange(10,13)
     });
@@ -55,7 +55,7 @@ QUnit.test("unionMembers against overlapping ranged sets", function(){
     });
     var union = a.merge(b,items.slice(0,5),items.slice(3,8), getId );
 
-	deepEqual(union, items);
+	assert.deepEqual(union, items);
 
     // BREAK
     a = new BasicQuery({
@@ -68,7 +68,7 @@ QUnit.test("unionMembers against overlapping ranged sets", function(){
         items.slice(0,2),
         items.slice(1,8), getId );
 
-	deepEqual(union, items);
+	assert.deepEqual(union, items);
 
     // BREAK
 
@@ -82,10 +82,10 @@ QUnit.test("unionMembers against overlapping ranged sets", function(){
         items.slice(1,8),
 		items.slice(0,2), getId );
 
-	deepEqual(union, items);
+	assert.deepEqual(union, items);
 });
 
-QUnit.test("unionMembers filters for uniqueness", function(){
+QUnit.test("unionMembers filters for uniqueness", function(assert) {
 	var aItems = items.filter(function(a) {
 		return a.type === "critical";
 	});
@@ -101,10 +101,10 @@ QUnit.test("unionMembers filters for uniqueness", function(){
         page: new BasicQuery.KeysAnd({note: "C"})
     });
     var union = a.merge(b,aItems, bItems, getId );
-    deepEqual(union, unionItems);
+    assert.deepEqual(union, unionItems);
 
     // BREAK
     var union = b.merge(a,bItems,aItems, getId );
-	deepEqual(union, unionItems);
+	assert.deepEqual(union, unionItems);
 
 });

@@ -4,7 +4,7 @@ var canReflect = require("can-reflect");
 
 QUnit.module("can-query-logic with maybe type");
 
-QUnit.test("basics", function(){
+QUnit.test("basics", function(assert) {
 	// Goal here is so the type doesn't have to know about `can-query-logic`,
 	// but when passed to can-query-logic, it knows what to do.
 	//
@@ -36,7 +36,7 @@ QUnit.test("basics", function(){
 		{},
 		{filter: {age: {$gt: 5}}});
 
-	QUnit.deepEqual(res.filter,
+	assert.deepEqual(res.filter,
 		{$or: [
 			{age: {$lte: 5} },
 			{age: {$in: [undefined, null]}}
@@ -46,7 +46,7 @@ QUnit.test("basics", function(){
 	var query = todoQueryLogic.hydrate({filter: {age: 21}});
 
 	var serialized = todoQueryLogic.serialize(query);
-	QUnit.deepEqual( serialized, {filter: {age: 21}}, "can serialize back to what was provided" );
+	assert.deepEqual( serialized, {filter: {age: 21}}, "can serialize back to what was provided" );
 
 	res = todoQueryLogic.difference({},{
 		filter: {
@@ -57,7 +57,7 @@ QUnit.test("basics", function(){
 		}
 	});
 
-	QUnit.deepEqual(res.filter,
+	assert.deepEqual(res.filter,
 		{$or: [
 			{age: {$gte: 7} },
 			{age: {$lte: 3} },
@@ -70,12 +70,12 @@ QUnit.test("basics", function(){
 		{filter: {age: "07"}}
 	);
 
-	QUnit.deepEqual(unionized, {filter: {age: 7}}, "string numbers are converted to numbers");
+	assert.deepEqual(unionized, {filter: {age: 7}}, "string numbers are converted to numbers");
 
 });
 
 
-QUnit.test("MaybeDate", function(){
+QUnit.test("MaybeDate", function(assert) {
 	// Goal here is so the type doesn't have to know about `can-query-logic`,
 	// but when passed to can-query-logic, it knows what to do.
 	function toDate(str) {
@@ -130,7 +130,7 @@ QUnit.test("MaybeDate", function(){
 		{},
 		{filter: {due: {$gt: date1982_10_20}}});
 
-	QUnit.deepEqual(res.filter,
+	assert.deepEqual(res.filter,
 		{$or: [
 			{due: {$lte: date1982_10_20} },
 			{due: {$in: [undefined, null]}}
@@ -139,32 +139,32 @@ QUnit.test("MaybeDate", function(){
 
 	var gt1982 = {filter: {due: {$gt: date1982_10_20}}};
 
-	QUnit.ok( todoQueryLogic.isMember(gt1982,{
+	assert.ok( todoQueryLogic.isMember(gt1982,{
 		id: 0,
 		due: new Date(2000,0,1)
 	}), "works with a date object");
 
-	QUnit.ok( todoQueryLogic.isMember(gt1982,{
+	assert.ok( todoQueryLogic.isMember(gt1982,{
 		id: 0,
 		due: new Date(2000,0,1).toString()
 	}), "works with a string date");
 
-	QUnit.ok( todoQueryLogic.isMember(gt1982,{
+	assert.ok( todoQueryLogic.isMember(gt1982,{
 		id: 0,
 		due: new Date(2000,0,1).getTime()
 	}), "works with a integer date");
 
-	QUnit.notOk( todoQueryLogic.isMember(gt1982,{
+	assert.notOk( todoQueryLogic.isMember(gt1982,{
 		id: 0,
 		due: new Date(1970,0,1).getTime()
 	}), "doesn't fail if falsey");
 
-	QUnit.notOk( todoQueryLogic.isMember(gt1982,{
+	assert.notOk( todoQueryLogic.isMember(gt1982,{
 		id: 0,
 		due: null
 	}), "doesn't fail if falsey");
 
-	QUnit.ok( todoQueryLogic.isMember({filter: {due: {$in: [null,undefined]}}},{
+	assert.ok( todoQueryLogic.isMember({filter: {due: {$in: [null,undefined]}}},{
 		id: 0,
 		due: null
 	}), "works if using in");*/
@@ -192,7 +192,7 @@ QUnit.test("MaybeDate", function(){
 		sort: "due"
 	}, store);
 
-	QUnit.deepEqual(results, [
+	assert.deepEqual(results, [
 		{
 			id: 1,
 			due: null
