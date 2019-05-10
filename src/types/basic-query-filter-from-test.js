@@ -16,7 +16,7 @@ var items = [
 	{ id: 7, note: 'C', type: 'critical' }
 ];
 
-QUnit.test("against non ranged set", function(){
+QUnit.test("against non ranged set", function(assert) {
 	/*
 	 * 1. set b = {} evaluates to all available entities -- the univeral set
 	 * 2. set a = { type: 'critical', start: 1, end: 3 } evaluates to entities
@@ -41,10 +41,10 @@ QUnit.test("against non ranged set", function(){
     });
     var res = query.filterFrom(items);
 
-	QUnit.deepEqual(res && res.map(getId), [2,4,6]);
+	assert.deepEqual(res && res.map(getId), [2,4,6]);
 });
 
-QUnit.test("ordered ascending and paginated", function() {
+QUnit.test("ordered ascending and paginated", function(assert) {
 	/*
 	 * 1. set b = {} evaluates to all available entities -- the univeral set
 	 * 2. set a = { type: 'critical', sort: 'note ASC', start: 1, end: 3 }
@@ -72,10 +72,10 @@ QUnit.test("ordered ascending and paginated", function() {
     });
     var res = query.filterFrom(items);
 
- 	QUnit.deepEqual(res && res.map(getId), [7,1,2]);
+ 	assert.deepEqual(res && res.map(getId), [7,1,2]);
 });
 
-QUnit.test("ordered descending and paginated", function() {
+QUnit.test("ordered descending and paginated", function(assert) {
 	/*
 	 * 1. set b = {} evaluates to all available entities -- the univeral set
 	 * 2. set a = { type: 'critical', sort: 'note DESC', start: 1, end: 3 }
@@ -98,10 +98,10 @@ QUnit.test("ordered descending and paginated", function() {
     });
     var res = query.filterFrom(items);
 
-    QUnit.deepEqual(res && res.map(getId), [2,1,7]);
+    assert.deepEqual(res && res.map(getId), [2,1,7]);
 });
 
-QUnit.test("against paginated set", function(){
+QUnit.test("against paginated set", function(assert) {
 
     var query = new BasicQuery({
         filter: new BasicQuery.KeysAnd({ type: 'critical'}),
@@ -114,10 +114,10 @@ QUnit.test("against paginated set", function(){
 
     var res = query.filterFrom(items, fromQuery);
 
-	QUnit.deepEqual(res && res.map(getId), [2,4,6]);
+	assert.deepEqual(res && res.map(getId), [2,4,6]);
 });
 
-QUnit.test("returns undefined against incompatible set", function() {
+QUnit.test("returns undefined against incompatible set", function(assert) {
     var query = new BasicQuery({
         filter: new BasicQuery.KeysAnd({ note: 'C' })
     });
@@ -127,6 +127,6 @@ QUnit.test("returns undefined against incompatible set", function() {
 	try{
 		var res = query.filterFrom(items, fromQuery);
 	} catch(e) {
-		QUnit.ok(true, "throws an error")
+		assert.ok(true, "throws an error")
 	}
 });

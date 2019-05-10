@@ -10,7 +10,7 @@ QUnit.module("can-query-logic/and-or");
 // Might have "real numbers"
 // But want even and odds and integers
 // Can't "build up" to real with all those other combinations
-QUnit.test("AND intersection basics", function(){
+QUnit.test("AND intersection basics", function(assert) {
     var AndObject = types.KeysAnd;
 
     var isJustin = new AndObject({
@@ -21,13 +21,13 @@ QUnit.test("AND intersection basics", function(){
     });
 
     var is35AndJustin = set.intersection(is35, isJustin);
-    QUnit.deepEqual(is35AndJustin.values,{
+    assert.deepEqual(is35AndJustin.values,{
         name: "Justin",
         age: 35
     },"35 and justin");
 
     var isJustinAnd35 = set.intersection(isJustin, is35);
-    QUnit.deepEqual(isJustinAnd35.values,{
+    assert.deepEqual(isJustinAnd35.values,{
         name: "Justin",
         age: 35
     },"justin and 34");
@@ -40,11 +40,11 @@ QUnit.test("AND intersection basics", function(){
     });
 
     var is34and35 = set.intersection(is35, is34);
-    QUnit.equal(is34and35,set.EMPTY,"can't be 34 and 35");
+    assert.equal(is34and35,set.EMPTY,"can't be 34 and 35");
 
 });
 
-QUnit.test("AND union basics", function(){
+QUnit.test("AND union basics", function(assert) {
 
     var AndObject = types.KeysAnd;
 
@@ -56,29 +56,29 @@ QUnit.test("AND union basics", function(){
     });
     var is35OrJustin = set.union(is35, isJustin);
 
-    QUnit.deepEqual(is35OrJustin,new types.ValuesOr([is35, isJustin]),"35 and justin");
+    assert.deepEqual(is35OrJustin,new types.ValuesOr([is35, isJustin]),"35 and justin");
 });
 
-QUnit.test("AND / OR / NOT union", function(){
+QUnit.test("AND / OR / NOT union", function(assert) {
 
 
     var isJustin = new types.KeysAnd({name: "Justin"}),
         isNotJustin = new types.KeysAnd({name: new types.ValuesNot("Justin")});
 
-    QUnit.equal( set.union(isJustin,isNotJustin), set.UNIVERSAL, "{name: 'j'} U {name: NOT('j')}");
+    assert.equal( set.union(isJustin,isNotJustin), set.UNIVERSAL, "{name: 'j'} U {name: NOT('j')}");
 
     var everything = new types.KeysAnd({});
 
-    QUnit.equal( set.union(isJustin,everything), set.UNIVERSAL, "{name: 'j'} U {}");
+    assert.equal( set.union(isJustin,everything), set.UNIVERSAL, "{name: 'j'} U {}");
 
     var isJustinAnd21 = new types.KeysAnd({name: "Justin", age: 22});
 
-    QUnit.equal( set.union(isJustin,isJustinAnd21), isJustin, "super and subset");
+    assert.equal( set.union(isJustin,isJustinAnd21), isJustin, "super and subset");
 
-    QUnit.equal( set.union(isJustinAnd21,isJustinAnd21), isJustinAnd21, "union with itself");
+    assert.equal( set.union(isJustinAnd21,isJustinAnd21), isJustinAnd21, "union with itself");
 });
 
-QUnit.test("AND / OR / NOT difference", function(){
+QUnit.test("AND / OR / NOT difference", function(assert) {
 
 
     // CASE: prop in A not in B
@@ -95,17 +95,17 @@ QUnit.test("AND / OR / NOT difference", function(){
     result = set.difference(isJustin, is35);
 
     // CASE: overlaping sets
-    QUnit.deepEqual(result, isJustinAndNot35, 'OVERLAP: {name: "Justin"} \\ {age: 35} -> {name: "justin", age: NOT(35)}');
+    assert.deepEqual(result, isJustinAndNot35, 'OVERLAP: {name: "Justin"} \\ {age: 35} -> {name: "justin", age: NOT(35)}');
 
     // CASE: same set
-    QUnit.deepEqual( set.difference(is35, is35), set.EMPTY, 'SAME SET: {age: 35} \\ {age: 35} -> EMPTY');
+    assert.deepEqual( set.difference(is35, is35), set.EMPTY, 'SAME SET: {age: 35} \\ {age: 35} -> EMPTY');
 
     // CASE: subset
-    QUnit.deepEqual( set.difference(isJustinAnd35, is35), set.EMPTY,
+    assert.deepEqual( set.difference(isJustinAnd35, is35), set.EMPTY,
         'SUPERSET: {age: 35, name: "Justin"} \\ {age: 35} -> EMPTY');
 
     // CASE: superset
-    QUnit.deepEqual( set.difference(isJustin, isJustinAnd35), isJustinAndNot35,
+    assert.deepEqual( set.difference(isJustin, isJustinAnd35), isJustinAndNot35,
         '{name: "Justin"} \\ {age: 35, name: "Justin"} -> {name: "justin", age: NOT(35)}');
 
 
@@ -113,7 +113,7 @@ QUnit.test("AND / OR / NOT difference", function(){
     //  `{age: 35} \ {age: 32} -> {age: 35}`
     result = set.difference(is35, new types.KeysAnd({age: 32}));
 
-    QUnit.deepEqual(result, new types.KeysAnd({age: 35}),
+    assert.deepEqual(result, new types.KeysAnd({age: 35}),
         'DISJOINT: {age: 35} \\ {age: 32} -> {age: 35}');
 
 
@@ -121,7 +121,7 @@ QUnit.test("AND / OR / NOT difference", function(){
     //  `{age: 34, name: "Justin"} \ {age: 35}  -> {age: 34, name: "Justin"}`
     result = set.difference(new types.KeysAnd({age: 34, name: "Justin"}), is35);
 
-    QUnit.deepEqual(result, new types.KeysAnd({age: 34, name: "Justin"}),
+    assert.deepEqual(result, new types.KeysAnd({age: 34, name: "Justin"}),
         'DISJOINT: {age: 34, name: "Justin"} \\ {age: 35} -> {age: 34, name: "Justin"}');
 
     // CASE: DISJOINT - can't peform -> double NOT of props
@@ -131,7 +131,7 @@ QUnit.test("AND / OR / NOT difference", function(){
         new types.KeysAnd({foo: "bar"}),
         isJustinAnd35
         );
-    QUnit.deepEqual(result,set.UNDEFINABLE,
+    assert.deepEqual(result,set.UNDEFINABLE,
         'DISJOINT: {foo: "bar"} \\ {name: "Justin", age: 35} -> UNDEFINABLE');
 
     // CASE:
@@ -143,7 +143,7 @@ QUnit.test("AND / OR / NOT difference", function(){
         new types.KeysAnd({age: new types.ValuesNot(35)})
     ]);
 
-    QUnit.deepEqual(result,compare,
+    assert.deepEqual(result,compare,
         'UNIVESAL: {} \\ {name: "Justin", age: 35} -> OR[ AND(name: NOT("Justin")), AND(age: NOT(35)) ]');
 
 
@@ -151,7 +151,7 @@ QUnit.test("AND / OR / NOT difference", function(){
     //   {} \ {bar: IS_UNIVERSAL}
     result = set.difference(new types.KeysAnd({foo: 2}), new types.KeysAnd({foo: 2, bar : set.UNIVERSAL}));
 
-    QUnit.deepEqual(result,set.EMPTY,
+    assert.deepEqual(result,set.EMPTY,
         'UNIVESAL: {foo:2} \ {foo:2, bar: IS_UNIVERSAL} -> set.EMPTY');
 
 
@@ -162,15 +162,15 @@ QUnit.test("AND / OR / NOT difference", function(){
     // {color: [r, g], status: [a, c]} \ {color: [r], status: [a]} -> OR( {g X a}, {g X c}, {r X c} )
 });
 
-QUnit.test("AND / OR / NOT isSubset", function(){
+QUnit.test("AND / OR / NOT isSubset", function(assert) {
 
 
     var res;
 	res = set.isSubset( new types.KeysAnd({ type: 'FOLDER' }), new types.KeysAnd({ type: 'FOLDER' }) );
-	QUnit.ok(res, 'equal sets');
+	assert.ok(res, 'equal sets');
 
 	res = set.isSubset( new types.KeysAnd({ type: 'FOLDER', parentId: 5 }), new types.KeysAnd({ type: 'FOLDER' }));
-	QUnit.ok(res, 'sub set');
+	assert.ok(res, 'sub set');
 
 	res = set.isSubset( new types.KeysAnd({ type: 'FOLDER' }), new types.KeysAnd({ type: 'FOLDER', parentId: 5 }) );
 	QUnit.notOk(res, 'wrong way');
@@ -179,11 +179,11 @@ QUnit.test("AND / OR / NOT isSubset", function(){
 		new types.KeysAnd({ type: 'FOLDER', parentId: 7 }),
 		new types.KeysAnd({ type: 'FOLDER', parentId: 5 })
 	);
-	QUnit.ok(!res, 'different values');
+	assert.ok(!res, 'different values');
 
 });
 
-QUnit.test("union AND with ENUM", function(){
+QUnit.test("union AND with ENUM", function(assert) {
 
     function Color(){}
 
@@ -195,7 +195,7 @@ QUnit.test("union AND with ENUM", function(){
 
     var res = set.union(qA, qB);
 
-    QUnit.deepEqual(res,
+    assert.deepEqual(res,
         new types.KeysAnd({
             type: 'FOLDER',
             status: new ColorSet(["red","green"])
@@ -204,12 +204,12 @@ QUnit.test("union AND with ENUM", function(){
     );
 });
 
-QUnit.test("AND isMember", function(){
+QUnit.test("AND isMember", function(assert) {
 
     var folderAnd35 = new types.KeysAnd({ type: 'FOLDER', age: 35 });
 
-    QUnit.ok( folderAnd35.isMember({type: 'FOLDER', age: 35}) );
-    QUnit.ok( folderAnd35.isMember({type: 'FOLDER', age: 35, extra: "value"}) );
+    assert.ok( folderAnd35.isMember({type: 'FOLDER', age: 35}) );
+    assert.ok( folderAnd35.isMember({type: 'FOLDER', age: 35, extra: "value"}) );
     QUnit.notOk( folderAnd35.isMember({type: 'FOLDER', age: 36}) );
     QUnit.notOk( folderAnd35.isMember({type: 'folder', age: 35}) );
     QUnit.notOk( folderAnd35.isMember({type: 'FOLDER'}) );
@@ -220,36 +220,36 @@ QUnit.test("AND isMember", function(){
         age: 33
     });
 
-    QUnit.ok( isJustinPostCollege.isMember({
+    assert.ok( isJustinPostCollege.isMember({
         name: {first: "Justin", last: "Meyer"},
         age: 33
     }), "is member");
 
 });
 
-QUnit.test("OR isMember", function(){
+QUnit.test("OR isMember", function(assert) {
 
     var isFolder =  new types.KeysAnd({ type: 'FOLDER'}),
         is35 = new types.KeysAnd({  age: 35 }),
         isFolderOr35 = new types.ValuesOr([isFolder, is35]);
 
-    QUnit.ok( isFolderOr35.isMember({type: 'FOLDER', age: 35}), "both" );
+    assert.ok( isFolderOr35.isMember({type: 'FOLDER', age: 35}), "both" );
     QUnit.notOk( isFolderOr35.isMember({}), "empty" );
-    QUnit.ok( isFolderOr35.isMember({type: 'FOLDER', age: 36}) );
-    QUnit.ok( isFolderOr35.isMember({type: 'folder', age: 35}) );
+    assert.ok( isFolderOr35.isMember({type: 'FOLDER', age: 36}) );
+    assert.ok( isFolderOr35.isMember({type: 'folder', age: 35}) );
     QUnit.notOk( isFolderOr35.isMember({type: 'folder', age: 36}) );
-    QUnit.ok( isFolderOr35.isMember({type: 'FOLDER'}) );
-    QUnit.ok( isFolderOr35.isMember({age: 35}) );
+    assert.ok( isFolderOr35.isMember({type: 'FOLDER'}) );
+    assert.ok( isFolderOr35.isMember({age: 35}) );
 
 });
 
-QUnit.test("And nested objects", function(){
+QUnit.test("And nested objects", function(assert) {
     var res;
 
     var isNameFirstJustin = new types.KeysAnd({ name: {first: "Justin"}});
     var isNameFirstJustin2 = new types.KeysAnd({ name: {first: "Justin"}});
     res = set.isEqual(isNameFirstJustin, isNameFirstJustin2);
-    QUnit.equal(res, true);
+    assert.equal(res, true);
 
 });
 
@@ -261,25 +261,25 @@ QUnit.module("can-query-logic/not");
 // Might have "real numbers"
 // But want even and odds and integers
 // Can't "build up" to real with all those other combinations
-QUnit.test("union basics", function(){
+QUnit.test("union basics", function(assert) {
 
 
 
-    QUnit.equal( set.union( new types.ValuesNot(1), 1), set.UNIVERSAL, "is univesal set");
+    assert.equal( set.union( new types.ValuesNot(1), 1), set.UNIVERSAL, "is univesal set");
 });
 
-QUnit.test("difference with universal", function(){
+QUnit.test("difference with universal", function(assert) {
 
     // everything NOT 1, but not the universe
-    QUnit.equal( set.difference( new types.ValuesNot(1), set.UNIVERSAL), set.EMPTY, "not 1 \\ univesal = 1");
+    assert.equal( set.difference( new types.ValuesNot(1), set.UNIVERSAL), set.EMPTY, "not 1 \\ univesal = 1");
 
-    QUnit.deepEqual( set.difference( set.UNIVERSAL, 1), new types.ValuesNot(1), "1 \\ univesal = not 1");
+    assert.deepEqual( set.difference( set.UNIVERSAL, 1), new types.ValuesNot(1), "1 \\ univesal = not 1");
 });
 
 
-QUnit.test("And with nested.properties", function(){
+QUnit.test("And with nested.properties", function(assert) {
 
-    QUnit.equal(
+    assert.equal(
         set.isSubset(
             new types.KeysAnd({
                 "name.first": "Justin",
@@ -293,7 +293,7 @@ QUnit.test("And with nested.properties", function(){
         "dot.ed properties work with subset"
     );
 
-    QUnit.equal(
+    assert.equal(
         new types.KeysAnd({
             "name.first": "Justin",
             "name.last": "Meyer"
@@ -302,7 +302,7 @@ QUnit.test("And with nested.properties", function(){
         "dot.ed properties isMember match"
     );
 
-    QUnit.equal(
+    assert.equal(
         new types.KeysAnd({
             "name.first": "Justin",
             "name.last": "Meyer"
@@ -314,11 +314,11 @@ QUnit.test("And with nested.properties", function(){
 });
 
 
-QUnit.test("And with nested ands", function(){
+QUnit.test("And with nested ands", function(assert) {
 
 
 
-    QUnit.equal(
+    assert.equal(
         set.isSubset(
             new types.KeysAnd({
                 name: new types.KeysAnd({
@@ -336,7 +336,7 @@ QUnit.test("And with nested ands", function(){
         "properties work with subset"
     );
 
-    QUnit.deepEqual(
+    assert.deepEqual(
         set.intersection(
             new types.KeysAnd({
                 name: new types.KeysAnd({
@@ -358,7 +358,7 @@ QUnit.test("And with nested ands", function(){
         "properties work with intersection"
     );
 
-    QUnit.equal(
+    assert.equal(
         new types.KeysAnd({
             name: new types.KeysAnd({
                 first: "Justin",
@@ -369,7 +369,7 @@ QUnit.test("And with nested ands", function(){
         "dot.ed properties isMember match"
     );
 
-    QUnit.equal(
+    assert.equal(
         new types.KeysAnd({
             name: new types.KeysAnd({
                 first: "Justin",
@@ -382,7 +382,7 @@ QUnit.test("And with nested ands", function(){
 
 });
 
-QUnit.test("union with comparisons", function(){
+QUnit.test("union with comparisons", function(assert) {
     var isGtJustinAndGt35 = new types.KeysAnd({
         name: new is.GreaterThan("Justin"),
         age: new is.GreaterThan(35)
@@ -391,7 +391,7 @@ QUnit.test("union with comparisons", function(){
         age: new is.GreaterThan(25)
     });
     var result = set.union(isGtJustinAndGt35, isGt25);
-    QUnit.deepEqual(result, isGt25);
+    assert.deepEqual(result, isGt25);
 
     // if filtering in fewer dimensions is a superset, use that
     var a = new types.KeysAnd({
@@ -404,6 +404,6 @@ QUnit.test("union with comparisons", function(){
         count: new is.GreaterThan(9)
     });
     result = set.union(b, a);
-    QUnit.deepEqual(result, b);
+    assert.deepEqual(result, b);
 
 });
