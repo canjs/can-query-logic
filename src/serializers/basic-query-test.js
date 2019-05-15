@@ -150,7 +150,7 @@ QUnit.test("auto-convert or schema into maybe type", function(assert) {
 
 
 testHelpers.dev.devOnlyTest("warn if query properties are not defined (#8)", function (assert) {
-	QUnit.expect(3);
+	assert.expect(3);
 
 	var message = "can-query-logic: Ignoring keys: start, end.";
 	var finishErrorCheck = testHelpers.dev.willWarn(message, function(actualMessage, success) {
