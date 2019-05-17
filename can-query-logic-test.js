@@ -1,4 +1,5 @@
 require("./src/set-test");
+require("./src/helpers-test");
 require("./src/types/make-real-number-range-inclusive-test");
 require("./src/types/comparisons-test");
 require("./src/types/and-or-not-test");
