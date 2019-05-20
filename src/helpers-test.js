@@ -85,3 +85,18 @@ QUnit.test(".getIndex should not sort unchanged items #33", function() {
 	QUnit.equal(res3, 2);
 	QUnit.equal(res4, 3);
 });
+
+QUnit.test("Missed schema on helper.getIndex #45", function() {
+	var items = [
+		{id: 1, name: "Item 0"},
+		{id: 2, name: "Item 1"},
+		{id: 3, name: "Item 2"},
+		{id: 4, name: "Item 3"},
+		{id: 5, name: "Item 4"}
+	];
+	
+	var compare = helpers.sorter("name", {});
+	var schema = { keys: {}, identity: ["id"] };
+	
+	QUnit.equal(helpers.getIndex(compare,items, {id: 2, name: "Item 1"}, schema), 1);
+});

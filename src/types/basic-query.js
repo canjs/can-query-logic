@@ -37,7 +37,8 @@ var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
 // That compare function will read the right property and return `-1` or `1`
 
 // WILL MAKE A TYPE FOR SORTING
-function makeSort(schemaKeys, hydrateAndValue) {
+function makeSort(schema, hydrateAndValue) {
+	var schemaKeys = schema.keys;
 	// Makes gt and lt functions that `helpers.sorter` can use
 	// to make a `compare` function for `Array.sort(compare)`.`
 	var sorters = {};
@@ -107,6 +108,7 @@ function makeSort(schemaKeys, hydrateAndValue) {
 
 	function Sort(key) {
 		this.key = key;
+		this.schema = schema;
 		this.compare = helpers.sorter(key, sorters);
 	}
 
@@ -129,7 +131,7 @@ function makeSort(schemaKeys, hydrateAndValue) {
 	return Sort;
 }
 
-var DefaultSort = makeSort({});
+var DefaultSort = makeSort({ keys: {}, identity: ["id"] });
 
 
 // Define the BasicQuery type
@@ -234,7 +236,7 @@ canReflect.assignMap(BasicQuery.prototype, {
 			return undefined;
 		}
 		// use the passed sort's compare function
-		return helpers.getIndex(this.sort.compare, items, props);
+		return helpers.getIndex(this.sort.compare, items, props, this.sort.schema);
 	},
 	isMember: function(props) {
 		// Use the AND type for it's isMember method

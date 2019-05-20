@@ -55,22 +55,22 @@ var helpers = {
 	// or in the left direction
 	// otherwise return the last index
 	// see getIdentityIndexByDirection
-	getIdentityIndex: function(compare, items, props, startIndex) {
-		var identity = canReflect.getIdentity(props),
+	getIdentityIndex: function(compare, items, props, startIndex, schema) {
+		var identity = canReflect.getIdentity(props, schema),
 			starterItem = items[startIndex];
 		// check if the middle has a match
 		if (compare(props, starterItem) === 0) {
-			if (identity === canReflect.getIdentity(starterItem)) {
+			if (identity === canReflect.getIdentity(starterItem, schema)) {
 				return startIndex;
 			}
 		}
 		
-		var rightResult = this.getIdentityIndexByDirection(compare, items, props, startIndex+1, 1),
+		var rightResult = this.getIdentityIndexByDirection(compare, items, props, startIndex+1, 1, schema),
 			leftResult;
 		if(rightResult.index) {
 			return rightResult.index;
 		} else {
-			leftResult = this.getIdentityIndexByDirection(compare, items, props, startIndex-1, -1);
+			leftResult = this.getIdentityIndexByDirection(compare, items, props, startIndex-1, -1, schema);
 		}
 		if(leftResult.index !== undefined) {
 			return leftResult.index;
@@ -82,14 +82,14 @@ var helpers = {
 	// for a given direction (right or left)
 	// 1 for right
 	// -1 for left
-	getIdentityIndexByDirection: function(compare, items, props, startIndex, direction) {
+	getIdentityIndexByDirection: function(compare, items, props, startIndex, direction, schema) {
 		var currentIndex = startIndex;
-		var identity = canReflect.getIdentity(props);
+		var identity = canReflect.getIdentity(props, schema);
 		while(currentIndex >= 0 && currentIndex < items.length) {
 			var currentItem = items[currentIndex];
 			var computed = compare(props, currentItem);
 			if(computed === 0) {
-				if( identity === canReflect.getIdentity(currentItem)) {
+				if( identity === canReflect.getIdentity(currentItem, schema)) {
 					return {index: currentIndex};
 				}
 			} else {
@@ -100,7 +100,7 @@ var helpers = {
 		return {lastIndex: currentIndex - direction};
 	},
 	//
-	getIndex: function(compare, items, props) {
+	getIndex: function(compare, items, props, schema) {
 		if (!items || !items.length) {
 			return undefined;
 		}
@@ -121,7 +121,7 @@ var helpers = {
 				item = items[mid],
 				computed = compare(props, item);
 			if (computed === 0) {
-				return this.getIdentityIndex(compare, items, props, mid);
+				return this.getIdentityIndex(compare, items, props, mid, schema);
 			} else if (computed === -1) {
 				high = mid;
 			} else {
