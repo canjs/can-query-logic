@@ -356,3 +356,14 @@ QUnit.test("index uses can-reflect", function(){
     QUnit.deepEqual([obj1Read, obj2Read, itemKeyRead, itemOwnKeyRead],
         [true, true, true, true], "read everything");
 });
+
+QUnit.test(".index should work with literal objects", function() {
+	var query = new BasicQuery({
+		sort: "name"
+	});
+
+	var items = [{id: 1, name: "Item 0"}, {id: 2, name: "Item 1"}];
+	var res = query.index({id: 1, name: "Item 1"}, items);
+
+	QUnit.equal(res, 1, "Item index at 1");
+});
