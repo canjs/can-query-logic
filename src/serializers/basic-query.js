@@ -281,7 +281,7 @@ module.exports = function(schema) {
 
 
 	// Makes a sort type that can make a compare function using the SetType
-	var Sort = BasicQuery.makeSort(keys, hydrateAndValue);
+	var Sort = BasicQuery.makeSort(schema, hydrateAndValue);
 	var serializer = new Serializer(serializeMap);
 	serializer.add(comparisonsConverter.serializer);
 

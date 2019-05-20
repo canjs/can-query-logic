@@ -357,51 +357,13 @@ QUnit.test("index uses can-reflect", function(assert) {
         [true, true, true, true], "read everything");
 });
 
-
-QUnit.test("index should not sort unchanged items #33", function(assert) {
-	canReflect.assignSymbols({},{
-		"can.getSchema": function() {
-			return {
-				type: "map",
-				identity: ["id"],
-				keys: {
-					id: Number,
-					name: String
-				}
-			};
-		}
-	});
-	
-	var items = [
-		{id: 1, name: "Item 0"},
-		{id: 2, name: "Item 1"},
-		{id: 3, name: "Item 1"},
-		{id: 4, name: "Item 1"},
-		{id: 5, name: "Item 2"}
-	];
-
-	canReflect.eachIndex(items, function(item, i) {
-		canReflect.assignSymbols(item, {
-			"can.getSchema": function() {
-				return {
-					type: "map",
-					identity: ["id"],
-					keys: {
-						id: Number,
-						name: String
-					}
-				};
-			}
-		});
-	});
-
-
-
+QUnit.test(".index should work with literal objects", function(assert) {
 	var query = new BasicQuery({
-        sort: "name"
+		sort: "name"
 	});
-	
-	var res = query.index({id:4, name: "Item 1"}, items);
 
-	assert.equal(res, 3);
+	var items = [{id: 1, name: "Item 0"}, {id: 2, name: "Item 1"}];
+	var res = query.index({id: 1, name: "Item 1"}, items);
+
+	assert.equal(res, 1, "Item index at 1");
 });

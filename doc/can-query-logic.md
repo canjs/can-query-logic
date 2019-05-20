@@ -4,6 +4,7 @@
 @group can-query-logic.prototype 1 prototype
 @group can-query-logic/query-format 2 query format
 @group can-query-logic.static 3 static methods
+@package ../package.json
 
 @group can-query-logic.static-types 4 static types
 @outline 3
