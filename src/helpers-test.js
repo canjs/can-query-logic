@@ -94,26 +94,9 @@ QUnit.test("Missed schema on helper.getIndex #45", function() {
 		{id: 4, name: "Item 3"},
 		{id: 5, name: "Item 4"}
 	];
-
-	canReflect.eachIndex(items, function(item) {
-		canReflect.assignSymbols(item, {
-			"can.getSchema": function() {
-				return {
-					type: "map",
-					identity: ["id"],
-					keys: {
-						id: Number,
-						name: String
-					}
-				};
-			}
-		});
-	});
 	
 	var compare = helpers.sorter("name", {});
-	var schema = canReflect.getSchema(items[0]);
+	var schema = { keys: {}, identity: ["id"] };
 	
 	QUnit.equal(helpers.getIndex(compare,items, {id: 2, name: "Item 1"}, schema), 1);
-
-
 });
