@@ -17,7 +17,7 @@ var EmptySchema = {
 
 
 
-QUnit.test("basics", function(){
+QUnit.test("basics", function(assert) {
     var query = {
         filter: {foo: "bar"}
     };
@@ -28,10 +28,10 @@ QUnit.test("basics", function(){
 
     var returnedQuery = converter.serializer.serialize(basicQuery);
 
-    QUnit.deepEqual(returnedQuery, query, "got back what we give");
+    assert.deepEqual(returnedQuery, query, "got back what we give");
 });
 
-QUnit.test("nested properties", function(){
+QUnit.test("nested properties", function(assert) {
     var query = {
         filter: {
             name: {
@@ -45,13 +45,13 @@ QUnit.test("nested properties", function(){
     var basicQuery = converter.hydrate(query);
 
 
-    QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
+    assert.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
         name: new logicTypes.KeysAnd({first: new is.In(["justin"])})
     }), "adds nested ands");
 });
 
 
-QUnit.test("$or with the same types unify into maybe", function(){
+QUnit.test("$or with the same types unify into maybe", function(assert) {
 
     var MaybeSet = makeMaybe([null])
 
@@ -74,7 +74,7 @@ QUnit.test("$or with the same types unify into maybe", function(){
 
     var basicQuery = converter.hydrate(query);
 
-    QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
+    assert.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
         foo: new is.In(["bar"]),
         age: new MaybeSet({
             range: new is.GreaterThan(3),
@@ -83,7 +83,7 @@ QUnit.test("$or with the same types unify into maybe", function(){
     }));
 
     var res = converter.serializer.serialize(basicQuery);
-    QUnit.deepEqual(res, {
+    assert.deepEqual(res, {
         filter: {
             $or: [
                 { foo: "bar", age: {$gt: 3}},
@@ -93,7 +93,7 @@ QUnit.test("$or with the same types unify into maybe", function(){
     }, "serialized");
 });
 
-QUnit.test("auto-convert or schema into maybe type", function(){
+QUnit.test("auto-convert or schema into maybe type", function(assert) {
     var MaybeNumber = canReflect.assignSymbols({},{
         "can.new": function(val){
             if (val == null) {
@@ -128,7 +128,7 @@ QUnit.test("auto-convert or schema into maybe type", function(){
 
     var basicQuery = converter.hydrate(query);
 
-    /*QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
+    /*assert.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
         foo: new is.In(["bar"]),
         age: new MaybeSet({
             range: new is.GreaterThan(3),
@@ -138,7 +138,7 @@ QUnit.test("auto-convert or schema into maybe type", function(){
 
     var res = converter.serializer.serialize(basicQuery);
 
-    QUnit.deepEqual(res, {
+    assert.deepEqual(res, {
         filter: {
             $or: [
                 { foo: "bar", age: {$gt: 3}},
@@ -149,13 +149,13 @@ QUnit.test("auto-convert or schema into maybe type", function(){
 });
 
 
-testHelpers.dev.devOnlyTest("warn if query properties are not defined (#8)", function() {
-	QUnit.expect(3);
+testHelpers.dev.devOnlyTest("warn if query properties are not defined (#8)", function (assert) {
+	assert.expect(3);
 
 	var message = "can-query-logic: Ignoring keys: start, end.";
 	var finishErrorCheck = testHelpers.dev.willWarn(message, function(actualMessage, success) {
-		QUnit.equal(actualMessage, message, "Warning is expected message");
-		QUnit.ok(success);
+		assert.equal(actualMessage, message, "Warning is expected message");
+		assert.ok(success);
 	});
 
 
@@ -172,10 +172,10 @@ testHelpers.dev.devOnlyTest("warn if query properties are not defined (#8)", fun
     var converter = makeBasicQueryConvert(EmptySchema);
 
     converter.hydrate(query);
-    QUnit.equal(finishErrorCheck(), 1);
+    assert.equal(finishErrorCheck(), 1);
 });
 
-QUnit.test("gt and lt", function(){
+QUnit.test("gt and lt", function(assert) {
     var query = {
         filter: {
             age: {
@@ -189,7 +189,7 @@ QUnit.test("gt and lt", function(){
 
     var basicQuery = converter.hydrate(query);
 
-    QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
+    assert.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
         age: new is.And([
             new is.GreaterThan(0),
             new is.LessThan(100)
@@ -198,7 +198,7 @@ QUnit.test("gt and lt", function(){
 
     var res = converter.serializer.serialize(basicQuery);
 
-    QUnit.deepEqual(res, {
+    assert.deepEqual(res, {
         filter: {
             age: {
                 $gt: 0,
@@ -209,7 +209,7 @@ QUnit.test("gt and lt", function(){
 
 });
 
-QUnit.test("basicquery with no sort", function() {
+QUnit.test("basicquery with no sort", function(assert) {
 	var query = {};
 
 	var converter = makeBasicQueryConvert({
@@ -225,7 +225,7 @@ QUnit.test("basicquery with no sort", function() {
 	var item = {id: 1};
 
 	var res = basicQuery.index(item, objs);
-	QUnit.equal(res, 1, "inserted at 1");
+	assert.equal(res, 1, "inserted at 1");
 });
 
 /*
@@ -240,7 +240,7 @@ QUnit.skip("nested properties within ors", function(){
 
     var basicQuery = converter.hydrate(query);
 
-    QUnit.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
+    assert.deepEqual(basicQuery.filter, new logicTypes.KeysAnd({
         name: new logicTypes.KeysAnd({first: new is.In(["justin"])})
     }), "adds nested ands");
 });

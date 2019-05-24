@@ -717,7 +717,7 @@ var tests = {
 			var intermediate = set.union(gt1,lt1);
 			var result = set.union( intermediate, eq1 );
 
-			QUnit.equal(result, set.UNIVERSAL, "foo > 1 || foo < 1 || foo === 1 => UNIVERSAL");
+			assert.equal(result, set.UNIVERSAL, "foo > 1 || foo < 1 || foo === 1 => UNIVERSAL");
 		},
 		intersection: function(assert) {
 			var a = new is.In([5, 6]);
@@ -3883,7 +3883,7 @@ names.forEach(function(name1, i) {
 
 
 
-QUnit.test("Able to do membership, union, difference with GreaterThan", function() {
+QUnit.test("Able to do membership, union, difference with GreaterThan", function(assert) {
 
 	var DateStrSet = function(value) {
 		this.value = value;
@@ -3896,7 +3896,7 @@ QUnit.test("Able to do membership, union, difference with GreaterThan", function
 	var greaterThan1980 = new compare.GreaterThan(
 		new DateStrSet(date1980.toString())
 	);
-	QUnit.ok(greaterThan1980.isMember(new Date(1982, 9, 20).toString()), "is member");
+	assert.ok(greaterThan1980.isMember(new Date(1982, 9, 20).toString()), "is member");
 
 	var greaterThan1990 = new compare.GreaterThan(
 		new DateStrSet(new Date(1990, 0, 1).toString())
@@ -3904,7 +3904,7 @@ QUnit.test("Able to do membership, union, difference with GreaterThan", function
 
 	var union = set.union(greaterThan1980, greaterThan1990);
 
-	QUnit.deepEqual(union, new compare.GreaterThan(
+	assert.deepEqual(union, new compare.GreaterThan(
 		new DateStrSet(date1980.toString())
 	), "union");
 
@@ -3912,12 +3912,12 @@ QUnit.test("Able to do membership, union, difference with GreaterThan", function
 
 	var gt1980 = new compare.GreaterThan(new DateStrSet(date1980.toString())),
 		lte1990 = new compare.LessThanEqual(new DateStrSet(new Date(1990, 0, 1).toString()));
-	QUnit.deepEqual(difference,
+	assert.deepEqual(difference,
 		new is.And([gt1980, lte1990]),
 		"difference");
 });
 
-QUnit.test("Able to do membership, union, difference with $in", function() {
+QUnit.test("Able to do membership, union, difference with $in", function(assert) {
 
 	var DateStrSet = function(value) {
 		this.value = value;
@@ -3935,7 +3935,7 @@ QUnit.test("Able to do membership, union, difference with $in", function() {
 	]);
 
 
-	QUnit.ok(in80or90.isMember(date1980), "is member");
+	assert.ok(in80or90.isMember(date1980), "is member");
 
 	var in90or00 = new compare.In([
 		new DateStrSet(date1990),
@@ -3944,7 +3944,7 @@ QUnit.test("Able to do membership, union, difference with $in", function() {
 
 	var union = set.union(in80or90, in90or00);
 
-	QUnit.deepEqual(union, new compare.In([
+	assert.deepEqual(union, new compare.In([
 		new DateStrSet(date1980),
 		new DateStrSet(date1990),
 		new DateStrSet(date2000)
@@ -3956,7 +3956,7 @@ QUnit.test("Able to do membership, union, difference with $in", function() {
 
 	var union = set.union(greaterThan1980, greaterThan1990);
 
-	QUnit.deepEqual(union,new compare.GreaterThan(
+	assert.deepEqual(union,new compare.GreaterThan(
 	    new DateStrSet( date1980.toString() )
 	), "union");
 
@@ -3964,7 +3964,7 @@ QUnit.test("Able to do membership, union, difference with $in", function() {
 
 	var gt1980 = new compare.GreaterThan( new DateStrSet( date1980.toString() ) ),
 	    lte1990 = new compare.LessThanEqual( new DateStrSet( new Date(1990,0,1).toString() ) );
-	QUnit.deepEqual(difference,
+	assert.deepEqual(difference,
 	    new is.And([gt1980, lte1990]),
 	    "difference");*/
 });

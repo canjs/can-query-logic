@@ -5,7 +5,7 @@ var canReflect = require("can-reflect");
 QUnit.module("can-query-logic/helpers");
 
 
-QUnit.test('.getIdentityIndex', function(){
+QUnit.test('.getIdentityIndex', function(assert){
 	var items = [
 		{id: 1, name: "Item 0"},
 		{id: 2, name: "Item 1"},
@@ -44,10 +44,10 @@ QUnit.test('.getIdentityIndex', function(){
 	});
 	var compare = helpers.sorter("name", {});
 	var res = helpers.getIdentityIndex(compare, items, props, 1);
-	QUnit.deepEqual(res, 1);
+	assert.deepEqual(res, 1);
 });
 
-QUnit.test(".getIndex should not sort unchanged items #33", function() {
+QUnit.test(".getIndex should not sort unchanged items #33", function(assert) {
 	
 	var items = [
 		{id: 1, name: "Item 0"},
@@ -80,13 +80,13 @@ QUnit.test(".getIndex should not sort unchanged items #33", function() {
 	var res4 = helpers.getIndex(compare,items, items[3]);
 	
 	
-	QUnit.equal(res1, 0);
-	QUnit.equal(res2, 1);
-	QUnit.equal(res3, 2);
-	QUnit.equal(res4, 3);
+	assert.equal(res1, 0);
+	assert.equal(res2, 1);
+	assert.equal(res3, 2);
+	assert.equal(res4, 3);
 });
 
-QUnit.test("Missed schema on helper.getIndex #45", function() {
+QUnit.test("Missed schema on helper.getIndex #45", function(assert) {
 	var items = [
 		{id: 1, name: "Item 0"},
 		{id: 2, name: "Item 1"},
@@ -98,5 +98,5 @@ QUnit.test("Missed schema on helper.getIndex #45", function() {
 	var compare = helpers.sorter("name", {});
 	var schema = { keys: {}, identity: ["id"] };
 	
-	QUnit.equal(helpers.getIndex(compare,items, {id: 2, name: "Item 1"}, schema), 1);
+	assert.equal(helpers.getIndex(compare,items, {id: 2, name: "Item 1"}, schema), 1);
 });
