@@ -1,10 +1,12 @@
 var QUnit = require("steal-qunit");
 var comparisons = require("./comparisons");
 var canReflect = require("can-reflect");
+var is = require("../types/comparisons");
+var ValuesNot = require("../types/values-not");
 
 QUnit.module("can-query-logic/serializers/comparisons");
 
-QUnit.test("hydrate and serialize", function(assert) {
+QUnit.test("hydrate and serialize with custom types that work with operators", function(assert) {
 	var Type = function(value){
 		this.value = value;
 	};
@@ -44,3 +46,17 @@ QUnit.test("unknown hydrator is called in all cases", function(assert) {
 
 	assert.deepEqual(hydrated, [1,2, "abc","x","y"], "hydrated called with the right stuff");
 });
+
+
+QUnit.only("$not and $all can work recursively", function(assert){
+
+
+	var hydrated = comparisons.hydrate( {$not: {$all: ['def']}}, function(value){
+		return value;
+	} );
+
+	console.log(hydrated);
+
+	assert.ok(hydrated instanceof ValuesNot, "is an instance");
+
+})

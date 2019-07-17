@@ -1,6 +1,7 @@
 var compare = require("./comparisons");
 var set = require("../set");
 var is = compare;
+var ValuesNot = require("./values-not");
 
 QUnit.module("can-query-logic/types/comparisons")
 
@@ -3968,3 +3969,43 @@ QUnit.test("Able to do membership, union, difference with $in", function(assert)
 	    new is.And([gt1980, lte1990]),
 	    "difference");*/
 });
+
+QUnit.test("All on arrays", function(assert){
+
+	var arrayHasAbc = new is.All(["abc"]);
+
+	assert.equal( arrayHasAbc.isMember(["abc"]), true );
+	assert.equal( arrayHasAbc.isMember(["abc", "def"]), true );
+	assert.equal( arrayHasAbc.isMember(["def"]), false );
+	assert.equal( arrayHasAbc.isMember([]), false );
+
+	var hasAbcAndDef = new is.And([
+	    new is.All(["abc"]),
+	    new is.All(["def"])
+	]);
+
+
+	assert.equal( hasAbcAndDef.isMember(["abc"]), false );
+	assert.equal( hasAbcAndDef.isMember(["abc", "def"]), true );
+	assert.equal( hasAbcAndDef.isMember(["def"]), false );
+	assert.equal( hasAbcAndDef.isMember([]), false );
+
+	var hasAbcAndNotDef = new is.And([
+	    new is.All(["abc"]),
+	    new ValuesNot( new is.All(["def"]) )
+	]);
+
+	assert.equal( hasAbcAndNotDef.isMember(["abc"]), true );
+	assert.equal( hasAbcAndNotDef.isMember(["abc", "def"]), false );
+	assert.equal( hasAbcAndNotDef.isMember(["def"]), false );
+	assert.equal( hasAbcAndNotDef.isMember([]), false );
+	// Future tests
+	// arrayHasAbc.isMember(null), false
+	//
+	// {$all: ["10-20-22"]}.isMember( ["yesterday"])
+	// new is.All([new DateStrSet(date1990)]).isMember(new DateStrSet(date1990))
+	/*
+	*/
+
+
+})

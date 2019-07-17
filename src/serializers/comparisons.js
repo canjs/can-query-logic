@@ -1,6 +1,7 @@
 var is = require("../types/comparisons");
 var Serializer = require("../serializer");
 var canReflect = require("can-reflect");
+var ValuesNot = require("../types/values-not");
 
 function makeNew(Constructor) {
 	return function(value){
@@ -47,6 +48,13 @@ addHydrateFrom("$gte", makeNew(is.GreaterThanEqual));
 addHydrateFromValues("$in", makeNew(is.In));
 addHydrateFrom("$lt", makeNew(is.LessThan));
 addHydrateFrom("$lte", makeNew(is.LessThanEqual));
+
+addHydrateFromValues("$all", makeNew(is.All));
+
+hydrateMap["$not"] = function(value, unknownHydrator) {
+	return new ValuesNot(hydrateValue(value["$not"], unknownHydrator));
+};
+
 addHydrateFromValues("$nin", makeNew(is.GreaterThan));
 
 
@@ -83,41 +91,44 @@ var serializer = new Serializer([
 	}]*/
 ]);
 
-module.exports = {
-	hydrate: function(value, hydrateUnknown){
-		if(!hydrateUnknown) {
-			hydrateUnknown = function(){
-				throw new Error("can-query-logic doesn't recognize operator: "+JSON.stringify(value));
-			}
+function hydrateValue(value, hydrateUnknown){
+	if(!hydrateUnknown) {
+		hydrateUnknown = function(){
+			throw new Error("can-query-logic doesn't recognize operator: "+JSON.stringify(value));
 		}
-		if(Array.isArray(value)) {
-			return new is.In(value.map(function(value){
-				return hydrateUnknown(value);
-			}));
-		}
-		else if(value && typeof value === "object") {
-			var keys = Object.keys(value);
-			var allKeysAreComparisons = keys.every(function(key){
-				return hydrateMap[key]
+	}
+	if(Array.isArray(value)) {
+		return new is.In(value.map(function(value){
+			return hydrateUnknown(value);
+		}));
+	}
+	else if(value && typeof value === "object") {
+		var keys = Object.keys(value);
+		var allKeysAreComparisons = keys.every(function(key){
+			return hydrateMap[key]
+		});
+		if(allKeysAreComparisons) {
+			var andClauses = keys.map(function(key){
+				var part = {};
+				part[key] = value[key];
+				var hydrator = hydrateMap[key];
+				return hydrator(part, hydrateUnknown);
 			});
-			if(allKeysAreComparisons) {
-				var andClauses = keys.map(function(key){
-					var part = {};
-					part[key] = value[key];
-					var hydrator = hydrateMap[key];
-					return hydrator(part, hydrateUnknown);
-				});
-				if(andClauses.length > 1) {
-					return new is.And(andClauses);
-				} else {
-					return andClauses[0];
-				}
+			if(andClauses.length > 1) {
+				return new is.And(andClauses);
 			} else {
-				return hydrateUnknown(value);
+				return andClauses[0];
 			}
 		} else {
-			return new is.In([hydrateUnknown(value)]);
+			return hydrateUnknown(value);
 		}
-	},
+	} else {
+		return new is.In([hydrateUnknown(value)]);
+	}
+}
+
+module.exports = {
+	// value - something from a query, for example {$in: [1,2]}
+	hydrate: hydrateValue,
 	serializer: serializer
 };

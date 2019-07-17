@@ -45,6 +45,9 @@ var comparisons = {
 	// These are all value comparisons.
 	Or: function ValueOr(ors) {
 		this.values = ors;
+	},
+	All: function(values){
+		this.values = values;
 	}
 };
 
@@ -52,6 +55,15 @@ comparisons.Or.prototype.orValues = function() {
 	return this.values;
 };
 
+comparisons.All.test = function(allValues, recordValues) {
+
+	return allValues.every(function(allValue) {
+		return recordValues.some(function(recordValue){
+			var values = set.ownAndMemberValue(allValue, recordValue);
+			return values.own === values.member;
+		});
+	});
+}
 
 comparisons.In.test = function(values, b) {
 	return values.some(function(value) {
@@ -115,7 +127,7 @@ function isMemberThatUsesTest(value) {
 function isMemberThatUsesTestOnValues(value) {
 	return this.constructor.test(this.values, value);
 }
-[comparisons.In, comparisons.NotIn].forEach(function(Type) {
+[comparisons.In, comparisons.NotIn, comparisons.All].forEach(function(Type) {
 	Type.prototype.isMember = isMemberThatUsesTestOnValues;
 });
 
