@@ -251,9 +251,9 @@ QUnit.test("mongo things", function(assert) {
     var query = {
         filter: {
 			$and: [
-				{foo: "bar"},
-				{zed: "ted "}
-			]
+		      {tags: {$all: ['sbux']}},
+		      {tags: {$not: {$all: ['dfw']}}}
+		  ]
 		}
     };
 
@@ -261,7 +261,5 @@ QUnit.test("mongo things", function(assert) {
 
     var basicQuery = converter.hydrate(query);
 
-    var returnedQuery = converter.serializer.serialize(basicQuery);
-
-    assert.deepEqual(returnedQuery, query, "got back what we give");
+    assert(basicQuery.filter instanceof )
 });

@@ -50,7 +50,7 @@ QUnit.test("unknown hydrator is called in all cases", function(assert) {
 
 QUnit.only("$not and $all can work recursively", function(assert){
 
-
+	// WHat if {$not: 1} //-> is.NotIn([1]) | new is.ValuesNot(new is.In([1]))
 	var hydrated = comparisons.hydrate( {$not: {$all: ['def']}}, function(value){
 		return value;
 	} );
