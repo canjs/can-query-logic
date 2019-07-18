@@ -3825,6 +3825,24 @@ var tests = {
 				"other directional holes"
 			);
 		}
+	},
+	UNIVERSAL_All: {
+		difference: function(assert) {
+			var all = new is.All(["test"]);
+			assert.deepEqual(
+				set.difference(set.UNIVERSAL, all),
+				set.UNKNOWABLE
+			);
+		}
+	},
+	All_UNIVERSAL: {
+		difference: function(assert) {
+			var all = new is.All(["test"]);
+			assert.deepEqual(
+				set.difference(all, set.UNIVERSAL),
+				set.EMPTY
+			);
+		}
 	}
 };
 

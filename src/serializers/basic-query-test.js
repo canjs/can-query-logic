@@ -5,6 +5,7 @@ var logicTypes = require("../types/and-or-not");
 var is = require("../types/comparisons");
 var makeMaybe = require("../types/make-maybe");
 var testHelpers = require("can-test-helpers");
+var ValuesAnd = require("../types/values-and");
 
 QUnit.module("can-query-logic/serializers/basic-query");
 
@@ -246,20 +247,21 @@ QUnit.skip("nested properties within ors", function(){
 });
 */
 
-
-QUnit.test("mongo things", function(assert) {
-    var query = {
-        filter: {
+QUnit.test("Complex queries with nested $not, $all", function(assert) {
+	var query = {
+		filter: {
 			$and: [
-		      {tags: {$all: ['sbux']}},
-		      {tags: {$not: {$all: ['dfw']}}}
-		  ]
+				{tags: {$all: ['sbux']}},
+				{tags: {$not: {$all: ['dfw']}}}
+			]
 		}
-    };
+	};
 
-    var converter = makeBasicQueryConvert(EmptySchema);
+	var converter = makeBasicQueryConvert(EmptySchema);
+	var basicQuery = converter.hydrate(query);
 
-    var basicQuery = converter.hydrate(query);
+	assert.ok(basicQuery.filter instanceof ValuesAnd);
 
-    assert(basicQuery.filter instanceof )
+	var res = converter.serializer.serialize(basicQuery);
+	assert.deepEqual(res, query);
 });

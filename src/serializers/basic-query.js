@@ -27,8 +27,11 @@ function getSchemaProperties(value) {
 }
 
 function hydrateFilter(values, schemaProperties, hydrateUnknown) {
-	if (values && typeof values === "object" && ("$or" in values)) {
+	var valuesIsObject = values && typeof values === "object";
+	if (valuesIsObject && ("$or" in values)) {
 		return hydrateOrs(values.$or, schemaProperties, hydrateUnknown);
+	} else if(valuesIsObject && ("$and" in values)) {
+		return hydrateAnds(values.$and, schemaProperties, hydrateUnknown);
 	} else {
 		return hydrateAndValues(values, schemaProperties, hydrateUnknown);
 	}
@@ -194,6 +197,13 @@ function hydrateOrs(values, schemaProperties, hydrateUnknown) {
 	return new BasicQuery.Or(comparisons);
 }
 
+function hydrateAnds(values, schemaProperties, hydrateUnknown) {
+	var comparisons = values.map(function(value) {
+		return hydrateAndValues(value, schemaProperties, hydrateUnknown);
+	});
+	return new BasicQuery.And(comparisons);
+}
+
 function recursivelyAddOrs(ors, value, serializer, key){
     value.orValues().forEach(function(orValue){
         if(typeof orValue.orValues === "function") {
@@ -217,6 +227,14 @@ module.exports = function(schema) {
 				return serializer(value);
 			});
 		}],
+		[BasicQuery.And, function(and, serializer) {
+			return { $and: and.values.map(function(value) {
+				return serializer(value);
+			}) };
+		}],
+		[BasicQuery.Not, function(nots, serializer) {
+			return { $not: serializer(nots.value) };
+		}],
 		// this destructures ANDs with OR-like clauses
 		[BasicQuery.KeysAnd, function(and, serializer) {
 			var ors = [];
@@ -230,6 +248,7 @@ module.exports = function(schema) {
 					result[key] = serializer(value);
 				}
 			});
+
 			if (ors.length) {
 				if (ors.length === 1) {
 					return ors[0];

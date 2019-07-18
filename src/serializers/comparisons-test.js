@@ -34,7 +34,6 @@ QUnit.test("hydrate and serialize with custom types that work with operators", f
 });
 
 QUnit.test("unknown hydrator is called in all cases", function(assert) {
-
 	var hydrated = [];
 	var addToHydrated = function(value){
 		hydrated.push(value);
@@ -48,15 +47,11 @@ QUnit.test("unknown hydrator is called in all cases", function(assert) {
 });
 
 
-QUnit.only("$not and $all can work recursively", function(assert){
-
+QUnit.test("$not and $all can work recursively", function(assert){
 	// WHat if {$not: 1} //-> is.NotIn([1]) | new is.ValuesNot(new is.In([1]))
 	var hydrated = comparisons.hydrate( {$not: {$all: ['def']}}, function(value){
 		return value;
 	} );
 
-	console.log(hydrated);
-
 	assert.ok(hydrated instanceof ValuesNot, "is an instance");
-
-})
+});

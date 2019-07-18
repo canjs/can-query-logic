@@ -11,7 +11,8 @@ var isMemberSymbol = canSymbol.for("can.isMember");
 // TYPES FOR FILTERING
 var KeysAnd = andOrNot.KeysAnd,
 	Or = andOrNot.ValuesOr,
-	Not = andOrNot.ValuesNot;
+	Not = andOrNot.ValuesNot,
+	And = andOrNot.ValuesAnd;
 
 // TYPES FOR PAGINATION
 var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
@@ -155,6 +156,7 @@ function BasicQuery(query) {
 BasicQuery.KeysAnd = KeysAnd;
 BasicQuery.Or = Or;
 BasicQuery.Not = Not;
+BasicQuery.And = And;
 BasicQuery.RecordRange = RecordRange;
 BasicQuery.makeSort = makeSort;
 
@@ -170,7 +172,8 @@ canReflect.assignMap(BasicQuery.prototype, {
 	},
 	filterMembersAndGetCount: function(bData, parentQuery) {
 		if (parentQuery) {
-			if (!set.isSubset(this, parentQuery)) {
+			if (!set.isEqual(set.UNIVERSAL, parentQuery.filter) &&
+				!set.isSubset(this, parentQuery)) {
 				throw new Error("can-query-logic: Unable to get members from a set that is not a superset of the current set.");
 			}
 		} else {

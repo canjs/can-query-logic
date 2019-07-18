@@ -24,7 +24,7 @@ ComparisonSet.prototype.valueOf = function() {
 var MaybeDateStringSet = makeMaybe([null, undefined], DateStringSet);
 
 
-QUnit.test("construtor normalizes", function(assert) {
+QUnit.test("constructor normalizes", function(assert) {
 	var isNull_3 = new MaybeDateStringSet({
 		range: new is.In([null, 3])
 	});

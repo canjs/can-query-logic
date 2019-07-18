@@ -56,14 +56,13 @@ comparisons.Or.prototype.orValues = function() {
 };
 
 comparisons.All.test = function(allValues, recordValues) {
-
 	return allValues.every(function(allValue) {
 		return recordValues.some(function(recordValue){
 			var values = set.ownAndMemberValue(allValue, recordValue);
 			return values.own === values.member;
 		});
 	});
-}
+};
 
 comparisons.In.test = function(values, b) {
 	return values.some(function(value) {
@@ -934,7 +933,6 @@ var comparators = {
 			return set.union(inverseFirst, inverseSecond);
 		}
 	},
-
 	Or_Or: {
 		// (a ∪ b) ∪ (c ∪ d)
 		union: function(or1, or2) {
@@ -993,6 +991,16 @@ var comparators = {
 			return set.intersection(inverseFirst, inverseSecond);
 		}
 	},
+	UNIVERSAL_All: {
+		difference: function() {
+			return set.UNKNOWABLE;
+		}
+	},
+	All_UNIVERSAL: {
+		difference: function() {
+			return set.EMPTY;
+		}
+	}
 };
 
 // Registers all the comparisons above

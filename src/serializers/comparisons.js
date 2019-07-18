@@ -2,6 +2,7 @@ var is = require("../types/comparisons");
 var Serializer = require("../serializer");
 var canReflect = require("can-reflect");
 var ValuesNot = require("../types/values-not");
+var ValuesAnd = require("../types/values-and");
 
 function makeNew(Constructor) {
 	return function(value){
@@ -58,9 +59,6 @@ hydrateMap["$not"] = function(value, unknownHydrator) {
 addHydrateFromValues("$nin", makeNew(is.GreaterThan));
 
 
-
-
-
 var serializer = new Serializer([
 	[is.In,function(isIn, serialize){
 		return isIn.values.length === 1 ?
@@ -81,7 +79,8 @@ var serializer = new Serializer([
 			canReflect.assignMap(obj, serialize(clause) );
 		});
 		return obj;
-	}]
+	}],
+	[is.All, function(all, serialize) { return {$all: serialize(all.values)}}]
 	/*[is.Or, function(or, serialize){
 		return {
 			$or: or.values.map(function(value){
