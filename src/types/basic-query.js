@@ -171,8 +171,11 @@ canReflect.assignMap(BasicQuery.prototype, {
 		return data.slice(0).sort(this.sort.compare);
 	},
 	filterMembersAndGetCount: function(bData, parentQuery) {
+		var parentIsUniversal;
 		if (parentQuery) {
-			if (!set.isEqual(set.UNIVERSAL, parentQuery.filter) &&
+			parentIsUniversal = set.isEqual(parentQuery.page, set.UNIVERSAL);
+			if ((parentIsUniversal &&
+				!set.isEqual(parentQuery.filter, set.UNIVERSAL)) &&
 				!set.isSubset(this, parentQuery)) {
 				throw new Error("can-query-logic: Unable to get members from a set that is not a superset of the current set.");
 			}
@@ -192,8 +195,10 @@ canReflect.assignMap(BasicQuery.prototype, {
 			aData = this.sortData(aData);
 		}
 
-		var thisIsUniversal = set.isEqual(this.page, set.UNIVERSAL),
+		var thisIsUniversal = set.isEqual(this.page, set.UNIVERSAL);
+		if(parentIsUniversal == null) {
 			parentIsUniversal = set.isEqual(parentQuery.page, set.UNIVERSAL);
+		}
 
 		if (parentIsUniversal) {
 			if (thisIsUniversal) {

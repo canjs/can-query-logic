@@ -3831,7 +3831,7 @@ var tests = {
 			var all = new is.All(["test"]);
 			assert.deepEqual(
 				set.difference(set.UNIVERSAL, all),
-				set.UNKNOWABLE
+				new ValuesNot(new is.All(["test"]))
 			);
 		}
 	},
@@ -3842,6 +3842,120 @@ var tests = {
 				set.difference(all, set.UNIVERSAL),
 				set.EMPTY
 			);
+		}
+	},
+	All_All: {
+		union: function(assert) {
+			// {$all:["a"]} ∪ {$all:["b"]} -> {$or: [{$all:["a"]}]}
+			var a = new is.All(["a"]);
+			var b = new is.All(["b"]);
+
+			assert.deepEqual(
+				set.union(a, b),
+				new is.Or([new is.All(["a"]), new is.All(["b"])])
+			)
+		}
+	},
+	In_All: {
+		union: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function(){
+				set.union(a, b);
+			}, "unable to compare");
+		},
+		difference: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function(){
+				set.union(a, b);
+			}, "unable to compare");
+		}
+	},
+	All_In: {
+		union: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function(){
+				set.union(b, a);
+			}, "unable to compare");
+		},
+		difference: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function(){
+				set.difference(b, a);
+			}, "unable to compare");
+		}
+	},
+	NotIn_All: {
+		union: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.union(a, b);
+			}, "unable to compare");
+		}
+	},
+	All_NotIn: {
+		union: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.union(b, a);
+			}, );
+		}
+	},
+	And_All: {
+		union: function(assert) {
+			// {$and:[{"a":"b"}]} ∪ {$all:["b"]} -> ?
+			var a = new is.And([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.union(a, b)
+			}, "unable to compare");
+		},
+		difference: function(assert) {
+			// {$and:[{"a":"b"}]} ∖ {$all:["b"]} -> ?
+			var a = new is.And([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.difference(a, b)
+			}, "unable to compare");
+		},
+		intersection: function(assert) {
+			// {$and:[{"a":"b"}]} ∩ {$all:["b"]} -> ?
+			var a = new is.And([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.intersection(a, b)
+			}, "unable to compare");
+		}
+	},
+	All_Or: {
+		union: function(assert) {
+			// {$and:[{"a":"b"}]} ∪ {$all:["b"]} -> ?
+			var a = new is.Or([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.union(a, b)
+			}, "unable to compare");
+		},
+		difference: function(assert) {
+			// {$and:[{"a":"b"}]} \ {$all:["b"]} -> ?
+			var a = new is.Or([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.difference(a, b)
+			}, "unable to compare");
+		},
+		intersection: function(assert) {
+			// {$and:[{"a":"b"}]} ∩ {$all:["b"]} -> ?
+			var a = new is.Or([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.intersection(a, b)
+			}, "unable to compare");
 		}
 	}
 };

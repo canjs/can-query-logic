@@ -52,11 +52,32 @@ addHydrateFrom("$lte", makeNew(is.LessThanEqual));
 
 addHydrateFromValues("$all", makeNew(is.All));
 
-hydrateMap["$not"] = function(value, unknownHydrator) {
-	return new ValuesNot(hydrateValue(value["$not"], unknownHydrator));
+var notRemap = {
+	"LessThan": { Type: is.GreaterThanEqual, prop: "value" },
+	"LessThanEqual": { Type: is.GreaterThan, prop: "value" },
+	"GreaterThan": { Type: is.LessThanEqual, prop: "value" },
+	"GreaterThanEqual": { Type: is.LessThan, prop: "value" },
+	"In": { Type: is.NotIn, prop: "values" },
+	"NotIn": { Type: is.In, prop: "values" }
 };
 
-addHydrateFromValues("$nin", makeNew(is.GreaterThan));
+hydrateMap["$not"] = function(value, unknownHydrator) {
+	// Many nots can be hydrated to their opposite.
+	var hydratedValue = hydrateValue(value["$not"], unknownHydrator);
+	var typeName = hydratedValue.constructor.name;
+
+	if(notRemap[typeName]) {
+		var options = notRemap[typeName];
+		var RemapConstructor = options.Type;
+		var prop = options.prop;
+
+		return new RemapConstructor(hydratedValue[prop]);
+	}
+
+	return new ValuesNot(hydratedValue);
+};
+
+addHydrateFromValues("$nin", makeNew(is.NotIn));
 
 
 var serializer = new Serializer([
