@@ -52,13 +52,15 @@ addHydrateFrom("$lte", makeNew(is.LessThanEqual));
 
 addHydrateFromValues("$all", makeNew(is.All));
 
-var notRemap = {
-	"LessThan": { Type: is.GreaterThanEqual, prop: "value" },
-	"LessThanEqual": { Type: is.GreaterThan, prop: "value" },
-	"GreaterThan": { Type: is.LessThanEqual, prop: "value" },
-	"GreaterThanEqual": { Type: is.LessThan, prop: "value" },
-	"In": { Type: is.NotIn, prop: "values" },
-	"NotIn": { Type: is.In, prop: "values" }
+// This is a mapping of types to their opposite. The $not hydrator
+// uses this to create a more specific type, since they are logical opposites.
+var oppositeTypeMap = {
+	LessThan: { Type: is.GreaterThanEqual, prop: "value" },
+	LessThanEqual: { Type: is.GreaterThan, prop: "value" },
+	GreaterThan: { Type: is.LessThanEqual, prop: "value" },
+	GreaterThanEqual: { Type: is.LessThan, prop: "value" },
+	In: { Type: is.NotIn, prop: "values" },
+	NotIn: { Type: is.In, prop: "values" }
 };
 
 hydrateMap["$not"] = function(value, unknownHydrator) {
@@ -66,12 +68,12 @@ hydrateMap["$not"] = function(value, unknownHydrator) {
 	var hydratedValue = hydrateValue(value["$not"], unknownHydrator);
 	var typeName = hydratedValue.constructor.name;
 
-	if(notRemap[typeName]) {
-		var options = notRemap[typeName];
-		var RemapConstructor = options.Type;
+	if(oppositeTypeMap[typeName]) {
+		var options = oppositeTypeMap[typeName];
+		var OppositeConstructor = options.Type;
 		var prop = options.prop;
 
-		return new RemapConstructor(hydratedValue[prop]);
+		return new OppositeConstructor(hydratedValue[prop]);
 	}
 
 	return new ValuesNot(hydratedValue);
