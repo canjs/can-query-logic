@@ -29,9 +29,6 @@
     "donejs-plugin"
   ],
   "steal": {
-    "configDependencies": [
-      "live-reload"
-    ],
     "npmIgnore": [
       "testee",
       "generator-donejs",

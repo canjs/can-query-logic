@@ -1,6 +1,7 @@
 var compare = require("./comparisons");
 var set = require("../set");
 var is = compare;
+var ValuesNot = require("./values-not");
 
 QUnit.module("can-query-logic/types/comparisons")
 
@@ -3824,6 +3825,138 @@ var tests = {
 				"other directional holes"
 			);
 		}
+	},
+	UNIVERSAL_All: {
+		difference: function(assert) {
+			var all = new is.All(["test"]);
+			assert.deepEqual(
+				set.difference(set.UNIVERSAL, all),
+				new ValuesNot(new is.All(["test"]))
+			);
+		}
+	},
+	All_UNIVERSAL: {
+		difference: function(assert) {
+			var all = new is.All(["test"]);
+			assert.deepEqual(
+				set.difference(all, set.UNIVERSAL),
+				set.EMPTY
+			);
+		}
+	},
+	All_All: {
+		union: function(assert) {
+			// {$all:["a"]} ∪ {$all:["b"]} -> {$or: [{$all:["a"]}]}
+			var a = new is.All(["a"]);
+			var b = new is.All(["b"]);
+
+			assert.deepEqual(
+				set.union(a, b),
+				new is.Or([new is.All(["a"]), new is.All(["b"])])
+			)
+		}
+	},
+	In_All: {
+		union: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function(){
+				set.union(a, b);
+			}, "unable to compare");
+		},
+		difference: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function(){
+				set.union(a, b);
+			}, "unable to compare");
+		}
+	},
+	All_In: {
+		union: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function(){
+				set.union(b, a);
+			}, "unable to compare");
+		},
+		difference: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function(){
+				set.difference(b, a);
+			}, "unable to compare");
+		}
+	},
+	NotIn_All: {
+		union: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.union(a, b);
+			}, "unable to compare");
+		}
+	},
+	All_NotIn: {
+		union: function(assert) {
+			var a = new is.In(["a"]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.union(b, a);
+			}, );
+		}
+	},
+	And_All: {
+		union: function(assert) {
+			// {$and:[{"a":"b"}]} ∪ {$all:["b"]} -> ?
+			var a = new is.And([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.union(a, b)
+			}, "unable to compare");
+		},
+		difference: function(assert) {
+			// {$and:[{"a":"b"}]} ∖ {$all:["b"]} -> ?
+			var a = new is.And([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.difference(a, b)
+			}, "unable to compare");
+		},
+		intersection: function(assert) {
+			// {$and:[{"a":"b"}]} ∩ {$all:["b"]} -> ?
+			var a = new is.And([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.intersection(a, b)
+			}, "unable to compare");
+		}
+	},
+	All_Or: {
+		union: function(assert) {
+			// {$and:[{"a":"b"}]} ∪ {$all:["b"]} -> ?
+			var a = new is.Or([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.union(a, b)
+			}, "unable to compare");
+		},
+		difference: function(assert) {
+			// {$and:[{"a":"b"}]} \ {$all:["b"]} -> ?
+			var a = new is.Or([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.difference(a, b)
+			}, "unable to compare");
+		},
+		intersection: function(assert) {
+			// {$and:[{"a":"b"}]} ∩ {$all:["b"]} -> ?
+			var a = new is.Or([{a:"b"}]);
+			var b = new is.All(["b"]);
+			assert.throws(function() {
+				set.intersection(a, b)
+			}, "unable to compare");
+		}
 	}
 };
 
@@ -3968,3 +4101,43 @@ QUnit.test("Able to do membership, union, difference with $in", function(assert)
 	    new is.And([gt1980, lte1990]),
 	    "difference");*/
 });
+
+QUnit.test("All on arrays", function(assert){
+
+	var arrayHasAbc = new is.All(["abc"]);
+
+	assert.equal( arrayHasAbc.isMember(["abc"]), true );
+	assert.equal( arrayHasAbc.isMember(["abc", "def"]), true );
+	assert.equal( arrayHasAbc.isMember(["def"]), false );
+	assert.equal( arrayHasAbc.isMember([]), false );
+
+	var hasAbcAndDef = new is.And([
+	    new is.All(["abc"]),
+	    new is.All(["def"])
+	]);
+
+
+	assert.equal( hasAbcAndDef.isMember(["abc"]), false );
+	assert.equal( hasAbcAndDef.isMember(["abc", "def"]), true );
+	assert.equal( hasAbcAndDef.isMember(["def"]), false );
+	assert.equal( hasAbcAndDef.isMember([]), false );
+
+	var hasAbcAndNotDef = new is.And([
+	    new is.All(["abc"]),
+	    new ValuesNot( new is.All(["def"]) )
+	]);
+
+	assert.equal( hasAbcAndNotDef.isMember(["abc"]), true );
+	assert.equal( hasAbcAndNotDef.isMember(["abc", "def"]), false );
+	assert.equal( hasAbcAndNotDef.isMember(["def"]), false );
+	assert.equal( hasAbcAndNotDef.isMember([]), false );
+	// Future tests
+	// arrayHasAbc.isMember(null), false
+	//
+	// {$all: ["10-20-22"]}.isMember( ["yesterday"])
+	// new is.All([new DateStrSet(date1990)]).isMember(new DateStrSet(date1990))
+	/*
+	*/
+
+
+})

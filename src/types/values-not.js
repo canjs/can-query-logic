@@ -82,4 +82,14 @@ set.defineComparison(Identity, NotIdentity,{
     }
 });
 
+NotIdentity.prototype.isMember = function(value){
+	if(this.value  && typeof this.value.isMember === "function") {
+		return !this.value.isMember(value);
+	} else {
+		var values = set.ownAndMemberValue(this.value, value)
+		return values.own !== values.member;
+	}
+
+}
+
 module.exports = keysLogic.Not = NotIdentity;

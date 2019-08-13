@@ -1,5 +1,8 @@
 var set = require("../set");
 var arrayUnionIntersectionDifference = require("../array-union-intersection-difference");
+var common = require("./comparisons-common");
+var arrayComparisons = require("./array-comparisons");
+var canReflect = require("can-reflect");
 var canSymbol = require("can-symbol");
 var isMemberSymbol = canSymbol.for("can.isMember");
 // $ne	Matches all values that are not equal to a specified value.
@@ -14,9 +17,7 @@ var isMemberSymbol = canSymbol.for("can.isMember");
 // $in	Matches any of the values specified in an array.
 // $nin	Matches none of the values specified in an array.
 
-
-
-var comparisons = {
+var comparisons = canReflect.assign(arrayComparisons.comparisons, {
 	In: function In(values) {
 		// TODO: change this to store as `Set` later.
 		this.values = values;
@@ -46,12 +47,11 @@ var comparisons = {
 	Or: function ValueOr(ors) {
 		this.values = ors;
 	}
-};
+});
 
 comparisons.Or.prototype.orValues = function() {
 	return this.values;
 };
-
 
 comparisons.In.test = function(values, b) {
 	return values.some(function(value) {
@@ -102,8 +102,6 @@ comparisons.LessThanEqual.test = nullIsFalseTwoIsOk(function(a, b) {
 	return a <= b;
 });
 
-
-
 function isMemberThatUsesTest(value) {
 	var values = set.ownAndMemberValue(this.value, value);
 	return this.constructor.test(values.member, values.own);
@@ -112,11 +110,8 @@ function isMemberThatUsesTest(value) {
 	Type.prototype.isMember = isMemberThatUsesTest;
 });
 
-function isMemberThatUsesTestOnValues(value) {
-	return this.constructor.test(this.values, value);
-}
 [comparisons.In, comparisons.NotIn].forEach(function(Type) {
-	Type.prototype.isMember = isMemberThatUsesTestOnValues;
+	Type.prototype.isMember = common.isMemberThatUsesTestOnValues;
 });
 
 comparisons.And.prototype.isMember = function(value) {
@@ -513,8 +508,19 @@ var Or_RANGE = {
 	}
 };
 
+function unknowable() {
+	return set.UNKNOWABLE;
+}
 
-var comparators = {
+// I don't know anything...
+var noNothing = {
+	union: unknowable,
+	difference: unknowable,
+	intersection: unknowable
+};
+
+
+var comparators = canReflect.assign(arrayComparisons.comparators, {
 	// In
 	In_In: {
 		union: makeEnum("union", is.In),
@@ -922,7 +928,6 @@ var comparators = {
 			return set.union(inverseFirst, inverseSecond);
 		}
 	},
-
 	Or_Or: {
 		// (a ∪ b) ∪ (c ∪ d)
 		union: function(or1, or2) {
@@ -980,8 +985,8 @@ var comparators = {
 				inverseSecond = set.difference(universe, or.values[1]);
 			return set.intersection(inverseFirst, inverseSecond);
 		}
-	},
-};
+	}
+});
 
 // Registers all the comparisons above
 var names = Object.keys(comparisons);

@@ -11,7 +11,8 @@ var isMemberSymbol = canSymbol.for("can.isMember");
 // TYPES FOR FILTERING
 var KeysAnd = andOrNot.KeysAnd,
 	Or = andOrNot.ValuesOr,
-	Not = andOrNot.ValuesNot;
+	Not = andOrNot.ValuesNot,
+	And = andOrNot.ValuesAnd;
 
 // TYPES FOR PAGINATION
 var RecordRange = makeRealNumberRangeInclusive(0, Infinity);
@@ -155,6 +156,7 @@ function BasicQuery(query) {
 BasicQuery.KeysAnd = KeysAnd;
 BasicQuery.Or = Or;
 BasicQuery.Not = Not;
+BasicQuery.And = And;
 BasicQuery.RecordRange = RecordRange;
 BasicQuery.makeSort = makeSort;
 
@@ -169,8 +171,12 @@ canReflect.assignMap(BasicQuery.prototype, {
 		return data.slice(0).sort(this.sort.compare);
 	},
 	filterMembersAndGetCount: function(bData, parentQuery) {
+		var parentIsUniversal;
 		if (parentQuery) {
-			if (!set.isSubset(this, parentQuery)) {
+			parentIsUniversal = set.isEqual(parentQuery.page, set.UNIVERSAL);
+			if ((parentIsUniversal &&
+				!set.isEqual(parentQuery.filter, set.UNIVERSAL)) &&
+				!set.isSubset(this, parentQuery)) {
 				throw new Error("can-query-logic: Unable to get members from a set that is not a superset of the current set.");
 			}
 		} else {
@@ -189,8 +195,10 @@ canReflect.assignMap(BasicQuery.prototype, {
 			aData = this.sortData(aData);
 		}
 
-		var thisIsUniversal = set.isEqual(this.page, set.UNIVERSAL),
+		var thisIsUniversal = set.isEqual(this.page, set.UNIVERSAL);
+		if(parentIsUniversal == null) {
 			parentIsUniversal = set.isEqual(parentQuery.page, set.UNIVERSAL);
+		}
 
 		if (parentIsUniversal) {
 			if (thisIsUniversal) {
