@@ -154,3 +154,104 @@
   ```
   @codepen
   @highlight 6,only
+
+@signature `{ $all: <value> }`
+
+  The `$all` operator behaves like the [$all MongoDB equivalent](https://docs.mongodb.com/manual/reference/operator/query/all/). It operates on Arrays, comparing a dataset against an array from which all matches must exist.
+
+  ```js
+  import {QueryLogic} from "can";
+
+  const queryLogic = new QueryLogic();
+
+  const data = [
+    {
+      "id": "Canada",
+      "colors": [ "red", "white" ]
+    },
+    {
+      "id": "Mexico",
+      "colors": [ "red", "white", "green" ]
+    },
+    {
+      "id": "USA",
+      "colors": [ "red", "white", "blue" ]
+    }
+  ];
+
+  const filter = queryLogic.filterMembers(
+    { filter: { colors: { $all: ["red", "white"] } } },
+    data
+  );
+
+  console.log( filter ); //-> matches all...
+  ```
+  @codepen
+  @highlight 5-18,21,only
+
+@signature `{ $not: <value> }`
+
+  The `$not` operator behaves like the [$not MongoDB equivalent](https://docs.mongodb.com/manual/reference/operator/query/not/). It can be used to negate queries such as:
+
+  ```js
+  import {QueryLogic} from "can";
+
+  const queryLogic = new QueryLogic();
+
+  const data = [
+    {
+      "name": "Joe",
+      "age": 45
+    },
+    {
+      "name": "Zoey",
+      "age": 22
+    }
+  ];
+
+  const filter = queryLogic.filterMembers(
+    { filter: { age: { $not: { $lt: 40 } } },
+    data
+  );
+
+  console.log( filter ); //-> [{"name": "Joe", "age": 45}]
+  ```
+  @codepen
+  @highlight 5-14,17,only
+
+@signature `{ $and: <value> }`
+
+  The `and` operator behaves like the [$and MongoDB equivalent](https://docs.mongodb.com/manual/reference/operator/query/and/index.html).
+
+  ```js
+  import {QueryLogic} from "can";
+
+  const queryLogic = new QueryLogic();
+
+  const data = [
+    {
+      "id": "Canada",
+      "colors": [ "red", "white" ]
+    },
+    {
+      "id": "Mexico",
+      "colors": [ "red", "white", "green" ]
+    },
+    {
+      "id": "USA",
+      "colors": [ "red", "white", "blue" ]
+    }
+  ];
+
+  const filter = queryLogic.filterMembers(
+    { $and: [
+      { colors: { $all: ["red", "white"] } },
+      { colors: { $not: { $all: ["blue"] } } }
+    ] },
+    data
+  );
+
+  console.log( filter ); //-> [{"id": "Mexico", "colors": [...]}]
+  ```
+  @codepen
+  @highlight 5-18,21-24,only
