@@ -65,7 +65,7 @@ var oppositeTypeMap = {
 hydrateMap.$not = function(value, unknownHydrator) {
 	// Many nots can be hydrated to their opposite.
 	var hydratedValue = hydrateValue(value.$not, unknownHydrator);
-	var typeName = hydratedValue.constructor.name;
+	var typeName = hydratedValue.constructor.name || hydratedValue.constructor.toString().match(/^\s*function\s*(\S*)\s*\(/)[1];
 
 	if(oppositeTypeMap[typeName]) {
 		var options = oppositeTypeMap[typeName];
