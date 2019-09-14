@@ -15,7 +15,7 @@ module.exports = function(min, max) {
 		this.range = new is.And([
 			new is.GreaterThanEqual( this.start ),
 			new is.LessThanEqual( this.end )
-		])
+		]);
     }
 
 	var universeRange = new RealNumberRangeInclusive( min , max );
@@ -39,7 +39,7 @@ module.exports = function(min, max) {
 			if(value instanceof is.LessThan) {
 				values.end = value.value-1;
 			}
-		})
+		});
 		if("start" in values && "end" in values) {
 			return new RealNumberRangeInclusive(values.start, values.end );
 		}

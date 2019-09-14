@@ -24,7 +24,7 @@ comparisons.All.test = function(allValues, recordValues) {
 function makeThrowCannotCompare(type, left, right) {
 	return function() {
 		throw new Error("can-query-logic: Cannot perform " + type + " between " + left + " and " + right);
-	}
+	};
 }
 
 function throwComparatorAllTypes(type1, type2) {
@@ -73,7 +73,7 @@ var comparators = {
 	And_All: throwComparatorAllTypes("And",	 "All"),
 	All_Or: throwComparatorDifference("All", "Or"),
 	Or_All: throwComparatorAllTypes("Or", "All")
-}
+};
 
 exports.comparisons = comparisons;
 exports.comparators = comparators;

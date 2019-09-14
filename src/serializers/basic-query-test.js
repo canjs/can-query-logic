@@ -54,7 +54,7 @@ QUnit.test("nested properties", function(assert) {
 
 QUnit.test("$or with the same types unify into maybe", function(assert) {
 
-    var MaybeSet = makeMaybe([null])
+    var MaybeSet = makeMaybe([null]);
 
     var converter = makeBasicQueryConvert({
         identity: ["id"],
@@ -222,7 +222,7 @@ QUnit.test("basicquery with no sort", function(assert) {
 	});
 	var basicQuery = converter.hydrate(query);
 
-	var objs = [{id: 0}, {id: 2}]
+	var objs = [{id: 0}, {id: 2}];
 	var item = {id: 1};
 
 	var res = basicQuery.index(item, objs);

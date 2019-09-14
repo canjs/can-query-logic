@@ -118,14 +118,14 @@ function difference(objA, objB) {
 			sharedKeysAndValues[key] = valuesA[key];
 		} else {
 			var intersection = set.intersection(valuesA[key], valuesB[key]);
-			var isProductable = intersection !== set.EMPTY
+			var isProductable = intersection !== set.EMPTY;
 			if (isProductable) {
 				productAbleKeysAndData[key] = {
 					// Products with `difference U intersection` would be subtracted
 					// from produts with `intersection`
 					difference: difference,
 					intersection: intersection
-				}
+				};
 			} else {
 				disjointKeysAndValues[key] = valuesA[key];
 			}
@@ -207,7 +207,7 @@ function difference(objA, objB) {
 		}).filter(notEmpty);
 
 		if (productAbleOr) {
-			ands.push(new KeysAnd(productAbleOr))
+			ands.push(new KeysAnd(productAbleOr));
 		}
 
 		// {c: "g"}
@@ -228,7 +228,7 @@ function difference(objA, objB) {
 	// {name: "Justin"} \\ {age: 35} -> {name: "Justin", age: NOT(35)}
 	if (aOnlyKeys.length > 0 && bOnlyKeys.length > 0) {
 		if (productAbleKeys.length) {
-			throw new Error("Can't handle any productable keys right now")
+			throw new Error("Can't handle any productable keys right now");
 		}
 		// add everything in sA into the result:
 		aOnlyKeys.forEach(function(key) {
@@ -272,7 +272,7 @@ set.defineComparison(KeysAnd, KeysAnd, {
 
 		diff.aAndBKeys.forEach(function(key) {
 			if (!set.isEqual(objA.values[key], objB.values[key])) {
-				aAndBKeysThatAreNotEqual.push(key)
+				aAndBKeysThatAreNotEqual.push(key);
 			} else {
 				sameKeys[key] = objA.values[key];
 			}

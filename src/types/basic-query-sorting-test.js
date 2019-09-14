@@ -235,9 +235,8 @@ QUnit.test('rangeInclusive legacyUnion', function(assert) {
 	 *
 	 * X U Y = X
 	 */
-	res = legacyUnion({}, { start: 0, end: 10 });
+	var res = legacyUnion({}, { start: 0, end: 10 });
 	assert.deepEqual(res, {}, "universal set");
-    return;
 	/*
 	 * X = [A100, ..., A199]
 	 * Y = [A200, ..., A299]

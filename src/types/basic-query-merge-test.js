@@ -104,7 +104,7 @@ QUnit.test("unionMembers filters for uniqueness", function(assert) {
     assert.deepEqual(union, unionItems);
 
     // BREAK
-    var union = b.merge(a,bItems,aItems, getId );
+    union = b.merge(a,bItems,aItems, getId );
 	assert.deepEqual(union, unionItems);
 
 });

@@ -113,7 +113,7 @@ function makeMaybe(inValues, makeChildType) {
 		var rangeIsMember = this.range[isMemberSymbol] || this.range.isMember,
 			enumIsMember = this.enum[isMemberSymbol] || this.enum.isMember;
 		return rangeIsMember.apply(this.range, arguments) || enumIsMember.apply(this.enum, arguments);
-	}
+	};
 
 
 
@@ -186,7 +186,7 @@ function makeMaybe(inValues, makeChildType) {
 	});
 	makeChildType = makeChildType || function(v) {
 		return v;
-	}
+	};
 
 	Maybe.hydrate = function(value, childHydrate) {
 		return new Maybe({
@@ -238,7 +238,7 @@ makeMaybe.makeMaybeSetTypes = function(Type) {
 	} else {
 
 		ComparisonSetType = function(value) {
-			this.value = canReflect.new(Type, value)
+			this.value = canReflect.new(Type, value);
 		};
 		ComparisonSetType.prototype.valueOf = function() {
 			return this.value;
@@ -262,7 +262,7 @@ makeMaybe.makeMaybeSetTypes = function(Type) {
 			return new ComparisonSetType(value);
 		}),
 		ComparisonSetType: ComparisonSetType
-	}
+	};
 };
 
 

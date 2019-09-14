@@ -96,5 +96,4 @@ const result = queryLogic.filterMembers({
   filter: {name: "important"}
 }, todos);
 
-console.log( todos ); //->[{id: 1, name: "important meeting"},{id: 3, name: "find out what important means"}]
-
+console.log( result ); //->[{id: 1, name: "important meeting"},{id: 3, name: "find out what important means"}]

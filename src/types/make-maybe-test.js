@@ -5,7 +5,7 @@ var is = require("./comparisons");
 var set = require("../set");
 var canReflect = require("can-reflect");
 
-QUnit.module("can-query-logic/types/make-maybe")
+QUnit.module("can-query-logic/types/make-maybe");
 
 function DateStringSet(value) {
 	this.value = value;

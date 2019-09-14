@@ -55,7 +55,7 @@ comparisons.Or.prototype.orValues = function() {
 
 comparisons.In.test = function(values, b) {
 	return values.some(function(value) {
-		var values = set.ownAndMemberValue(value, b)
+		var values = set.ownAndMemberValue(value, b);
 		return values.own === values.member;
 	});
 };
@@ -124,18 +124,18 @@ comparisons.Or.prototype.isMember = function(value) {
 		return and.isMember(value);
 	});
 };
-Object.keys(comparisons).forEach(function(name){
+Object.keys(comparisons).forEach(function(name) {
 	comparisons[name].prototype[isMemberSymbol] = comparisons[name].prototype.isMember;
 });
 
-
+var is = comparisons;
 
 function makeNot(Type) {
 	return {
 		test: function(vA, vB) {
 			return !Type.test(vA, vB);
 		}
-	}
+	};
 }
 
 
@@ -150,13 +150,9 @@ function makeEnum(type, Type, emptyResult) {
 	};
 }
 
-function isUniversal(aSet) {
-	return set.isEqual(set.UNIVERSAL, aSet);
-}
-
 function swapArgs(fn) {
 	return function(a, b) {
-		return fn(b, a)
+		return fn(b, a);
 	};
 }
 
@@ -214,29 +210,9 @@ function make_filterFirstValueAgainstSecond(Comparison, Type, defaultReturn) {
 	};
 }
 
-function make_filterFirstValues(Comparison, Type, defaultReturn) {
-	return function(inSet, gt) {
-		var values = inSet.values.filter(function(value) {
-			return Comparison.test(value, gt.value);
-		});
-		return values.length ?
-			new Type(values) : defaultReturn || set.EMPTY;
-	};
-}
-
 var isMemberTest = {
 	test: function isMemberTest(set, value) {
 		return set.isMember(value);
-	}
-};
-var returnTrue = {
-	test: function returnTrue() {
-		return true;
-	}
-};
-var returnFalse = {
-	test: function returnFalse() {
-		return false;
 	}
 };
 
@@ -256,23 +232,13 @@ function isAndOrOr(value) {
 // `value` - has a test function to check values
 // `with` - the type we use to combined with the "other" value.
 // `combinedUsing` - If there are values, how do we stick it together with `with`
-function combineFilterFirstValues(options) {
-	return function(inSet, gt) {
-		var values = inSet.values.filter(function(value) {
-			return options.values.test(value, gt.value);
-		});
-		var range = options.with ? new options.with(gt.value) : gt;
-		return values.length ?
-			options.combinedUsing([new options.arePut(values), range]) : range;
-	};
-}
 
 function combineFilterFirstValuesAgainstSecond(options) {
 	return function(inSet, gt) {
 		var values = inSet.values.filter(function(value) {
 			return options.values.test(gt, value);
 		});
-		var range
+		var range;
 		if (options.complement) {
 			range = set.difference(set.UNIVERSAL, gt);
 		} else if (options.with) {
@@ -292,7 +258,7 @@ function makeOrUnless(Comparison, result) {
 		} else {
 			return makeOr([setA, setB]);
 		}
-	}
+	};
 }
 
 function makeAndUnless(Comparison, result) {
@@ -302,7 +268,7 @@ function makeAndUnless(Comparison, result) {
 		} else {
 			return makeAnd([setA, setB]);
 		}
-	}
+	};
 }
 
 function makeComplementSecondArgIf(Comparison) {
@@ -312,7 +278,7 @@ function makeComplementSecondArgIf(Comparison) {
 		} else {
 			return setA;
 		}
-	}
+	};
 }
 
 
@@ -324,18 +290,16 @@ function makeOr(ors) {
 	return comparisons.Or ? new comparisons.Or(ors) : set.UNDEFINABLE;
 }
 
-var is = comparisons;
-
-function combineValueWithRangeCheck(inSet, rangeSet, RangeOrEqType){
+function combineValueWithRangeCheck(inSet, rangeSet, RangeOrEqType) {
 	var gte = new RangeOrEqType(rangeSet.value);
-	var leftValues = inSet.values.filter(function(value){
+	var leftValues = inSet.values.filter(function(value) {
 		return !gte.isMember(value);
 	});
-	if(!leftValues.length) {
+	if (!leftValues.length) {
 		return gte;
 	}
 
-	if(leftValues.length < inSet.values.length) {
+	if (leftValues.length < inSet.values.length) {
 		return makeOr([new is.In(leftValues), gte]);
 	} else {
 		return makeOr([inSet, rangeSet]);
@@ -344,21 +308,21 @@ function combineValueWithRangeCheck(inSet, rangeSet, RangeOrEqType){
 
 // This tries to unify In([1]) with GT(1) -> GTE(1)
 function makeOrWithInAndRange(inSet, rangeSet) {
-	if(rangeSet instanceof is.Or) {
+	if (rangeSet instanceof is.Or) {
 		var firstResult = makeOrWithInAndRange(inSet, rangeSet.values[0]);
-		if( !(firstResult instanceof is.Or) ) {
+		if ( !(firstResult instanceof is.Or) ) {
 			return set.union(firstResult, rangeSet.values[1]);
 		}
 		var secondResult = makeOrWithInAndRange(inSet, rangeSet.values[1]);
-		if( !(secondResult instanceof is.Or) ) {
+		if ( !(secondResult instanceof is.Or) ) {
 			return set.union(secondResult, rangeSet.values[0]);
 		}
 		return makeOr([inSet, rangeSet]);
 	} else {
-		if(rangeSet instanceof is.GreaterThan) {
+		if (rangeSet instanceof is.GreaterThan) {
 			return combineValueWithRangeCheck(inSet, rangeSet, is.GreaterThanEqual);
 		}
-		if(rangeSet instanceof is.LessThan) {
+		if (rangeSet instanceof is.LessThan) {
 			return combineValueWithRangeCheck(inSet, rangeSet, is.LessThanEqual);
 		}
 		return makeOr([inSet, rangeSet]);
@@ -369,7 +333,7 @@ var In_RANGE = {
 	union: combineFilterFirstValuesAgainstSecond({
 		values: makeNot(isMemberTest),
 		arePut: is.In,
-		combinedUsing: function(ors){
+		combinedUsing: function(ors) {
 			return makeOrWithInAndRange(ors[0], ors[1]);
 		}
 	}),
@@ -398,7 +362,7 @@ var NotIn_RANGE = function() {
 			combinedUsing: makeAnd,
 			complement: true
 		})
-	}
+	};
 };
 var RANGE_NotIn = {
 	difference: swapArgs(make_filterFirstValueAgainstSecond(isMemberTest, is.In, set.EMPTY))
@@ -508,18 +472,6 @@ var Or_RANGE = {
 	}
 };
 
-function unknowable() {
-	return set.UNKNOWABLE;
-}
-
-// I don't know anything...
-var noNothing = {
-	union: unknowable,
-	difference: unknowable,
-	intersection: unknowable
-};
-
-
 var comparators = canReflect.assign(arrayComparisons.comparators, {
 	// In
 	In_In: {
@@ -608,15 +560,15 @@ var comparators = canReflect.assign(arrayComparisons.comparators, {
 	},
 
 	GreaterThan_LessThan: {
-		union: (function(){
+		union: (function() {
 			var makeOrUnlessLessThan = makeOrUnless(is.LessThan);
-			return function greaterThan_lessThan_union(a, b){
-				if( comparisons.In.test([a.value], b.value) ) {
+			return function greaterThan_lessThan_union(a, b) {
+				if ( comparisons.In.test([a.value], b.value) ) {
 					return new is.NotIn([a.value]);
 				} else {
 					return makeOrUnlessLessThan(a, b);
 				}
-			}
+			};
 		})(),
 		intersection: makeAndUnless(is.GreaterThan),
 		difference: makeComplementSecondArgIf(is.LessThan)
@@ -673,7 +625,7 @@ var comparators = canReflect.assign(arrayComparisons.comparators, {
 			return function gte_lte_intersection(gte, lte) {
 				var inSet = new is.In([gte.value]);
 				if (inSet.isMember(lte.value)) {
-					return inSet
+					return inSet;
 				} else {
 					return makeAnd(gte, lte);
 				}
@@ -786,10 +738,14 @@ var comparators = canReflect.assign(arrayComparisons.comparators, {
 					set.union(and1.values[0], and2.values[1]),
 					set.union(and1.values[1], and2.values[0])
 				];
-			if(combo1.every(isUniversal)) {
+			if (combo1.every(function(aSet) {
+				return set.isEqual(set.UNIVERSAL, aSet);
+			})) {
 				return set.intersection.apply(set, combo2);
 			}
-			if(combo2.every(isUniversal)) {
+			if (combo2.every(function(aSet) {
+				return set.isEqual(set.UNIVERSAL, aSet);
+			})) {
 				return set.intersection.apply(set, combo1);
 			}
 			return new is.Or([and1, and2]);*/
@@ -821,24 +777,24 @@ var comparators = canReflect.assign(arrayComparisons.comparators, {
 				var d1 = set.difference(and1, and2.values[0]);
 				var d2 = set.difference(and1, and2.values[1]);
 				return set.union(d1, d2);
-			}
+			};
 			/*
 			function getDiffIfPartnerIsEmptyAndOtherComboNotDisjoint(inOrderDiffs, reverseOrderDiffs, diffedAnd) {
 				var diff;
-				if(inOrderDiffs[0] === set.EMPTY) {
+				if (inOrderDiffs[0] === set.EMPTY) {
 					diff = inOrderDiffs[1];
 				}
-				if(inOrderDiffs[1] === set.EMPTY) {
+				if (inOrderDiffs[1] === set.EMPTY) {
 					diff = inOrderDiffs[0];
 				}
-				if(diff) {
+				if (diff) {
 					// check if a diff equals itself (and therefor is disjoint)
 
-					if(set.isEqual(diffedAnd.values[0], reverseOrderDiffs[0] ) ) {
+					if (set.isEqual(diffedAnd.values[0], reverseOrderDiffs[0] ) ) {
 						// is disjoint
 						return diffedAnd;
 					}
-					if( set.isEqual(diffedAnd.values[1], reverseOrderDiffs[1] ) ) {
+					if ( set.isEqual(diffedAnd.values[1], reverseOrderDiffs[1] ) ) {
 						return diffedAnd;
 					}
 					return diff;
@@ -855,17 +811,17 @@ var comparators = canReflect.assign(arrayComparisons.comparators, {
 					];
 
 				var diff = getDiffIfPartnerIsEmptyAndOtherComboNotDisjoint(inOrderDiffs, reverseOrderDiffs, and1);
-				if(diff) {
+				if (diff) {
 					return diff;
 				}
 				diff = getDiffIfPartnerIsEmptyAndOtherComboNotDisjoint(reverseOrderDiffs, inOrderDiffs, and1);
-				if(diff) {
+				if (diff) {
 					return diff;
 				} else {
 					// if one is a double And ... that's the outer \\ inner
-					if(isAndOrOr(inOrderDiffs[0]) && isAndOrOr(inOrderDiffs[1])) {
+					if (isAndOrOr(inOrderDiffs[0]) && isAndOrOr(inOrderDiffs[1])) {
 						return new is.Or([inOrderDiffs[0], inOrderDiffs[1]]);
-					} else if( isAndOrOr(reverseOrderDiffs[0]) && isAndOrOr(reverseOrderDiffs[1]) ) {
+					} else if ( isAndOrOr(reverseOrderDiffs[0]) && isAndOrOr(reverseOrderDiffs[1]) ) {
 						return new is.Or([reverseOrderDiffs[0], reverseOrderDiffs[1]]);
 					}
 					return set.UNKNOWABLE;
