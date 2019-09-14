@@ -1,7 +1,6 @@
 var QUnit = require("steal-qunit");
 var comparisons = require("./comparisons");
 var canReflect = require("can-reflect");
-var is = require("../types/comparisons");
 var ValuesNot = require("../types/values-not");
 
 QUnit.module("can-query-logic/serializers/comparisons");
@@ -15,7 +14,7 @@ QUnit.test("hydrate and serialize with custom types that work with operators", f
 		"can.serialize": function(){
 			return this.value;
 		}
-	})
+	});
 
 	var hydrated = comparisons.hydrate({$in: [1,2]}, function(value){
 		return new Type(value);
@@ -37,7 +36,7 @@ QUnit.test("unknown hydrator is called in all cases", function(assert) {
 	var hydrated = [];
 	var addToHydrated = function(value){
 		hydrated.push(value);
-	}
+	};
 
 	comparisons.hydrate({$in: [1,2]}, addToHydrated);
 	comparisons.hydrate("abc", addToHydrated);

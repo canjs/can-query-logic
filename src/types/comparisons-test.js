@@ -3,7 +3,7 @@ var set = require("../set");
 var is = compare;
 var ValuesNot = require("./values-not");
 
-QUnit.module("can-query-logic/types/comparisons")
+QUnit.module("can-query-logic/types/comparisons");
 
 var tests = {
 	// In
@@ -3375,9 +3375,8 @@ var tests = {
 	},
 	And_Or: {
 		union: function(assert) {
-			var a, b;
-			a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]),
-			b = new is.And([new is.GreaterThan(0), new is.LessThan(6)]);
+			var a = new is.Or([new is.LessThanEqual(0), new is.GreaterThanEqual(6)]);
+			var b = new is.And([new is.GreaterThan(0), new is.LessThan(6)]);
 
 			assert.deepEqual(
 				set.union(a, b),
@@ -3853,7 +3852,7 @@ var tests = {
 			assert.deepEqual(
 				set.union(a, b),
 				new is.Or([new is.All(["a"]), new is.All(["b"])])
-			)
+			);
 		}
 	},
 	In_All: {
@@ -3903,7 +3902,7 @@ var tests = {
 			var b = new is.All(["b"]);
 			assert.throws(function() {
 				set.union(b, a);
-			}, );
+			}, "unable to compare");
 		}
 	},
 	And_All: {
@@ -3912,7 +3911,7 @@ var tests = {
 			var a = new is.And([{a:"b"}]);
 			var b = new is.All(["b"]);
 			assert.throws(function() {
-				set.union(a, b)
+				set.union(a, b);
 			}, "unable to compare");
 		},
 		difference: function(assert) {
@@ -3920,7 +3919,7 @@ var tests = {
 			var a = new is.And([{a:"b"}]);
 			var b = new is.All(["b"]);
 			assert.throws(function() {
-				set.difference(a, b)
+				set.difference(a, b);
 			}, "unable to compare");
 		},
 		intersection: function(assert) {
@@ -3928,7 +3927,7 @@ var tests = {
 			var a = new is.And([{a:"b"}]);
 			var b = new is.All(["b"]);
 			assert.throws(function() {
-				set.intersection(a, b)
+				set.intersection(a, b);
 			}, "unable to compare");
 		}
 	},
@@ -3938,7 +3937,7 @@ var tests = {
 			var a = new is.Or([{a:"b"}]);
 			var b = new is.All(["b"]);
 			assert.throws(function() {
-				set.union(a, b)
+				set.union(a, b);
 			}, "unable to compare");
 		},
 		difference: function(assert) {
@@ -3946,7 +3945,7 @@ var tests = {
 			var a = new is.Or([{a:"b"}]);
 			var b = new is.All(["b"]);
 			assert.throws(function() {
-				set.difference(a, b)
+				set.difference(a, b);
 			}, "unable to compare");
 		},
 		intersection: function(assert) {
@@ -3954,7 +3953,7 @@ var tests = {
 			var a = new is.Or([{a:"b"}]);
 			var b = new is.All(["b"]);
 			assert.throws(function() {
-				set.intersection(a, b)
+				set.intersection(a, b);
 			}, "unable to compare");
 		}
 	}
@@ -4140,4 +4139,4 @@ QUnit.test("All on arrays", function(assert){
 	*/
 
 
-})
+});

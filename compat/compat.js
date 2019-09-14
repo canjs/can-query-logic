@@ -76,7 +76,7 @@ var set = {
                 if(mutators[prop]) {
                     mutators[prop].push(value[prop]);
                 } else {
-                    throw new Error("can-query-logic: This type of configuration is not supported. Please use can-query-logic directly.")
+                    throw new Error("can-query-logic: This type of configuration is not supported. Please use can-query-logic directly.");
                 }
 
             }
@@ -123,7 +123,7 @@ var set = {
                 var filter = data.filter || {};
                 if(hasKey(filter, {
                     "$ne": true,
-                    "$in": function(val){ return val["$in"]; }
+                    "$in": function(val){ return val.$in; }
                 })) {
                     return SET.UNDEFINABLE;
                 }
@@ -167,7 +167,7 @@ var set = {
                     return query;
                 }
             }
-        }
+        };
     },
     props: {
 

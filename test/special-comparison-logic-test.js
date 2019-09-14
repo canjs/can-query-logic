@@ -247,7 +247,7 @@ QUnit.test("value type", function(assert) {
 		{id: 3, date: new Date(1983,9,20).toString()}
 	]);
 
-	var ids = result.map(function(item){ return item.id});
+	var ids = result.map(function(item){ return item.id; });
 	assert.deepEqual(ids,[1,2,3,4], "sorted correctly");
 
 	var index = queryLogic.index({
@@ -261,7 +261,7 @@ QUnit.test("value type", function(assert) {
 		],
 		{id: 4, date: new Date(2018,4,24).toString()}); //F
 
-	assert.equal(index, 4, "added at the end")
+	assert.equal(index, 4, "added at the end");
 });
 
 QUnit.test("sort a type that is similar to the member values (#31)", function(assert) {

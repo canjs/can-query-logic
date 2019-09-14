@@ -141,12 +141,12 @@ QUnit.test('set.isSubset with range', function(assert) {
 	// same
 	// right
 	// left
-	var addSort = function(set, value){
+	var addSort = function(set, value) {
 		set.sort = value;
 	};
 
 	var sort = {
-		left: function(setA, setB) {
+		left: function(setA) {
 			addSort(setA, "prop");
 		},
 		right: function(setA, setB) {
@@ -167,46 +167,46 @@ QUnit.test('set.isSubset with range', function(assert) {
 	};
 
 	var range = {
-		left: function(setA,setB){
+		left: function(setA) {
 			addRange(setA, 0,9);
 		},
-		right: function(setA,setB){
+		right: function(setA,setB) {
 			addRange(setB, 0,9);
 		},
-		same: function(setA,setB){
+		same: function(setA,setB) {
 			addRange(setA, 0,9);
 			addRange(setB, 0,9);
 		},
-		superLeft: function(setA,setB){
+		superLeft: function(setA,setB) {
 			addRange(setA, 0,9);
 			addRange(setB, 3,7);
 		},
-		superRight: function(setA,setB){
+		superRight: function(setA,setB) {
 			addRange(setB, 0,9);
 			addRange(setA, 3,7);
 		}
 	};
 
 	var sets = {
-		same: function(setA, setB){ },
-		superLeft: function(setA, setB){
+		same: function() { },
+		superLeft: function(setA, setB) {
 			setB.type = "apples";
 		},
-		superRight: function(setA, setB){
+		superRight: function(setA) {
 			setA.type = "apples";
 		}
 	};
 
 
-	var make = function(){
+	var make = function() {
 		var setA = {},
 			setB = {};
-		canReflect.eachIndex(arguments, function(method){
+		canReflect.eachIndex(arguments, function(method) {
 			method(setA, setB);
 		});
 		return {left: setA, right: setB};
 	};
-	var assertSubset = function(methods, result){
+	var assertSubset = function(methods, result) {
 		var sets = make.apply(null, methods);
 		assert.equal( algebra.isSubset(sets.left, sets.right), result, JSON.stringify(sets.left)+" ⊂ "+JSON.stringify(sets.right)+" = "+result );
 	};

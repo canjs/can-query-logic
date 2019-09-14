@@ -24,15 +24,13 @@ QUnit.test("basics", function(assert) {
 		}
 	});
 
-	var res;
-
 	var todoQueryLogic = new QueryLogic({
 		keys: {
 			age: MaybeNumber
 		}
 	});
 	/*
-	res = todoQueryLogic.difference(
+	var res = todoQueryLogic.difference(
 		{},
 		{filter: {age: {$gt: 5}}});
 
@@ -116,8 +114,6 @@ QUnit.test("MaybeDate", function(assert) {
 		"can.ComparisonSetType": DateStringSet
 	});
 
-	var res;
-
 	var todoQueryLogic = new QueryLogic({
 		keys: {
 			due: MaybeDate
@@ -126,7 +122,7 @@ QUnit.test("MaybeDate", function(assert) {
 	/*
 	var date1982_10_20 = new Date(1982,9,20).toString();
 
-	res = todoQueryLogic.difference(
+	var res = todoQueryLogic.difference(
 		{},
 		{filter: {due: {$gt: date1982_10_20}}});
 
@@ -186,7 +182,7 @@ QUnit.test("MaybeDate", function(assert) {
 			id: 4,
 			due: null
 		}
-	]
+	];
 
 	var results = todoQueryLogic.filterMembers({
 		sort: "due"

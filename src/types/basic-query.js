@@ -5,8 +5,6 @@ var canReflect = require("can-reflect");
 var andOrNot = require("./and-or-not");
 var helpers = require("../helpers");
 var defineLazyValue = require("can-define-lazy-value");
-var canSymbol = require("can-symbol");
-var isMemberSymbol = canSymbol.for("can.isMember");
 
 // TYPES FOR FILTERING
 var KeysAnd = andOrNot.KeysAnd,
@@ -69,7 +67,7 @@ function makeSort(schema, hydrateAndValue) {
 						$eq: valueA
 					}, key, schemaProp,
 					helpers.valueHydrator);
-				return $gt[isMemberSymbol](hydratedIn.values[0]);*/
+				return $gt[require("can-symbol").for("can.isMember")](hydratedIn.values[0]);*/
 			},
 			$lt: function(valueA, valueB) {
 				if(valueA == null || valueB == null) {
@@ -94,7 +92,7 @@ function makeSort(schema, hydrateAndValue) {
 						$eq: valueA
 					}, key, schemaProp,
 					helpers.valueHydrator);
-				return $lt[isMemberSymbol](hydratedValue);*/
+				return $lt[require("can-symbol").for("can.isMember")](hydratedValue);*/
 
 				/*
 				// This doesn't work because of maybe types.
@@ -102,7 +100,7 @@ function makeSort(schema, hydrateAndValue) {
 						$eq: valueA
 					}, key, schemaProp,
 					helpers.valueHydrator);
-				return $lt[isMemberSymbol](hydratedIn.values[0]); */
+				return $lt[require("can-symbol").for("can.isMember")](hydratedIn.values[0]); */
 			}
 		};
 	});
@@ -477,6 +475,7 @@ set.defineComparison(BasicQuery, BasicQuery, {
 
 
 					}
+					break;
 				case "page":
 				case "filter":
 					{
