@@ -37,7 +37,7 @@
 Using [canReflect.getSchema().identity](can-reflect.getSchema.html):
 
 ```js
-import {QueryLogic, Reflect as canReflect} from "can";
+import {canReflect, QueryLogic} from "can";
 
 const queryLogic = new QueryLogic({
   identity: ["_id"]

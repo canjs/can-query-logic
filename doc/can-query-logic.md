@@ -679,7 +679,7 @@ The following is a more complex query and what it gets hydrated to:
 
 
 ```js
-import {QueryLogic, Reflect as canReflect} from "can";
+import {canReflect, QueryLogic} from "can";
 //query
 const queryLogic = new QueryLogic({
   filter: {

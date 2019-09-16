@@ -124,8 +124,8 @@ QUnit.test("returns undefined against incompatible set", function(assert) {
     var fromQuery = new BasicQuery({
         filter: new BasicQuery.KeysAnd({ type: 'critical' })
     });
-		var res;
-	try{
+	var res;
+	try {
 		res = query.filterFrom(items, fromQuery);
 	} catch(e) {
 		assert.ok(true, "throws an error");

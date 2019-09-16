@@ -1,4 +1,4 @@
-import {DefineMap, QueryLogic } from "can";
+import {DefineMap, QueryLogic} from "can";
 
 class DateStringSet {
 	constructor(value){
