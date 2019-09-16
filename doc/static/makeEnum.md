@@ -49,7 +49,7 @@ Create a schema type that represents a finite set of values.
 Instead of using `makeEnum`, an enum type can be defined the following:
 
 ```js
-import {Reflect as canReflect} from "can";
+import {canReflect} from "can";
 
 const Status = canReflect.assignSymbols({}, {
   "can.new": function(val){

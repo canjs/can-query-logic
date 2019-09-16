@@ -1,4 +1,4 @@
-import {QueryLogic, Reflect as canReflect} from "can";
+import {canReflect, QueryLogic} from "can";
 
 // Takes the value of `name` (ex: `"chicken"`)
 function SearchableStringSet(value) {

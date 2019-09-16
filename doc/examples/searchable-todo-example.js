@@ -1,4 +1,4 @@
-import {DefineMap, QueryLogic, Reflect as canReflect} from "can";
+import {canReflect, DefineMap, QueryLogic} from "can";
 
 // Takes the value of `name` (ex: `"chicken"`)
 function SearchableStringSet(value) {
