@@ -2,6 +2,8 @@ var QueryLogic = require("../can-query-logic");
 var QUnit = require("steal-qunit");
 var canReflect = require("can-reflect");
 
+window.canReflect = canReflect;
+
 QUnit.module("can-query-logic with maybe type");
 
 QUnit.test("basics", function(assert) {
@@ -73,53 +75,38 @@ QUnit.test("basics", function(assert) {
 });
 
 
-QUnit.test("MaybeDate", function(assert) {
-	// Goal here is so the type doesn't have to know about `can-query-logic`,
-	// but when passed to can-query-logic, it knows what to do.
-	function toDate(str) {
-		var type = typeof str;
-		if (type === 'string') {
-			str = Date.parse(str);
-			return isNaN(str) ? null : new Date(str);
-		} else if (type === 'number') {
-			return new Date(str);
-		} else {
-			return str;
-		}
+
+// Goal here is so the type doesn't have to know about `can-query-logic`,
+// but when passed to can-query-logic, it knows what to do.
+function toDate(str) {
+	var type = typeof str;
+	if (type === 'string') {
+		str = Date.parse(str);
+		return isNaN(str) ? null : new Date(str);
+	} else if (type === 'number') {
+		return new Date(str);
+	} else {
+		return str;
 	}
+}
 
-	function DateStringSet(dateStr){
-		this.setValue = dateStr;
-		var date = toDate(dateStr);
-		this.value = date == null ? date : date.getTime();
+// This is the ComparisonSetType
+function DateStringSet(dateStr){
+	this.setValue = dateStr;
+	var date = toDate(dateStr);
+	this.value = date == null ? date : date.getTime();
+}
+
+DateStringSet.prototype.valueOf = function(){
+	return this.value;
+};
+canReflect.assignSymbols(DateStringSet.prototype,{
+	"can.serialize": function(){
+		return this.setValue;
 	}
+});
 
-	DateStringSet.prototype.valueOf = function(){
-		return this.value;
-	};
-	canReflect.assignSymbols(DateStringSet.prototype,{
-		"can.serialize": function(){
-			return this.setValue;
-		}
-	});
-
-	var MaybeDate = canReflect.assignSymbols({},{
-		"can.new": toDate,
-		"can.getSchema": function(){
-			return {
-				type: "Or",
-				values: [Date, undefined, null]
-			};
-		},
-		"can.ComparisonSetType": DateStringSet
-	});
-
-	var todoQueryLogic = new QueryLogic({
-		keys: {
-			due: MaybeDate
-		}
-	});
-	/*
+function testMaybeDate(todoQueryLogic, assert) {
 	var date1982_10_20 = new Date(1982,9,20).toString();
 
 	var res = todoQueryLogic.difference(
@@ -132,6 +119,7 @@ QUnit.test("MaybeDate", function(assert) {
 			{due: {$in: [undefined, null]}}
 		]},
 		"difference works");
+
 
 	var gt1982 = {filter: {due: {$gt: date1982_10_20}}};
 
@@ -163,7 +151,7 @@ QUnit.test("MaybeDate", function(assert) {
 	assert.ok( todoQueryLogic.isMember({filter: {due: {$in: [null,undefined]}}},{
 		id: 0,
 		due: null
-	}), "works if using in");*/
+	}), "works if using in");
 
 	var store = [
 		{
@@ -206,4 +194,57 @@ QUnit.test("MaybeDate", function(assert) {
 			due: new Date(2001,0,1).toString()
 		}
 	]);
+
+	assert.ok( todoQueryLogic.isSubset({
+		"filter": {
+			"due": {
+				"$gte": "Mon May 24 2021 21:34:01 GMT-0500 (Central Daylight Time)",
+				"$lt": "Tue May 25 2021 21:34:01 GMT-0500 (Central Daylight Time)"
+			}
+		}
+	}, {}), "is subset");
+}
+
+
+
+QUnit.test("MaybeDate with ComparisonSetType", function(assert) {
+
+	var MaybeDate = canReflect.assignSymbols({},{
+		"can.new": toDate,
+		"can.getSchema": function(){
+			return {
+				type: "Or",
+				values: [Date, undefined, null]
+			};
+		},
+		"can.ComparisonSetType": DateStringSet
+	});
+
+	var todoQueryLogic = new QueryLogic({
+		keys: {
+			due: MaybeDate
+		}
+	});
+	testMaybeDate( todoQueryLogic, assert );
+});
+
+
+QUnit.test("MaybeDate without ComparisonSetType", function(assert) {
+
+	var MaybeDate = canReflect.assignSymbols({},{
+		"can.new": toDate,
+		"can.getSchema": function(){
+			return {
+				type: "Or",
+				values: [Date, undefined, null]
+			};
+		}
+	});
+
+	var todoQueryLogic = new QueryLogic({
+		keys: {
+			due: MaybeDate
+		}
+	});
+	testMaybeDate( todoQueryLogic, assert);
 });
