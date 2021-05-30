@@ -238,14 +238,17 @@ makeMaybe.makeMaybeSetTypes = function(Type) {
 	} else {
 
 		ComparisonSetType = function(value) {
+			this.setValue = value;
 			this.value = canReflect.new(Type, value);
 		};
+
 		ComparisonSetType.prototype.valueOf = function() {
-			return this.value;
+			return this.value && typeof this.value.valueOf === "function" ?
+				this.value.valueOf() : this.value;
 		};
 		canReflect.assignSymbols(ComparisonSetType.prototype, {
 			"can.serialize": function() {
-				return this.value;
+				return this.setValue;
 			}
 		});
 		//!steal-remove-start

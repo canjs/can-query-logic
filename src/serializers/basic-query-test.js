@@ -142,7 +142,7 @@ QUnit.test("auto-convert or schema into maybe type", function(assert) {
     assert.deepEqual(res, {
         filter: {
             $or: [
-                { foo: "bar", age: {$gt: 3}},
+                { foo: "bar", age: {$gt: "3"}},
                 { foo: "bar", age: null}
             ]
         }
