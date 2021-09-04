@@ -101,8 +101,11 @@ var helpers = {
 	},
 	//
 	getIndex: function(compare, items, props, schema) {
-		if (!items || !items.length) {
+		if(!items){
 			return undefined;
+		}
+		if (items.length === 0) {
+			return 0;
 		}
 		// check the start and the end
 		if (compare(props, items[0]) === -1) {
