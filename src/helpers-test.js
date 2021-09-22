@@ -86,6 +86,14 @@ QUnit.test(".getIndex should not sort unchanged items #33", function(assert) {
 	assert.equal(res4, 3);
 });
 
+QUnit.test(".getIndex on an empty list should return 0 #59", function(assert) {
+
+	var items = [];
+	var compare = helpers.sorter("-id");
+	var index = helpers.getIndex(compare,items, {id: 1, name: "Item 1"});
+	assert.equal(index, 0);
+});
+
 QUnit.test("Missed schema on helper.getIndex #45", function(assert) {
 	var items = [
 		{id: 1, name: "Item 0"},
