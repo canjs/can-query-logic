@@ -164,21 +164,16 @@ QUnit.test("filterMembers basics", function(assert) {
 
 
 QUnit.test("unionMembers basics", function(assert) {
-	var union = algebra.unionMembers({
-		filter: {
-			name: "Bohdi"
-		}
-	}, {
-		filter: {
-			name: "Ramiya"
-		}
-	}, [{
-		name: "Bohdi",
-		id: 1
-	}, ], [{
-		name: "Ramiya",
-		id: 2
-	}, ]);
+	var union = algebra.unionMembers(
+		{ filter: { name: "Bohdi" } },
+		{ filter: { name: "Ramiya" } },
+		[
+			{ name: "Bohdi", id: 1 }
+		],
+		[
+			{ name: "Ramiya", id: 2 }
+		]
+	);
 
 	assert.deepEqual(union, [{
 			name: "Bohdi",
