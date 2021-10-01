@@ -162,6 +162,37 @@ QUnit.test("filterMembers basics", function(assert) {
 	]);
 });
 
+QUnit.test("filterMembers nested", function(assert) {
+    var subset = algebra.filterMembers(
+        { filter: { 'employees': {name: 'Patrick' } }},
+        [{
+            projectId: 1,
+            employees: [{
+                name: 'Patrick',
+            },
+            {
+                name: 'Justin',
+            }]
+        }, {
+            projectId: 2,
+            employees: [
+            {
+                name: 'Justin',
+            }]
+        }],
+    );
+
+    assert.deepEqual(subset, [{
+        projectId: 1,
+        employees: [{
+            name: 'Patrick',
+        },
+        {
+            name: 'Justin',
+        }]
+    }])
+})
+
 
 QUnit.test("unionMembers basics", function(assert) {
 	var union = algebra.unionMembers({

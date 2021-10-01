@@ -23,23 +23,30 @@ var isMemberSymbol = canSymbol.for("can.isMember");
 
 
 KeysAnd.prototype.isMember = function(props, root, rootKey) {
-	var equal = true;
-	var preKey = rootKey ? rootKey + "." : "";
-	canReflect.eachKey(this.values, function(value, key) {
-		var isMember = value && (value[isMemberSymbol] || value.isMember);
-		if (isMember) {
-			if (!isMember.call(value, canGet(props, key), root || props, preKey + key)) {
-				equal = false;
-			}
-		} else {
-			if (value !== canGet(props, key)) {
-				equal = false;
-			}
-		}
-	});
-	return equal;
-};
+    var equal = true;
+    var preKey = rootKey ? rootKey + "." : "";
+    canReflect.eachKey(this.values, function(value, key) {
+        var isMember = value && (value[isMemberSymbol] || value.isMember);
+        if (isMember) {
+            if(canReflect.isListLike(props)) {
+                var match = false;
+                canReflect.each(props, (objInList) => {
+                    if(match) return;
 
+                    match = isMember.call(value, canGet(objInList, key), root || props, preKey + key)
+                })
+                equal = match;
+            } else if (!isMember.call(value, canGet(props, key), root || props, preKey + key)) {
+                equal = false;
+            }
+        } else {
+            if (value !== canGet(props, key)) {
+                equal = false;
+            }
+        }
+    });
+    return equal;
+};
 
 // ====== DEFINE COMPARISONS ========
 
